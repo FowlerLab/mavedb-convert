@@ -1,6 +1,6 @@
 import unittest
 
-from . import disable_logging
+from mavedbconvert import disable_logging
 
 
 if __name__ == "__main__":

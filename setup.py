@@ -6,10 +6,16 @@ setup(
     packages=[
         'mavedbconvert'
         'mavedbconvert.tests',
+        'mavedbconvert.base',
         'mavedbconvert.constants',
+        'mavedbconvert.empiric',
+        'mavedbconvert.enrich',
+        'mavedbconvert.enrich2',
+        'mavedbconvert.exceptions',
+        'mavedbconvert.fasta',
+        'mavedbconvert.filters',
         'mavedbconvert.utilities',
         'mavedbconvert.validators',
-        'mavedbconvert.programs',
     ],
     url='https://github.com/FowlerLab/mavedb-tools',
     license='AGPLv3',

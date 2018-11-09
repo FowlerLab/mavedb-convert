@@ -1,9 +1,9 @@
 import os
 import mock
 
-from mavedbconvert.programs import base
+from .. import base
 
-from mavedbconvert.programs.tests import ProgramTestCase
+from . import ProgramTestCase
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

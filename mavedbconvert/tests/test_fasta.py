@@ -1,7 +1,7 @@
 import os
 from unittest import TestCase
 
-from .. utilities import parse_fasta, split_fasta_path
+from ..fasta import parse_fasta, split_fasta_path
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.normpath(BASE_DIR + '/data/')

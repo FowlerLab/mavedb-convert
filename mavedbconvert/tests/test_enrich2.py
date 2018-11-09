@@ -10,11 +10,9 @@ import numpy as np
 import pandas as pd
 from pandas.testing import assert_index_equal, assert_frame_equal
 
-from ...dataset.validators import validate_datasets_define_same_variants
+from .. import validators, enrich2, constants
 
-from mavedbconvert.programs import enrich2, constants
-
-from mavedbconvert.programs.tests import ProgramTestCase
+from . import ProgramTestCase
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -495,13 +493,13 @@ class TestEnrich2ParseInput(ProgramTestCase):
         for call_args in patch.call_args_list:
             self.assertIn(expected_base_path, call_args[0][0])
             
-    @mock.patch('mavedbtools.programs.enrich2.get_replicate_score_dataframes')
+    @mock.patch('mavedbconvert.enrich2.get_replicate_score_dataframes')
     def test_iterates_over_all_available_tables(self, patch):
         self.enrich2.parse_input(self.enrich2.load_input_file())
         self.assertIn(constants.synonymous_table, patch.call_args_list[0][0])
         self.assertIn(constants.variants_table, patch.call_args_list[1][0])
 
-    @mock.patch('mavedbtools.programs.enrich2.drop_null',
+    @mock.patch('mavedbconvert.enrich2.drop_null',
                 side_effect=lambda scores_df, counts_df: (scores_df, counts_df))
     def test_calls_drop_null(self, patch):
         self.enrich2.parse_input(self.enrich2.load_input_file())
@@ -690,11 +688,11 @@ class TestEnrich2ParseInput(ProgramTestCase):
 
         df_counts = pd.read_csv(self.files[4])  # c1
         df_scores = pd.read_csv(self.files[6])  # c1
-        validate_datasets_define_same_variants(df_scores, df_counts)
+        validators.validate_datasets_define_same_variants(df_scores, df_counts)
 
         df_counts = pd.read_csv(self.files[5])  # c2
         df_scores = pd.read_csv(self.files[7])  # c2
-        validate_datasets_define_same_variants(df_scores, df_counts)
+        validators.validate_datasets_define_same_variants(df_scores, df_counts)
         
     def test_drops_null_rows(self):
         self.store.close()

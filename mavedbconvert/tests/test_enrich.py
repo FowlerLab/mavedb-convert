@@ -4,10 +4,9 @@ import pandas as pd
 import numpy as np
 from pandas.testing import assert_frame_equal
 
-from mavedbconvert import utilities
-from mavedbconvert.programs import enrich, constants
+from .. import enrich, constants, utilities
 
-from mavedbconvert.programs.tests import ProgramTestCase
+from . import ProgramTestCase
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -103,7 +102,7 @@ class TestEnrichParseInput(ProgramTestCase):
         self.assertEqual(list(result.columns).index(
             constants.pro_variant_col), 0)
         self.assertEqual(list(result.columns).index(
-            constants.required_score_column), 1)
+            constants.mavedb_score_column), 1)
 
     def test_removes_hgvs_nt(self):
         df = pd.DataFrame({
@@ -127,7 +126,7 @@ class TestEnrichParseInput(ProgramTestCase):
         result = self.enrich.parse_input(df)
         self.assertEqual(len(result), 1)
         self.assertEqual(
-            result[constants.required_score_column].values[0], 1.2)
+            result[constants.mavedb_score_column].values[0], 1.2)
         self.assertEqual(result['B'].values[0], 2.4)
         
     def test_renames_score_column_to_score_and_drops_original(self):
@@ -145,7 +144,7 @@ class TestEnrichParseInput(ProgramTestCase):
         })
         result = self.enrich.parse_input(df)
         self.assertTrue(np.issubdtype(
-            result[constants.required_score_column].values[0], np.int))
+            result[constants.mavedb_score_column].values[0], np.signedinteger))
 
     def test_removes_non_numeric(self):
         df = pd.DataFrame({

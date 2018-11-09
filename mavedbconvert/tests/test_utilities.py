@@ -2,10 +2,10 @@ from unittest import TestCase
 
 import numpy as np
 
-from .. import utilities
+from .. import utilities, constants, exceptions
 
 
-class TestUtilities(TestCase):
+class TestSlicer(TestCase):
     def test_slicer_returns_chunks_of_size_n(self):
         self.assertEqual(
             list(utilities.slicer('aaabbbccc', 3)),
@@ -41,32 +41,19 @@ class TestTranslateWTSequence(TestCase):
             utilities.translate_dna('GTGGCGGAG', offset=-3)
 
 
-class TestDNAtoAAPosition(TestCase):
-    def test_error_pos_negative(self):
-        with self.assertRaises(ValueError):
-            utilities.dna_to_aa_position(-1)
+class TestIsNull(TestCase):
+    def test_is_null_true_for_none_nan_and_na(self):
+        for v in constants.extra_na:
+            self.assertTrue(utilities.is_null(v))
 
-    def test_error_zero_pos_one_based(self):
-        with self.assertRaises(ValueError):
-            utilities.dna_to_aa_position(0, True)
+    def test_test_is_null_true_blank(self):
+        self.assertTrue(utilities.is_null(' '))
 
-    def test_convert_dna_to_aa_position_0_based(self):
-        self.assertEqual(1, utilities.dna_to_aa_position(0))
-        self.assertEqual(1, utilities.dna_to_aa_position(1))
-        self.assertEqual(1, utilities.dna_to_aa_position(2))
+    def test_is_null_case_insensitive(self):
+        self.assertTrue(utilities.is_null('NONE'))
 
-        self.assertEqual(2, utilities.dna_to_aa_position(3))
-        self.assertEqual(2, utilities.dna_to_aa_position(4))
-        self.assertEqual(2, utilities.dna_to_aa_position(5))
-
-    def test_convert_dna_to_aa_position_1_based(self):
-        self.assertEqual(1, utilities.dna_to_aa_position(1, True))
-        self.assertEqual(1, utilities.dna_to_aa_position(2, True))
-        self.assertEqual(1, utilities.dna_to_aa_position(3, True))
-
-        self.assertEqual(2, utilities.dna_to_aa_position(4, True))
-        self.assertEqual(2, utilities.dna_to_aa_position(5, True))
-        self.assertEqual(2, utilities.dna_to_aa_position(6, True))
+    def test_is_null_false(self):
+        self.assertFalse(utilities.is_null('1.2'))
 
 
 class TestFormatColumn(TestCase):
@@ -227,3 +214,95 @@ class TestProteinSubstitutionEvent(TestCase):
             utilities.ProteinSubstitutionEvent('p.Gly2=').event, 'Gly2=')
         self.assertEqual(
             utilities.ProteinSubstitutionEvent('p.Gly2Leu').event, 'Gly2Leu')
+
+
+class TestSplitVariant(TestCase):
+    def test_split_hgvs_singular_list_non_multi_variant(self):
+        self.assertListEqual(
+            ['c.100A>G'], utilities.split_variant('c.100A>G'))
+
+    def test_split_hgvs_returns_list_of_single_variants(self):
+        self.assertListEqual(
+            ['c.100A>G', 'c.101A>G'],
+            utilities.split_variant('c.[100A>G;101A>G]')
+        )
+
+
+class TestFormatVariant(TestCase):
+    def test_stripts_white_space(self):
+        self.assertEqual(utilities.format_variant(' c.1A>G '), 'c.1A>G')
+
+    def test_passes_on_none(self):
+        self.assertIsNone(utilities.format_variant(None))
+
+
+class TestHGVSProFromEventList(TestCase):
+    def test_returns_single_event(self):
+        result = utilities.hgvs_pro_from_event_list(['L4V'])
+        self.assertEqual(result, 'p.L4V')
+
+    def test_strips_whitespace(self):
+        result = utilities.hgvs_pro_from_event_list([' L4V '])
+        self.assertEqual(result, 'p.L4V')
+
+    def test_combines_muilt_events(self):
+        result = utilities.hgvs_pro_from_event_list(['L4V', 'G5*'])
+        self.assertEqual(result, 'p.[L4V;G5*]')
+
+    def test_removes_duplicate_events(self):
+        result = utilities.hgvs_pro_from_event_list(['L4V', 'L4V'])
+        self.assertEqual(result, 'p.L4V')
+        result = utilities.hgvs_pro_from_event_list(['L4V', 'L4V', 'L5V'])
+        self.assertEqual(result, 'p.[L4V;L5V]')
+
+    def test_retains_ordering(self):
+        result = utilities.hgvs_pro_from_event_list(['L5V', 'L4V'])
+        self.assertEqual(result, 'p.[L5V;L4V]')
+
+    def test_error_invalid_hgvs(self):
+        with self.assertRaises(exceptions.HGVSMatchError):
+            utilities.hgvs_pro_from_event_list(['aaaa'])
+
+
+class TestHGVSNTFromEventList(TestCase):
+    def test_returns_single_event(self):
+        result = utilities.hgvs_nt_from_event_list(['45A>G'], prefix='c')
+        self.assertEqual(result, 'c.45A>G')
+
+    def test_strips_whitespace(self):
+        result = utilities.hgvs_nt_from_event_list([' 45A>G '], prefix='c')
+        self.assertEqual(result, 'c.45A>G')
+
+    def test_combines_muilt_events(self):
+        result = utilities.hgvs_nt_from_event_list(
+            ['45A>G', '127_128delinsAAA'], prefix='n')
+        self.assertEqual(result, 'n.[45A>G;127_128delinsAAA]')
+
+    def test_keeps_duplicate_events(self):
+        result = utilities.hgvs_nt_from_event_list(
+            ['45a>u', '45a>u'], prefix='r')
+        self.assertEqual(result, 'r.[45a>u;45a>u]')
+
+    def test_error_invalid_hgvs(self):
+        with self.assertRaises(exceptions.HGVSMatchError):
+            utilities.hgvs_nt_from_event_list(['aaaa'], prefix='c')
+
+
+class TestNonHgvsColumns(TestCase):
+    def test_returns_non_hgvs_columns(self):
+        self.assertListEqual(
+            ['score'],
+            list(utilities.non_hgvs_columns(
+                ['score', constants.nt_variant_col, constants.pro_variant_col]
+            ))
+        )
+
+
+class TestHgvsColumns(TestCase):
+    def test_returns_only_hgvs_columns(self):
+        self.assertListEqual(
+            [constants.nt_variant_col, constants.pro_variant_col],
+            list(utilities.hgvs_columns(
+                ['score', constants.nt_variant_col, constants.pro_variant_col]
+            ))
+        )

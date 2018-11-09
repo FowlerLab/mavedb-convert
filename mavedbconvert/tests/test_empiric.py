@@ -5,9 +5,9 @@ import pandas as pd
 import numpy as np
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from mavedbconvert.programs import empiric, constants
+from .. import empiric, constants
 
-from mavedbconvert.programs.tests import ProgramTestCase
+from . import ProgramTestCase
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -270,7 +270,7 @@ class TestEmpiricParseInput(ProgramTestCase):
         })
         result = self.empiric.parse_input(df)
         self.assertTrue(np.issubdtype(
-            result[constants.required_score_column].values[0], np.int))
+            result[constants.mavedb_score_column].values[0], np.signedinteger))
 
 
 class TestEmpiricLoadInput(ProgramTestCase):
