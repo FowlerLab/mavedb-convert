@@ -1,0 +1,4 @@
+hgvs_nt,hgvs_pro,score,col_B
+c.[1T>A;2C>A;3T>A],p.Ser1Lys,-1.2,1.2
+c.[4T>A;5=;6T>C],p.Tyr2Asn,464,nan
+c.[7=;8G>A;9T>A],p.Cys3Ter,0,515

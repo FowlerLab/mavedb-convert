@@ -1,0 +1,14 @@
+tables>=3.2.0
+pandas>=0.18.0
+docopt
+mock
+pytest
+xlrd >= 0.9.0
+git+https://github.com/FowlerLab/hgvs-patterns.git
+hgvs
+requests
+numpy
+scipy
+joblib
+tqdm
+xlsxwriter
