@@ -1,23 +1,13 @@
 from setuptools import setup
 
 setup(
-    name='mavedb-convert',
+    name='mavedbconvert',
     version='v0.1-alpha',
     packages=[
-        'mavedbconvert'
+        'mavedbconvert',
         'mavedbconvert.tests',
-        'mavedbconvert.base',
-        'mavedbconvert.constants',
-        'mavedbconvert.empiric',
-        'mavedbconvert.enrich',
-        'mavedbconvert.enrich2',
-        'mavedbconvert.exceptions',
-        'mavedbconvert.fasta',
-        'mavedbconvert.filters',
-        'mavedbconvert.utilities',
-        'mavedbconvert.validators',
     ],
-    url='https://github.com/FowlerLab/mavedb-tools',
+    url='https://github.com/FowlerLab/mavedb-convert',
     license='AGPLv3',
     author='Daniel Esposito',
     author_email='esposito.d@wehi.edu.au',
