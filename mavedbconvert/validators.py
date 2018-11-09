@@ -149,7 +149,7 @@ def validate_has_column(df, column):
 def validate_columns_are_numeric(df):
     """Checks non-hgvs columns for float or int data."""
     for column in df.columns:
-        if column in [constants.hgvs_pro_col, constants.hgvs_nt_col]:
+        if column in [constants.pro_variant_col, constants.nt_variant_col]:
             continue
         else:
             if not (np.issubdtype(df.dtypes[column], np.floating) or
@@ -162,11 +162,11 @@ def validate_columns_are_numeric(df):
 
 def validate_hgvs_nt_uniqueness(df):
     """Validate that hgvs columns only define a variant once."""
-    df = df[~df[constants.hgvs_nt_col].isnull()]
-    dups = df.loc[:, constants.hgvs_nt_col].duplicated(keep=False)
+    df = df[~df[constants.nt_variant_col].isnull()]
+    dups = df.loc[:, constants.nt_variant_col].duplicated(keep=False)
     if np.any(dups):
         dup_list = ["{} ({})".format(x, y) for x, y in
-                    zip(df.loc[dups, constants.hgvs_nt_col],
+                    zip(df.loc[dups, constants.nt_variant_col],
                         dups.index[dups])]
         raise ValueError(
             "duplicate HGVS nucleotide strings found: {}".format(
@@ -176,11 +176,11 @@ def validate_hgvs_nt_uniqueness(df):
 
 def validate_hgvs_pro_uniqueness(df):
     """Validate that hgvs columns only define a variant once."""
-    df = df[~df[constants.hgvs_pro_col].isnull()]
-    dups = df.loc[:, constants.hgvs_pro_col].duplicated(keep=False)
+    df = df[~df[constants.pro_variant_col].isnull()]
+    dups = df.loc[:, constants.pro_variant_col].duplicated(keep=False)
     if np.any(dups):
         dup_list = ["{} ({})".format(x, y) for x, y in
-                    zip(df.loc[dups, constants.hgvs_pro_col],
+                    zip(df.loc[dups, constants.pro_variant_col],
                         dups.index[dups])]
         raise ValueError(
             "Duplicate HGVS protein strings found: {}".format(
@@ -213,9 +213,9 @@ def validate_datasets_define_same_variants(scores_df, counts_df):
             )
         )
 
-    if constants.hgvs_nt_col in scores_columns:
-        scores_nt = scores_df[constants.hgvs_nt_col].values
-        counts_nt = counts_df[constants.hgvs_nt_col].values
+    if constants.nt_variant_col in scores_columns:
+        scores_nt = scores_df[constants.nt_variant_col].values
+        counts_nt = counts_df[constants.nt_variant_col].values
         try:
             assert_array_equal(scores_nt, counts_nt)  # Treats np.NaN as equal
         except AssertionError:
@@ -231,9 +231,9 @@ def validate_datasets_define_same_variants(scores_df, counts_df):
                 "nucleotide variants: {}.".format(', '.join(neq_list))
             )
 
-    if constants.hgvs_pro_col in scores_columns:
-        scores_pro = scores_df[constants.hgvs_pro_col].values
-        counts_pro = counts_df[constants.hgvs_pro_col].values
+    if constants.pro_variant_col in scores_columns:
+        scores_pro = scores_df[constants.pro_variant_col].values
+        counts_pro = counts_df[constants.pro_variant_col].values
         try:
             assert_array_equal(scores_pro,
                                counts_pro)  # Treats np.NaN as equal
@@ -255,31 +255,32 @@ def validate_mavedb_compliance(df, df_type):
     """Runs MaveDB compliance checks."""
     tqdm.pandas(desc="Validating variants")
 
-    has_nt_col = constants.hgvs_nt_col in df.columns
-    has_pro_col = constants.hgvs_pro_col in df.columns
+    has_nt_col = constants.nt_variant_col in df.columns
+    has_pro_col = constants.pro_variant_col in df.columns
     if not has_nt_col and not has_pro_col:
         raise ValueError(
             "Dataframe must define either '{}', '{}' or both.".format(
-                constants.hgvs_nt_col, constants.hgvs_pro_col
+                constants.nt_variant_col, constants.pro_variant_col
             ))
 
     primary_col = None
     if has_nt_col:
         defines_nt = not all(
-            df.loc[:, constants.hgvs_nt_col].progress_apply(utilities.is_null))
+            df.loc[:, constants.nt_variant_col].progress_apply(
+                utilities.is_null))
         if defines_nt:
-            primary_col = constants.hgvs_nt_col
+            primary_col = constants.nt_variant_col
 
     if has_pro_col and primary_col is None:
         defines_pro = not all(
-            df.loc[:, constants.hgvs_pro_col].progress_apply(
+            df.loc[:, constants.pro_variant_col].progress_apply(
                 utilities.is_null))
         if defines_pro:
-            primary_col = constants.hgvs_pro_col
+            primary_col = constants.pro_variant_col
 
     if primary_col is None:
         raise ValueError("Neither '{}' or '{}' defined any variants.".format(
-            constants.hgvs_nt_col, constants.hgvs_pro_col
+            constants.nt_variant_col, constants.pro_variant_col
         ))
 
     null_primary = df.loc[:, primary_col].progress_apply(utilities.is_null)
@@ -290,15 +291,15 @@ def validate_mavedb_compliance(df, df_type):
                 primary_col, 'NaN, Na, None, whitespace, Undefined'
             ))
 
-    if primary_col == constants.hgvs_nt_col:
+    if primary_col == constants.nt_variant_col:
         validate_hgvs_nt_uniqueness(df)
-    elif primary_col == constants.hgvs_pro_col:
+    elif primary_col == constants.pro_variant_col:
         try:
             validate_hgvs_pro_uniqueness(df)
         except ValueError as e:
             logger.warning(
                 "'{}' column contains duplicated entries: {}".format(
-                    constants.hgvs_pro_col, e))
+                    constants.pro_variant_col, e))
 
     validate_columns_are_numeric(df)
     if df_type == constants.score_type:

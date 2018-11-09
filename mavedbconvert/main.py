@@ -6,17 +6,20 @@ EMPIRIC users: Please supply an excel/tab separated file with a single row
 at the top of the file containing your column names. Required columns are
 'Position' and 'Amino Acid'. If you want nucleotide level HGVS events to be
 inferred then you must also provide a 'Codon' column. All other columns must be
-numeric where NaN values must be encoded using 'NaN', 'Na', 'None' or a blank cell.
+numeric where NaN values must be encoded using 'NaN', 'Na', 'None', 'N/A',
+'undefined', 'Null', or a blank cell.
 
 All outputs are in 1-based coordinates.
 
 Usage:
   mavedb-convert enrich2 <src> [--dst=D] [--wtseq=W] [--offset=O]
   mavedb-convert enrich <src> [--dst=D] [--wtseq=W] [--offset=O] [--one_based]
-                              [--score_column=C] [--input_type=T] [--sheet_name=S]
+                              [--score_column=C] [--input_type=T]
+                              [--sheet_name=S]
                               [--skip_header=H] [--skip_footer=H]
   mavedb-convert empiric <src> [--dst=D] [--wtseq=W] [--offset=O] [--one_based]
-                               [--score_column=C] [--input_type=T] [--sheet_name=S]
+                               [--score_column=C] [--input_type=T]
+                               [--sheet_name=S]
                                [--skip_header=H] [--skip_footer=H]
   mavedb-convert -h | --help
   
@@ -33,18 +36,18 @@ Options:
                     made to create the directory tree and check write access.
                     If input is a H5 file and a directory is not supplied, a
                     subdirectory with the same name as the input file will be
-                    created. In all other cases, saves to the output to the input
-                    files's directory if not supplied. [default: None]
+                    created. In all other cases, saves to the output to the
+                    input files's directory if not supplied. [default: None]
 
-  --wtseq=W         A wildtype DNA sequence or fasta file containing the sequence.
-                    Required when inputs are from Enrich, Enrich2 or EMPIRIC.
-                    Not used for other input sources. [default: None]
+  --wtseq=W         A wildtype DNA sequence or fasta file containing the
+                    sequence. Required when inputs are from Enrich, Enrich2 or
+                    EMPIRIC. Not used for other input sources. [default: None]
 
-  --one_based       Set if the coordinates in the input file for Enrich or EMPIRIC are
-                    one-based. [default: False]
+  --one_based       Set if the coordinates in the input file for Enrich or
+                    EMPIRIC are one-based. [default: False]
 
-  --offset=O        Number of bases at the beginning of `wt_sequence` to ignore before
-                    beginning translation. [default: 0]
+  --offset=O        Number of bases at the beginning of `wt_sequence` to ignore
+                    before beginning translation. [default: 0]
 
   --score_column=C  Column to use as scores. [default: None]
 
@@ -64,7 +67,7 @@ import sys
 import docopt
 import logging
 
-from . import programs, constants, utilities, LOGGER
+from . import enrich, enrich2, empiric, constants, LOGGER, fasta
 
 
 logger = logging.getLogger(LOGGER)
@@ -106,7 +109,7 @@ def parse_args(docopt_args=None):
             else:
                 path = None
             kwargs[k[2:]] = path
-        elif k in programs.constants.supported_programs and v:
+        elif k in constants.supported_programs and v:
             program = k
         elif k in ('--wtseq', '--offset', '--one_based', '--sheet_name',
                    '--score_column', '--input_type', '--skip_header',
@@ -122,16 +125,16 @@ def parse_args(docopt_args=None):
             continue
 
     # ---- Validate input types ----- #
-    if kwargs['input_type'] not in programs.constants.types:
+    if kwargs['input_type'] not in constants.types:
         logger.error(
             "Supported dataset input types are {}".format(
-                ' or '.join(programs.constants.types)))
+                ' or '.join(constants.types)))
         sys.exit()
     
-    if program not in programs.constants.supported_programs:
+    if program not in constants.supported_programs:
         logger.error(
             "Supported programs are {}".format(
-                ', '.join(programs.constants.supported_programs)))
+                ', '.join(constants.supported_programs)))
         sys.exit()
 
     # ---- Validate score column ----- #
@@ -139,7 +142,7 @@ def parse_args(docopt_args=None):
         defines_column = kwargs['score_column'] and \
                          kwargs['score_column'] is not None
         input_type = kwargs['input_type']
-        if input_type == programs.constants.score_type and not defines_column:
+        if input_type == constants.score_type and not defines_column:
             logger.error("A scores column name must be specified.")
             sys.exit()
     
@@ -162,7 +165,7 @@ def parse_args(docopt_args=None):
             sys.exit()
 
         if os.path.isfile(os.path.normpath(os.path.expanduser(wt_seq))):
-            wt_seq = utilities.parse_fasta(
+            wt_seq = fasta.parse_fasta(
                 os.path.normpath(os.path.expanduser(wt_seq)))
             kwargs['wtseq'] = wt_seq
         
@@ -188,14 +191,14 @@ def main():
         kwargs['skip_header_rows'] = kwargs.pop('skip_header')
         kwargs['skip_footer_rows'] = kwargs.pop('skip_footer')
         if program == 'enrich':
-            programs.enrich.Enrich(**kwargs).convert()
+            enrich.Enrich(**kwargs).convert()
         elif program == 'enrich2':
-            programs.enrich2.Enrich2(**kwargs).convert()
+            enrich2.Enrich2(**kwargs).convert()
         elif program == 'empiric':
-            programs.empiric.Empiric(**kwargs).convert()
+            empiric.Empiric(**kwargs).convert()
         else:
             logger.error("Supported programs are {}".format(
-                ', '.join(programs.constants.supported_programs)))
+                ', '.join(constants.supported_programs)))
             sys.exit()
     except Exception:
         logger.exception("An error occured during conversion.")

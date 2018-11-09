@@ -68,7 +68,8 @@ def parse_fasta(file):
     sequence = ''
     sequence_count = 0
     in_sequence = False
-    lines = open_func(file, 'rt').readlines()
+    handle = open_func(file, 'rt')
+    lines = handle.readlines()
     i = 0
     while i < len(lines):
         if i == 0 and not lines[i].strip().startswith('>'):
@@ -85,9 +86,9 @@ def parse_fasta(file):
             if lines[i].strip().startswith('>'):
                 in_sequence = False
                 continue
-            if not constants.dna_re.fullmatch(lines[i].strip()):
+            if not constants.dna_re.fullmatch(lines[i].strip().upper()):
                 raise ValueError(
-                    "Invalid nucleotide characters in line '{}."
+                    "Invalid nucleotide characters in line '{}. "
                     "Supported characters are ATCGatcg.".format(
                         lines[i].strip()
                     ))
@@ -95,4 +96,5 @@ def parse_fasta(file):
                 sequence += lines[i].strip()
                 i += 1
 
+    handle.close()
     return sequence.upper()

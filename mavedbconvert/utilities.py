@@ -271,7 +271,7 @@ def format_variant(variant):
 
     Parameters
     ----------
-    variant : str
+    variant : str, optional.
         HGVS_ formatted string.
 
     Returns
@@ -330,7 +330,8 @@ def non_hgvs_columns(columns):
     The order of the elements is preserved.
     """
     data_columns = [x for x in columns if
-                    x != constants.hgvs_nt_col and x != constants.hgvs_pro_col]
+                    x != constants.nt_variant_col
+                    and x != constants.pro_variant_col]
     return pd.Index(data_columns)
 
 
@@ -342,5 +343,6 @@ def hgvs_columns(columns):
     The order of the elements is preserved.
     """
     data_columns = [x for x in columns if
-                    x == constants.hgvs_nt_col or x == constants.hgvs_pro_col]
+                    x == constants.nt_variant_col
+                    or x == constants.pro_variant_col]
     return pd.Index(data_columns)

@@ -196,13 +196,13 @@ class Enrich(base.BaseProgram):
 
             if self.input_is_scores_based and column == self.score_column:
                 mave_columns.remove(column)
-                column = constants.required_score_column
+                column = constants.mavedb_score_column
             data[column] = list(utilities.format_column(column_values, astype))
 
         # Sort column order so 'score' comes right after hgvs columns.
         if self.input_is_scores_based:
             mave_columns = mave_columns[:2] + \
-                           [constants.required_score_column] + \
+                           [constants.mavedb_score_column] + \
                            mave_columns[2:]
         mavedb_df = pd.DataFrame(data=data, columns=mave_columns)
         filters.drop_na_rows(mavedb_df, inplace=True)
