@@ -13,12 +13,13 @@ __all__ = [
     'exceptions',
     'fasta',
     'utilities',
+    'filters',
     'validators',
     'disable_logging',
     'LOGGER',
 ]
 
-HOMEDIR = os.path.normpath(os.path.expanduser('~/.mave_convert/'))
+HOMEDIR = os.path.normpath(os.path.expanduser('~/.mavedb_convert/'))
 tempfile.tempdir = HOMEDIR
 if not os.path.isdir(HOMEDIR):
     os.mkdir(HOMEDIR)
