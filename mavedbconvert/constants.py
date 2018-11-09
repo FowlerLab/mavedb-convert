@@ -17,6 +17,7 @@ surrounding_brackets_re = re.compile(r"\((.*)\)")
 dna_re = re.compile(r'[{nucleotides}]+'.format(nucleotides=dna.nucleotides))
 
 # HGVS
+dummy_ref = 'NM_000000000.0'
 hgvs_parser = Parser()
 hdp = None
 
@@ -56,7 +57,7 @@ variant_columns = (nt_variant_col, pro_variant_col, )
 score_type = 'scores'
 count_type = 'counts'
 types = (score_type, count_type, )
-required_score_column = 'score'
+mavedb_score_column = 'score'
 
 
 # Standard codon table for translating wild type and variant DNA sequences
