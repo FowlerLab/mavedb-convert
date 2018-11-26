@@ -209,7 +209,6 @@ def main():
         kwargs['skip_header_rows'] = kwargs.pop('skip_header')
         kwargs['skip_footer_rows'] = kwargs.pop('skip_footer')
         if program == 'enrich':
-            kwargs.pop('one_based')
             enrich.Enrich(**kwargs).convert()
         elif program == 'enrich2':
             kwargs.pop('one_based')

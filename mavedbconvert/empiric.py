@@ -91,7 +91,7 @@ def infer_pro_substitution(wt_aa, mut_aa, codon_pos):
 class Empiric(base.BaseProgram):
     __doc__ = base.BaseProgram.__doc__
 
-    def __init__(self, src, wt_sequence, offset=0, dst=None, one_based=True,
+    def __init__(self, src, wt_sequence, offset=0, dst=None, one_based=False,
                  skip_header_rows=0, skip_footer_rows=0, score_column=None,
                  input_type=None, sheet_name=None):
         super().__init__(
