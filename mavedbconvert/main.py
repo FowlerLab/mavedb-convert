@@ -22,10 +22,13 @@ Usage:
                                [--sheet_name=S]
                                [--skip_header=H] [--skip_footer=H]
   mavedb-convert -h | --help
+  mavedb-convert --version
   
 
 Options:
   -h --help         Show this screen.
+
+  --version         Show version.
 
   <program>         The program the input was generated from.
                     Currently supports Enrich, enrich2 and EMPIRIC.
@@ -75,7 +78,7 @@ logger = logging.getLogger(LOGGER)
 
 def parse_args(docopt_args=None):
     if docopt_args is None:
-        docopt_args = docopt.docopt(__doc__)
+        docopt_args = docopt.docopt(__doc__, version='0.1-alpha')
     kwargs = {}
     program = None
     for k, v in docopt_args.items():
