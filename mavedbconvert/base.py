@@ -57,7 +57,7 @@ class BaseProgram(object):
     input_type : str, optional.
         The MaveDB file type. Can be either 'scores' or 'counts'.
     """
-    def __init__(self, src, wt_sequence, offset=0, dst=None, one_based=False,
+    def __init__(self, src, wt_sequence, offset=0, dst=None, one_based=True,
                  skip_header_rows=0, skip_footer_rows=0, score_column=None,
                  input_type=None, sheet_name=None):
         # Check the input is a readable file.
@@ -87,7 +87,7 @@ class BaseProgram(object):
         # read and write permissions.
         if not os.path.isdir(self.dst):
             logger.info("Creating directory '{}'".format(self.dst))
-            os.makedirs(dst, exist_ok=True)
+            os.makedirs(self.dst, exist_ok=True)
         logger.info("Checking write permission to directory '{}'".format(
             self.dst))
         os.access(self.dst, os.W_OK)

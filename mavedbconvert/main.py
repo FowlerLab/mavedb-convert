@@ -13,14 +13,12 @@ All outputs are in 1-based coordinates.
 
 Usage:
   mavedb-convert enrich2 <src> [--dst=D] [--wtseq=W] [--offset=O]
-  mavedb-convert enrich <src> [--dst=D] [--wtseq=W] [--offset=O] [--one_based]
+  mavedb-convert enrich <src> [--dst=D] [--wtseq=W] [--offset=O]
                               [--score_column=C] [--input_type=T]
-                              [--sheet_name=S]
-                              [--skip_header=H] [--skip_footer=H]
+                              [--sheet_name=S] [--skip_header=H] [--skip_footer=H]
   mavedb-convert empiric <src> [--dst=D] [--wtseq=W] [--offset=O] [--one_based]
                                [--score_column=C] [--input_type=T]
-                               [--sheet_name=S]
-                               [--skip_header=H] [--skip_footer=H]
+                               [--sheet_name=S] [--skip_header=H] [--skip_footer=H]
   mavedb-convert -h | --help
   mavedb-convert --version
   
@@ -46,10 +44,11 @@ Options:
                     sequence. Required when inputs are from Enrich, Enrich2 or
                     EMPIRIC. Not used for other input sources. [default: None]
 
-  --one_based       Set if the coordinates in the input file for Enrich or
-                    EMPIRIC are one-based. [default: False]
+  --one_based       Set if the coordinates in an EMPIRIC input file contains
+                    one-based coordinates. Ignored for Enrich and Enrich2
+                    [default: False]
 
-  --offset=O        Number of bases at the beginning of `wt_sequence` to ignore
+  --offset=O        Number of bases at the beginning of `wtseq` to ignore
                     before beginning translation. [default: 0]
 
   --score_column=C  Column to use as scores. [default: None]
@@ -106,9 +105,21 @@ def parse_args(docopt_args=None):
         elif k == '--dst':
             if str(v).capitalize() != 'None':
                 path = os.path.normpath(os.path.expanduser(v))
-                if not os.path.isdir(path):
-                    os.makedirs(path, exist_ok=True)
-                os.access(path, mode=os.W_OK)
+                try:
+                    if not os.path.isdir(path):
+                        os.makedirs(path, exist_ok=True)
+                    os.access(path, mode=os.W_OK)
+                except FileNotFoundError as e:
+                    logger.error(
+                        "Could not create directory {}. "
+                        "Please ensure it is a valid path.".format(path)
+                    )
+                    sys.exit(e.errno)
+                except PermissionError as e:
+                    logger.error(
+                        "Permission denied when creating {}.".format(path)
+                    )
+                    sys.exit(e.errno)
             else:
                 path = None
             kwargs[k[2:]] = path
@@ -121,7 +132,14 @@ def parse_args(docopt_args=None):
                 if v == 'None':
                     kwargs[k[2:]] = None
                 else:
-                    kwargs[k[2:]] = v.strip()
+                    if k in ('--skip_footer', '--skip_header'):
+                        try:
+                            kwargs[k[2:]] = int(v)
+                        except ValueError:
+                            logger.error("{} must be an integer.".format(k))
+                            sys.exit()
+                    else:
+                        kwargs[k[2:]] = v.strip()
             else:
                 kwargs[k[2:]] = v
         else:
@@ -196,6 +214,7 @@ def main():
         if program == 'enrich':
             enrich.Enrich(**kwargs).convert()
         elif program == 'enrich2':
+            kwargs.pop('one_based')
             enrich2.Enrich2(**kwargs).convert()
         elif program == 'empiric':
             empiric.Empiric(**kwargs).convert()
@@ -205,6 +224,7 @@ def main():
             sys.exit()
     except Exception:
         logger.exception("An error occured during conversion.")
+        sys.exit()
     
         
 if __name__ == '__main__':

@@ -177,9 +177,8 @@ def get_count_dataframe_by_condition(store, cnd,
 
 class Enrich2(base.BaseProgram):
     __doc__ = base.BaseProgram.__doc__
-
     LOG_MSG = "Writing {elem} {df_type} for condition '{cnd}' to '{path}'."
-
+    
     def convert(self):
         logger.info("Processing file {}".format(self.src))
         self.parse_input(self.load_input_file())

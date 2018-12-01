@@ -46,6 +46,13 @@ class Enrich(base.BaseProgram):
         -------
         `pd.DataFrame`
         """
+        if self.skip_header_rows:
+            logger.info("Skipping first {} row(s).".format(
+                self.skip_footer_rows + 1))
+        if self.skip_footer_rows:
+            logger.info("Skipping last {} row(s).".format(
+                self.skip_footer_rows + 1))
+            
         if self.extension in ('.xlsx', '.xls'):
             od = pd.read_excel(
                 self.src,
