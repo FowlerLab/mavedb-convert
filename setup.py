@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='mavedbconvert',
-    version='0.1-alpha',
+    version='0.2-alpha',
     packages=[
         'mavedbconvert',
         'mavedbconvert.tests',

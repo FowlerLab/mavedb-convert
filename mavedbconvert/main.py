@@ -77,7 +77,7 @@ logger = logging.getLogger(LOGGER)
 
 def parse_args(docopt_args=None):
     if docopt_args is None:
-        docopt_args = docopt.docopt(__doc__, version='0.1-alpha')
+        docopt_args = docopt.docopt(__doc__, version='0.2-alpha')
     kwargs = {}
     program = None
     for k, v in docopt_args.items():
