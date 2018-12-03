@@ -28,6 +28,13 @@ class TestInferProEvent(TestCase):
                 mut_aa='V', wt_aa='F', codon_pos=0
             ), 'p.Phe1Val'
         )
+        
+    def test_converts_triple_q_to_single_q(self):
+        self.assertEqual(
+            empiric.infer_pro_substitution(
+                mut_aa='???', wt_aa='v', codon_pos=0
+            ), 'p.Val1?'
+        )
 
 
 class TestInferNTEvent(TestCase):
@@ -50,6 +57,13 @@ class TestInferNTEvent(TestCase):
             empiric.infer_nt_substitution(
                 wt_codon='ATC', mut_codon='GTA', codon_pos=1
             ), 'c.[4A>G;5=;6C>A]'
+        )
+        
+    def test_converts_X_to_N(self):
+        self.assertEqual(
+            empiric.infer_nt_substitution(
+                wt_codon='ATC', mut_codon='GTX', codon_pos=1
+            ), 'c.[4A>G;5=;6C>N]'
         )
 
 

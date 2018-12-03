@@ -29,6 +29,9 @@ class TestEnrichParseRow(ProgramTestCase):
     def test_error_pos_len_not_equal_aa_len(self):
         with self.assertRaises(ValueError):
             self.enrich.parse_row('1,2,3,4-L,Y,T')
+            
+    def test_converts_triple_q_to_single_q(self):
+        self.assertEqual(self.enrich.parse_row('1-?'), 'p.Val2?')
 
     def test_error_no_events(self):
         with self.assertRaises(ValueError):

@@ -1,6 +1,8 @@
 from collections import OrderedDict
 
-from hgvsp import dna, protein, single_variant_re, multi_variant_re
+from hgvsp import (
+    dna, protein, single_variant_re, multi_variant_re, infer_level, Level
+)
 
 import numpy as np
 import pandas as pd
@@ -280,6 +282,13 @@ def format_variant(variant):
     """
     if variant is None:
         return variant
+    if protein.substitution_re.fullmatch(variant):
+        variant = variant.replace('???', '?')
+    if dna.substitution_re.fullmatch(variant) or \
+            dna.deletion_re.fullmatch(variant) or \
+            dna.insertion_re.fullmatch(variant) or \
+            dna.delins_re.fullmatch(variant):
+        variant = variant.replace('X', 'N')
     return variant.strip()
 
 

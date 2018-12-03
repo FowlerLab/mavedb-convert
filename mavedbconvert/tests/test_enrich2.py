@@ -780,6 +780,17 @@ class TestEnrich2ParseRow(ProgramTestCase):
     def test_strips_whitespace(self):
         self.assertEqual(
             self.enrich2.parse_row((' c.1A>G ', None)), ('c.1A>G', None))
+        
+    def test_converts_X_to_N(self):
+        self.assertEqual(
+            self.enrich2.parse_row(('c.1A>X', None)), ('c.1A>N', None))
+        self.assertEqual(
+            self.enrich2.parse_row(
+                ('c.1_2delinsXXX', None)), ('c.1_2delinsNNN', None))
+        
+    def test_converts_triple_q_to_single_q(self):
+        self.assertEqual(
+            self.enrich2.parse_row(('p.Gly4???', None)), (None, 'p.Gly4?'))
 
 
 # Protein parsing tests

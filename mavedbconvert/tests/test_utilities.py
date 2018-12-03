@@ -234,6 +234,12 @@ class TestFormatVariant(TestCase):
 
     def test_passes_on_none(self):
         self.assertIsNone(utilities.format_variant(None))
+        
+    def test_replaces_triple_q_with_single_q_in_protein_variant(self):
+        self.assertEqual(utilities.format_variant('p.G4???'), 'p.G4?')
+        
+    def test_replaces_X_with_N_in_dna_variant(self):
+        self.assertEqual(utilities.format_variant('c.100A>X'), 'c.100A>N')
 
 
 class TestHGVSProFromEventList(TestCase):
