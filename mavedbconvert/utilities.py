@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from hgvsp import (
-    dna, protein, single_variant_re, multi_variant_re, infer_level, Level
+   rna, dna, protein, single_variant_re, multi_variant_re
 )
 
 import numpy as np
@@ -284,13 +284,17 @@ def format_variant(variant):
         return variant
     if protein.substitution_re.fullmatch(variant):
         variant = variant.replace('???', '?')
-    if dna.substitution_re.fullmatch(variant) or \
+    elif dna.substitution_re.fullmatch(variant) or \
             dna.deletion_re.fullmatch(variant) or \
             dna.insertion_re.fullmatch(variant) or \
             dna.delins_re.fullmatch(variant):
         variant = variant.replace('X', 'N')
+    elif rna.substitution_re.fullmatch(variant) or \
+            dna.deletion_re.fullmatch(variant) or \
+            dna.insertion_re.fullmatch(variant) or \
+            dna.delins_re.fullmatch(variant):
+        variant = variant.replace('x', 'n')
     return variant.strip()
-
 
 def hgvs_pro_from_event_list(events):
     """
