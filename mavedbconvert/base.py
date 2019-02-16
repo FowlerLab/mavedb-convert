@@ -53,13 +53,34 @@ class BaseProgram(object):
     score_column : str, optional.
         The name of the column in the input column which you would like to
         set as the MaveDB score column. Ignored if `input_type` is 'counts'.
+        Used when input is tsv.
+        
+    count_column : str, optional.
+        The name of the column in the input column which you would like to
+        set as the MaveDB count column. Ignored if `input_type` is 'scores'.
+        Used when input is tsv.
+        
+    hgvs_nt_column : str, optional.
+        The name of the column in the input column which you would like to
+        set as the MaveDB hgvs_nt column. Used when input is an Enrich2 tsv
+        dataset.
+        
+    hgvs_pro_column : str, optional.
+        The name of the column in the input column which you would like to
+        set as the MaveDB hgvs_pro column. Used when input is an Enrich2 tsv
+        dataset.
+        
+    is_coding : bool, optional.
+        Set as `True` if the input variants are contain coding HGVS syntax
+        (c or p). Used only in Enrich2.
 
     input_type : str, optional.
         The MaveDB file type. Can be either 'scores' or 'counts'.
     """
     def __init__(self, src, wt_sequence, offset=0, dst=None, one_based=True,
                  skip_header_rows=0, skip_footer_rows=0, score_column=None,
-                 input_type=None, sheet_name=None):
+                 count_column=None, hgvs_nt_column=None, hgvs_pro_column=None,
+                 input_type=None, sheet_name=None, is_coding=True):
         # Check the input is a readable file.
         self.src = os.path.normpath(os.path.expanduser(src))
         logger.info("Checking read permission for '{}'".format(self.src))
@@ -91,19 +112,26 @@ class BaseProgram(object):
         logger.info("Checking write permission to directory '{}'".format(
             self.dst))
         os.access(self.dst, os.W_OK)
+        
+        if is_coding and offset % 3 != 0:
+            raise ValueError("Coding offset must be a multiple of 3.")
 
+        self.is_coding = is_coding
         self.skip_header_rows = skip_header_rows
         self.skip_footer_rows = skip_footer_rows
         self.sheet_name = sheet_name
         self.score_column = score_column
+        self.count_column = count_column
+        self.hgvs_nt_column = hgvs_nt_column
+        self.hgvs_pro_column = hgvs_pro_column
         self.input_type = input_type
         self.one_based = one_based
 
         # Initialize sequence information.
         self._wt_sequence = None
-        self._offset = None
         self.codons = None
         self.protein_sequence = None
+        
         self.offset = offset
         self.wt_sequence = wt_sequence
 
@@ -112,29 +140,14 @@ class BaseProgram(object):
         return self._wt_sequence
 
     @wt_sequence.setter
-    def wt_sequence(self, value):
-        if isinstance(value, tuple):
-            seq, offset = value
-            self.offset = offset
-        else:
-            seq = str(value).upper()
+    def wt_sequence(self, seq):
+        seq = str(seq).upper()
         # Initialize sequence information.
         if not constants.dna_re.fullmatch(seq):
             raise ValueError("{} is not a valid DNA sequence.".format(seq))
-        self._wt_sequence = seq[self.offset:].upper()
-        self.protein_sequence = utilities.translate_dna(self.wt_sequence)
-        self.codons = list(utilities.slicer(self.wt_sequence, 3))
-
-    @property
-    def offset(self):
-        return self._offset
-
-    @offset.setter
-    def offset(self, offset):
-        offset = int(offset)
-        if offset < 0:
-            raise ValueError("Offset must be not be negative.")
-        self._offset = offset
+        self.protein_sequence = utilities.translate_dna(seq, offset=0)
+        self.codons = list(utilities.slicer(seq, 3))
+        self._wt_sequence = seq
 
     @property
     def extension(self):
@@ -174,7 +187,7 @@ class BaseProgram(object):
 
     def parse_row(self, row):
         raise NotImplementedError()
-
+    
     def validate_against_wt_sequence(self, variant):
         """
         Checks that the reference base in a substitution variant matches that
@@ -201,18 +214,30 @@ class BaseProgram(object):
 
         zero_based_pos = variant.position - int(self.one_based)
         if zero_based_pos < 0:
+            raise IndexError((
+                "Encountered a negative position in {} with 'one_based' "
+                "set as '{}'. Positions might not be one-based."
+            ).format(variant, self.one_based))
+        
+        if zero_based_pos >= len(self.wt_sequence):
             raise IndexError(
-                "Encountered a negative position. "
-                "Positions might not be one-based.")
+                "Position {} (index {}) in {} with 'one_based' set as '{}' "
+                "extends beyond the maximum index {} in the wild-type "
+                "sequence with length {}.".format(
+                    zero_based_pos + int(self.one_based),
+                    zero_based_pos, variant, self.one_based,
+                    len(self.wt_sequence) - 1, len(self.wt_sequence)
+                )
+            )
 
         wt_ref_nt = self.wt_sequence[zero_based_pos]
         if variant.ref != wt_ref_nt:
             raise ValueError(
                 "Base '{base}' at 1-based position {pos} in the wild-type "
-                "sequence (offset {offset}) does not match the base "
-                "suggested in the variant '{variant}'.".format(
-                    pos=zero_based_pos + 1, base=wt_ref_nt, offset=self.offset,
-                    variant=variant))
+                "sequence does not match the base '{ref}' from "
+                "the variant '{variant}'.".format(
+                    pos=zero_based_pos + 1, base=wt_ref_nt,
+                    variant=variant, ref=variant.ref))
 
     def validate_against_protein_sequence(self, variant):
         """
@@ -237,14 +262,27 @@ class BaseProgram(object):
         variant = utilities.ProteinSubstitutionEvent(variant)
         zero_based_pos = variant.position - int(self.one_based)
         if zero_based_pos < 0:
+            raise IndexError((
+                "Encountered a negative position in {} with one_based "
+                "set as {}. Positions might not be one-based."
+            ).format(variant, self.one_based))
+        
+        if zero_based_pos >= len(self.protein_sequence):
             raise IndexError(
-                "Encountered a negative position. "
-                "Positions might not be one-based.")
+                "Position {} (index {}) in {} with 'one_based' set as '{}' "
+                "extends beyond the maximum index {} in the translated "
+                "wild-type sequence with length {}.".format(
+                    zero_based_pos + int(self.one_based),
+                    zero_based_pos, variant, self.one_based,
+                    len(self.protein_sequence) - 1, len(self.protein_sequence)
+                )
+            )
 
         wt_aa = constants.AA_CODES[self.protein_sequence[zero_based_pos]]
         if variant.ref != wt_aa:
             raise ValueError(
                 "Amino acid '{aa}' at 1-based position {pos} in the "
                 "translated protein sequence does not match the amino acid "
-                "suggested in the variant '{variant}'.".format(
-                    pos=zero_based_pos + 1, aa=wt_aa, variant=variant))
+                "'{ref}' suggested in the variant '{variant}'.".format(
+                    pos=zero_based_pos + 1, aa=wt_aa,
+                    variant=variant, ref=variant.ref))

@@ -1,7 +1,7 @@
 import os
 import mock
 
-from .. import base
+from .. import base, exceptions
 
 from . import ProgramTestCase
 
@@ -74,7 +74,7 @@ class TestBaseProgram(ProgramTestCase):
             src=self.src.replace('tsv', 'TSV'), wt_sequence='AAA', )
         self.assertEqual(p.ext, '.tsv')
 
-    def test_value_error_negative_offset(self):
+    def test_value_error_coding_offset_not_multiple_of_three(self):
         with self.assertRaises(ValueError):
             base.BaseProgram(
                 src=self.src, wt_sequence='ATCA', offset=-1)
@@ -104,41 +104,31 @@ class TestBaseProgram(ProgramTestCase):
         p.wt_sequence = 'ggg'
         self.assertEqual(p.wt_sequence, 'GGG')
 
-    def test_wt_setter_clips_offset_bases_from_wt_sequence(self):
+    def test_wt_setter_uses_full_wt_sequence_and_ignores_offset(self):
         p = base.BaseProgram(src=self.src, wt_sequence='AAA')
         p.offset = 3
         p.wt_sequence = 'ATGCGA'
-        self.assertEqual(p.wt_sequence, 'CGA')
+        self.assertEqual(p.wt_sequence, 'ATGCGA')
 
-    def test_wt_setter_translates_wt_sequence_from_offset(self):
+    def test_wt_setter_creates_codons_from_wt_sequence_and_ignores_offset(self):
         p = base.BaseProgram(src=self.src, wt_sequence='AAA', )
-        p.offset = 1
-        p.wt_sequence = 'ATCA'
-        self.assertEqual(p.protein_sequence, 'S')
-
-    def test_wt_setter_creates_codons_from_wt_sequence_and_clips_offset(self):
-        p = base.BaseProgram(src=self.src, wt_sequence='AAA', )
-        p.offset = 1
-        p.wt_sequence = 'ATCA'
-        self.assertEqual(p.codons, ['TCA', ])
+        p.offset = 3
+        p.wt_sequence = 'ATGCGA'
+        self.assertEqual(p.codons, ['ATG', 'CGA'])
 
     def test_wt_setter_value_error_not_valid_wt_sequence(self):
         p = base.BaseProgram(src=self.src, wt_sequence='AAA')
         with self.assertRaises(ValueError):
             p.wt_sequence = 'fff'
-
-    def test_wt_setter_can_set_wt_sequence_and_offset_with_tuple(self):
-        p = base.BaseProgram(src=self.src, wt_sequence='AAA')
-        p.wt_sequence = 'ATCA', 1
-        self.assertEqual(p.offset, 1)
-        self.assertEqual(p.wt_sequence, 'TCA')
-        self.assertEqual(p.protein_sequence, 'S')
-        self.assertEqual(p.codons, ['TCA', ])
-
-    def test_value_error_offset_negative(self):
-        p = base.BaseProgram(src=self.src, wt_sequence='AAA')
+            
+    def test_error_is_coding_and_offset_not_multiple_of_three(self):
         with self.assertRaises(ValueError):
-            p.offset = -1
+            base.BaseProgram(
+                src=self.src,
+                wt_sequence='AAA',
+                is_coding=True,
+                offset=2
+            )
 
 
 class TestBaseProgramValidateAgainstWTSeq(ProgramTestCase):
@@ -149,7 +139,7 @@ class TestBaseProgramValidateAgainstWTSeq(ProgramTestCase):
             src=self.src, wt_sequence='ATG', one_based=True)
 
     def test_error_not_a_dna_sub(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(exceptions.InvalidVariantType):
             self.base.validate_against_wt_sequence('p.Gly1Leu')
 
     def test_passes_on_special_and_silent(self):
@@ -182,6 +172,15 @@ class TestBaseProgramValidateAgainstWTSeq(ProgramTestCase):
         self.base.validate_against_wt_sequence('c.[1A>G;2T>G]')
         with self.assertRaises(ValueError):
             self.base.validate_against_wt_sequence('c.[1A>G;2A>G]')
+    
+    def test_index_error_index_extends_beyond_indexable_wt_seq(self):
+        with self.assertRaises(IndexError):
+            self.base.one_based = True
+            self.base.validate_against_wt_sequence('c.4G>A')
+            
+        with self.assertRaises(IndexError):
+            self.base.one_based = False
+            self.base.validate_against_wt_sequence('c.3G>A')
 
 
 class TestBaseProgramValidateAgainstProteinSeq(ProgramTestCase):
@@ -192,7 +191,7 @@ class TestBaseProgramValidateAgainstProteinSeq(ProgramTestCase):
             src=self.src, wt_sequence='ATGAAA', one_based=True)
 
     def test_error_not_a_protein_sub(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(exceptions.InvalidVariantType):
             self.base.validate_against_protein_sequence('c.1A>G')
 
     def test_passes_on_special_and_silent(self):
@@ -201,9 +200,6 @@ class TestBaseProgramValidateAgainstProteinSeq(ProgramTestCase):
         self.base.validate_against_protein_sequence('p.=')
 
     def test_passes_when_reference_aa_matches(self):
-        self.base.one_based = False
-        self.base.validate_against_protein_sequence('p.Met0Lys')
-
         self.base.one_based = True
         self.base.validate_against_protein_sequence('p.Met1Lys')
 
@@ -217,7 +213,7 @@ class TestBaseProgramValidateAgainstProteinSeq(ProgramTestCase):
             self.base.validate_against_protein_sequence('p.Met2Lys')
 
     def test_error_negative_position(self):
-        with self.assertRaises(IndexError):
+        with self.assertRaises(ValueError):
             self.base.one_based = True
             self.base.validate_against_protein_sequence('p.Met0Lys')
 
@@ -225,3 +221,16 @@ class TestBaseProgramValidateAgainstProteinSeq(ProgramTestCase):
         self.base.validate_against_protein_sequence('p.[Met1Lys;Lys2=]')
         with self.assertRaises(ValueError):
             self.base.validate_against_protein_sequence('p.[Met1Lys;Met2=]')
+
+    def test_index_error_index_extends_beyond_indexable_pro_seq(self):
+        # PASS
+        self.base.one_based = True
+        self.base.validate_against_protein_sequence('p.Lys2Met')
+        
+        with self.assertRaises(IndexError):
+            self.base.one_based = True
+            self.base.validate_against_protein_sequence('p.Met3Lys')
+    
+        with self.assertRaises(IndexError):
+            self.base.one_based = False
+            self.base.validate_against_protein_sequence('p.Met2Lys')
