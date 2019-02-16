@@ -123,12 +123,14 @@ class NucleotideSubstitutionEvent(object):
     """
     def __init__(self, variant):
         self.variant = variant.strip()
-        match = dna.substitution_re.fullmatch(self.variant)
-        if not match:
+        match_dna = dna.substitution_re.fullmatch(self.variant)
+        match_rna = rna.substitution_re.fullmatch(self.variant)
+        if not (match_dna or match_rna):
             raise exceptions.InvalidVariantType(
-                "'{}' is not a valid DNA "
+                "'{}' is not a valid DNA/RNA "
                 "substitution event.".format(self.variant))
-
+        
+        match = match_dna if match_dna is not None else match_rna
         self.dict = match.groupdict()
         self.position = int(match.groupdict()[constants.hgvsp_nt_pos])
         self.ref = match.groupdict()[constants.hgvsp_nt_ref]
@@ -138,6 +140,9 @@ class NucleotideSubstitutionEvent(object):
         
         if self.dict.get('utr', None) == '-':
             self.position *= -1
+            
+        if match_rna and self.position < 0:
+            raise IndexError("RNA positions cannot be negative.")
 
         if self.ref:
             self.ref = self.ref.upper()
@@ -251,8 +256,9 @@ class ProteinSubstitutionEvent(object):
     @position.setter
     def position(self, value):
         if value < 1:
-            raise ValueError("Protein position cannot be less "
-                             "than 1. Found {}.".format(self.variant))
+            raise ValueError(
+                "Protein position cannot be less "
+                "Attempted to set {} in {}".format(value, self.variant))
         self._position = value
     
     @property
