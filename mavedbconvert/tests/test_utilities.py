@@ -101,8 +101,12 @@ class TestIsNumeric(TestCase):
 
 
 class TestNucleotideSubstitutionEvent(TestCase):
+    def test_parses_negative_positions(self):
+        nt = utilities.NucleotideSubstitutionEvent('n.-100A>T')
+        self.assertEquals(nt.position, -100)
+        
     def test_error_invalid_dna_substitution_syntax(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(exceptions.InvalidVariantType):
             utilities.NucleotideSubstitutionEvent('c.100_101delins')
 
     def test_strips_ws(self):
@@ -171,8 +175,13 @@ class TestNucleotideSubstitutionEvent(TestCase):
 
 
 class TestProteinSubstitutionEvent(TestCase):
-    def test_error_invalid_dna_substitution_syntax(self):
+    def test_error_set_position_less_than_1(self):
+        pro = utilities.ProteinSubstitutionEvent('p.Gly4Leu')
         with self.assertRaises(ValueError):
+            pro.position -= 4
+            
+    def test_error_invalid_dna_substitution_syntax(self):
+        with self.assertRaises(exceptions.InvalidVariantType):
             utilities.ProteinSubstitutionEvent('p.100_101delins')
 
     def test_strips_ws(self):
