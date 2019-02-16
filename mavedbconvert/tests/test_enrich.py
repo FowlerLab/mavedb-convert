@@ -22,7 +22,7 @@ class TestEnrichParseRow(ProgramTestCase):
         super().setUp()
         self.path = os.path.join(DATA_DIR, 'enrich1.tsv')
         self.enrich = enrich.Enrich(
-            src=self.path, wt_sequence=WT, offset=0, one_based=False,
+            src=self.path, wt_sequence=WT,  one_based=False,
             score_column='A', input_type=constants.score_type
         )
 
@@ -93,7 +93,7 @@ class TestEnrichParseInput(ProgramTestCase):
         super().setUp()
         self.path = os.path.join(DATA_DIR, 'enrich1.tsv')
         self.enrich = enrich.Enrich(
-            src=self.path, wt_sequence=WT, offset=0, one_based=False,
+            src=self.path, wt_sequence=WT,  one_based=False,
             score_column='A', input_type=constants.score_type,
         )
 
@@ -175,7 +175,7 @@ class TestEnrichLoadInput(ProgramTestCase):
 
     def test_error_seq_id_not_in_columns(self):
         p = enrich.Enrich(
-            src=self.no_seq_id, wt_sequence=WT, offset=0,
+            src=self.no_seq_id, wt_sequence=WT, 
             score_column='log2_ratio', input_type=constants.score_type)
         with self.assertRaises(ValueError):
             p.load_input_file()
@@ -195,7 +195,7 @@ class TestEnrichLoadInput(ProgramTestCase):
 
     def test_loads_xlxs(self):
         p = enrich.Enrich(
-            src=self.excel_path, wt_sequence=WT, offset=0,
+            src=self.excel_path, wt_sequence=WT, 
             score_column='log2_ratio', input_type=constants.score_type)
         result = p.load_input_file()
         expected = pd.read_excel(self.excel_path, na_values=constants.extra_na)
@@ -203,7 +203,7 @@ class TestEnrichLoadInput(ProgramTestCase):
 
     def test_loads_table(self):
         p = enrich.Enrich(
-            src=self.path, wt_sequence=WT, offset=0,
+            src=self.path, wt_sequence=WT, 
             score_column='log2_ratio', input_type=constants.score_type)
         result = p.load_input_file()
         expected = pd.read_csv(
@@ -212,10 +212,10 @@ class TestEnrichLoadInput(ProgramTestCase):
 
     def test_table_and_excel_load_same_dataframe(self):
         p1 = enrich.Enrich(
-            src=self.path, wt_sequence=WT, offset=0,
+            src=self.path, wt_sequence=WT, 
             score_column='log2_ratio', input_type=constants.score_type)
         p2 = enrich.Enrich(
-            src=self.excel_path, wt_sequence=WT, offset=0,
+            src=self.excel_path, wt_sequence=WT, 
             score_column='log2_ratio', input_type=constants.score_type)
         assert_frame_equal(p1.load_input_file(), p2.load_input_file())
 
@@ -238,32 +238,23 @@ class TestEnrichIntegration(ProgramTestCase):
 
     def test_saves_to_input_dst_by_default(self):
         p = enrich.Enrich(
-            src=self.path, wt_sequence=WT, offset=0, one_based=False,
+            src=self.path, wt_sequence=WT, one_based=False,
             score_column='log2_ratio', input_type=constants.score_type)
         p.convert()
         self.assertTrue(os.path.isfile(self.bin[0]))
 
-    def test_output_when_no_offset(self):
+    def test_output_ignores_offset(self):
         p = enrich.Enrich(
-            src=self.path, wt_sequence=WT, offset=0, one_based=False,
+            src=self.path, wt_sequence=WT, offset=9, one_based=False,
             score_column='log2_ratio', input_type=constants.score_type)
         p.convert()
         result = pd.read_csv(self.bin[0])
         expected = pd.read_csv(self.expected)
         assert_frame_equal(expected, result)
 
-    def test_output_when_offset_exists(self):
-        p = enrich.Enrich(
-            src=self.path, wt_sequence=WT, offset=9, one_based=False,
-            score_column='log2_ratio', input_type=constants.score_type)
-        p.convert()
-        result = pd.read_csv(self.bin[0])
-        expected = pd.read_csv(self.expected_offset)
-        assert_frame_equal(expected, result)
-
     def test_output_from_one_based_input(self):
         p = enrich.Enrich(
-            src=self.path_1based, wt_sequence=WT, offset=0, one_based=True,
+            src=self.path_1based, wt_sequence=WT, one_based=True,
             score_column='log2_ratio', input_type=constants.score_type)
         p.convert()
         result = pd.read_csv(self.bin[1])

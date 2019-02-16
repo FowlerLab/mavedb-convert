@@ -73,7 +73,7 @@ class TestEmpiric(ProgramTestCase):
         self.input = os.path.join(DATA_DIR, 'empiric.xlsx')
         self.empiric = empiric.Empiric(
             src=self.input, wt_sequence='AAA',
-            one_based=False, offset=0
+            one_based=False, 
         )
 
     def test_error_missing_amino_acid(self):
@@ -189,7 +189,7 @@ class TestEmpiricParseInput(ProgramTestCase):
         self.input = os.path.join(DATA_DIR, 'empiric.xlsx')
         self.empiric = empiric.Empiric(
             src=self.input, wt_sequence='AAA',
-            one_based=False, offset=0, input_type='scores',
+            one_based=False, input_type='scores',
             score_column='A',
         )
 
@@ -301,7 +301,7 @@ class TestEmpiricLoadInput(ProgramTestCase):
             df['A'] = [value, ] * len(df)
             df.to_csv(self.tmp_path, index=False, sep='\t',)
             e = empiric.Empiric(
-                src=self.tmp_path, wt_sequence='TTTTCTTATTGT', offset=0,
+                src=self.tmp_path, wt_sequence='TTTTCTTATTGT', 
                 score_column='col_A', input_type=constants.score_type,
                 one_based=False,
             )
@@ -316,7 +316,7 @@ class TestEmpiricLoadInput(ProgramTestCase):
         ]
         self.mock_multi_sheet_excel_file(self.tmp_excel_path, data)
         p = empiric.Empiric(
-            src=self.tmp_excel_path, wt_sequence='TTTTCTTATTGT', offset=0,
+            src=self.tmp_excel_path, wt_sequence='TTTTCTTATTGT', 
             score_column='score', input_type=constants.score_type)
         df = p.load_input_file()
         expected = pd.DataFrame(data[0])
@@ -326,7 +326,7 @@ class TestEmpiricLoadInput(ProgramTestCase):
         df = pd.read_excel(self.path)
         df.to_csv(self.tmp_path, index=False, sep='\t',)
         e = empiric.Empiric(
-            src=self.tmp_path, wt_sequence='TTTTCTTATTGT', offset=0,
+            src=self.tmp_path, wt_sequence='TTTTCTTATTGT', 
             score_column='col_A', input_type=constants.score_type,
             one_based=False,
         )
@@ -339,7 +339,7 @@ class TestEmpiricLoadInput(ProgramTestCase):
         df.to_csv(self.tmp_path, index=False, sep='\t')
         with self.assertRaises(ValueError):
             e = empiric.Empiric(
-                src=self.tmp_path, wt_sequence='TTTTCTTATTGT', offset=0,
+                src=self.tmp_path, wt_sequence='TTTTCTTATTGT', 
                 score_column='col_A', input_type=constants.score_type,
                 one_based=False,
             )
@@ -351,7 +351,7 @@ class TestEmpiricLoadInput(ProgramTestCase):
         df.to_csv(self.tmp_path, index=False, sep='\t')
         with self.assertRaises(ValueError):
             e = empiric.Empiric(
-                src=self.tmp_path, wt_sequence='TTTTCTTATTGT', offset=0,
+                src=self.tmp_path, wt_sequence='TTTTCTTATTGT', 
                 score_column='col_A', input_type=constants.score_type,
                 one_based=False,
             )
@@ -360,7 +360,7 @@ class TestEmpiricLoadInput(ProgramTestCase):
     def test_not_scores_column_but_input_type_is_scores(self):
         with self.assertRaises(ValueError):
             empiric.Empiric(
-                src=self.tmp_path, wt_sequence='TTTTCTTATTGT', offset=0,
+                src=self.tmp_path, wt_sequence='TTTTCTTATTGT', 
                 score_column=None, input_type=constants.score_type,
                 one_based=False,
             )
@@ -372,7 +372,7 @@ class TestEmpiricConvert(ProgramTestCase):
         self.path = os.path.join(DATA_DIR, 'empiric.xlsx')
         self.expected = os.path.join(DATA_DIR, 'empiric_expected.csv')
         self.empiric = empiric.Empiric(
-            src=self.path, wt_sequence='TTTTCTTATTGT', offset=0,
+            src=self.path, wt_sequence='TTTTCTTATTGT', 
             score_column='col_A', input_type=constants.score_type,
             one_based=False,
         )
@@ -384,7 +384,7 @@ class TestEmpiricConvert(ProgramTestCase):
 
     def test_integration(self):
         self.empiric = empiric.Empiric(
-            src=self.path, wt_sequence='TTTTCTTATTGT', offset=3,
+            src=self.path, wt_sequence='TCTTATTGT',
             score_column='col_A', input_type=constants.score_type,
             one_based=False,
         )

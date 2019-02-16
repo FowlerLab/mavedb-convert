@@ -17,13 +17,14 @@ logger = logging.getLogger(LOGGER)
 class Enrich(base.BaseProgram):
     __doc__ = base.BaseProgram.__doc__
 
-    def __init__(self, src, wt_sequence, offset=0, dst=None, one_based=False,
+    def __init__(self, src, wt_sequence, dst=None, one_based=False,
                  skip_header_rows=0, skip_footer_rows=0, score_column=None,
-                 input_type=None, sheet_name=None):
+                 input_type=None, sheet_name=None, **kwargs):
         super().__init__(
             src=src,
             wt_sequence=wt_sequence,
-            offset=offset,
+            offset=0,
+            is_coding=True,
             dst=dst,
             one_based=one_based,
             skip_header_rows=skip_header_rows,
