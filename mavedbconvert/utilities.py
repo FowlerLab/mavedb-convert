@@ -125,7 +125,7 @@ class NucleotideSubstitutionEvent(object):
         self.variant = variant.strip()
         match = dna.substitution_re.fullmatch(self.variant)
         if not match:
-            raise ValueError(
+            raise exceptions.InvalidVariantType(
                 "'{}' is not a valid DNA "
                 "substitution event.".format(self.variant))
 
@@ -135,6 +135,9 @@ class NucleotideSubstitutionEvent(object):
         self.alt = match.groupdict()[constants.hgvsp_nt_alt]
         self.silent = match.groupdict()[constants.hgvsp_silent] == '='
         self.prefix = variant[0].lower()
+        
+        if self.dict.get('utr', None) == '-':
+            self.position *= -1
 
         if self.ref:
             self.ref = self.ref.upper()
@@ -145,6 +148,10 @@ class NucleotideSubstitutionEvent(object):
 
     def __repr__(self):
         return self.variant
+    
+    @property
+    def format(self):
+        return '{}.{}'.format(self.prefix, self.event)
 
     @property
     def event(self):
@@ -214,11 +221,12 @@ class ProteinSubstitutionEvent(object):
         self.variant = variant.strip()
         match = protein.substitution_re.fullmatch(self.variant)
         if not match:
-            raise ValueError(
+            raise exceptions.InvalidVariantType(
                 "'{}' is not a valid amino acid "
                 "substitution event.".format(self.variant))
 
         self.dict = match.groupdict()
+        self._position = None
         self.position = int(match.groupdict()[constants.hgvsp_pro_pos])
         self.ref = match.groupdict()[constants.hgvsp_pro_ref]
         self.alt = match.groupdict()[constants.hgvsp_pro_alt]
@@ -235,6 +243,21 @@ class ProteinSubstitutionEvent(object):
 
     def __repr__(self):
         return self.variant
+    
+    @property
+    def position(self):
+        return self._position
+    
+    @position.setter
+    def position(self, value):
+        if value < 1:
+            raise ValueError("Protein position cannot be less "
+                             "than 1. Found {}.".format(self.variant))
+        self._position = value
+    
+    @property
+    def format(self):
+        return '{}.{}'.format(self.prefix, self.event)
 
     @property
     def event(self):
