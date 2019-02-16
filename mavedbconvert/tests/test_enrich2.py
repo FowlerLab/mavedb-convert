@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from pandas.testing import assert_index_equal, assert_frame_equal
 
-from .. import validators, enrich2, constants
+from .. import validators, enrich2, constants, exceptions
 
 from . import ProgramTestCase
 
@@ -766,12 +766,25 @@ class TestEnrich2ParseRow(ProgramTestCase):
             self.enrich2.parse_row(
                 (constants.enrich2_synonymous, constants.synonymous_table)
             ))
+    
+    @mock.patch("mavedbconvert.enrich2.apply_offset",
+                return_value='c.3T>C (p.Thr1=)')
+    def test_calls_apply_offset_to_variant(self, patch):
+        variant = 'c.3T>C (p.=)'
+        self.enrich2.parse_row((variant, None))
+        patch.assert_called()
+        
+    @mock.patch("mavedbconvert.enrich2.fix_silent_hgvs_syntax",
+                return_value='c.3T>C (p.Thr1=)')
+    def test_calls_fix_silent_hgvs_syntax(self, patch):
+        variant = 'c.3T>C (p.Thr1=)'
+        self.enrich2.parse_row((variant, None))
+        patch.assert_called()
 
     def test_delegate_to_multi(self):
-        variant = 'c.3T>C (p.=)'
+        variant = 'c.3T>C (p.Thr1=)'
         expected = ('c.3T>C', 'p.Thr1=')
-        self.assertEqual(
-            expected, self.enrich2.parse_row((variant, None)))
+        self.assertEqual(expected, self.enrich2.parse_row((variant, None)))
 
     def test_returns_special_variant_as_tuple_non_synonymous_table(self):
         self.assertEqual(self.enrich2.parse_row(('_wt', None)), ('_wt', '_wt'))
@@ -861,6 +874,11 @@ class TestNucleotideHGVSParing(ProgramTestCase):
         self.path = os.path.join(DATA_DIR, 'dummy.h5')
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence='AAA')
         self.bin.append(self.path.replace('.h5', ''))
+        
+    def test_parses_non_coding_nt_variants_into_multi_variant(self):
+        nt = self.enrich2.parse_nucleotide_variant(
+            'n.-455T>A, n.-122A>T, n.-101A>T, n.-42T>A')
+        self.assertEqual(nt, 'n.[-455T>A;-122A>T;-101A>T;-42T>A]')
 
     def test_combines_into_multi_variant_syntax(self):
         result = self.enrich2.parse_nucleotide_variant('c.2A>G,c.1A>G')
@@ -965,7 +983,7 @@ class TestEnrich2MixedHGVSParsing(ProgramTestCase):
     def test_valueerror_multiple_prefix_types(self):
         with self.assertRaises(ValueError):
             self.enrich2.parse_mixed_variant(
-                'c.1A>G (p.=), r.2T>A (p.Lys4Arg)')
+                'c.1A>G (p.=), r.2u>a (p.Lys4Arg)')
         with self.assertRaises(ValueError):
             self.enrich2.parse_mixed_variant(
                 'c.1A>G (p.=), n.2T>A (p.Lys4Arg)')
@@ -1004,7 +1022,7 @@ class TestInferSilentAASub(ProgramTestCase):
         self.bin.append(self.path.replace('.h5', ''))
 
     def test_valueerror_not_a_sub_event(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(exceptions.InvalidVariantType):
             self.enrich2.infer_silent_aa_substitution('c.100_102del')
 
     def test_index_error_variant_pos_is_out_of_bounds_relative_to_wt(self):
@@ -1016,17 +1034,8 @@ class TestInferSilentAASub(ProgramTestCase):
         with self.assertRaises(ValueError):
             self.enrich2.infer_silent_aa_substitution('c.1A>G')
 
-        self.enrich2.wt_sequence = 'AGTG', 1
-        with self.assertRaises(ValueError):
-            self.enrich2.infer_silent_aa_substitution('c.1A>G')
-
     def test_correct_wt_aa_inferred(self):
         self.enrich2.wt_sequence = 'TCT'
-        self.assertEqual(
-            'p.Ser1=', self.enrich2.infer_silent_aa_substitution('c.3T>C')
-        )
-
-        self.enrich2.wt_sequence = 'AAAGGGTCT', 6
         self.assertEqual(
             'p.Ser1=', self.enrich2.infer_silent_aa_substitution('c.3T>C')
         )
@@ -1036,12 +1045,6 @@ class TestInferSilentAASub(ProgramTestCase):
         self.assertEqual(
             'p.Ser3=',
             self.enrich2.infer_silent_aa_substitution('c.9T>C')
-        )
-
-        self.enrich2.wt_sequence = 'AAAGGGTCT', 3
-        self.assertEqual(
-            'p.Ser2=',
-            self.enrich2.infer_silent_aa_substitution('c.6T>C')
         )
 
     def test_error_mutant_codon_does_not_match_wild_type(self):
@@ -1066,3 +1069,52 @@ class TestInferSilentAASub(ProgramTestCase):
         self.assertEqual(
             'p.Leu1=', self.enrich2.infer_silent_aa_substitution(group)
         )
+
+
+class TestApplyOffset(TestCase):
+    def test_applies_offset_to_mixed_variant(self):
+        variant = 'c.1A>T (p.Thr1Pro), c.4C>A (p.Gln2Lys)'
+        offset = -10
+        self.assertEquals(
+            'c.11A>T (p.Thr4Pro), c.14C>A (p.Gln5Lys)',
+            enrich2.apply_offset(variant, offset)
+        )
+        self.assertEquals(
+            'c.11A>T (p.Thr4Pro)',
+            enrich2.apply_offset('c.1A>T (p.Thr1Pro)', offset)
+        )
+
+    def test_error_position_after_offset_non_positive(self):
+        with self.assertRaises(ValueError):
+            enrich2.apply_offset('c.1A>T', 10)
+            
+        with self.assertRaises(ValueError):
+            enrich2.apply_offset('p.Leu1=', 10)
+        
+    def test_applies_offset_to_non_mixed_variant(self):
+        variant = 'n.-455T>A, n.-122A>T, n.-101A>T, n.-42T>A'
+        offset = -456
+        self.assertEquals(
+            'n.1T>A, n.334A>T, n.355A>T, n.414T>A',
+            enrich2.apply_offset(variant, offset)
+        )
+        self.assertEquals(
+            'n.1T>A',
+            enrich2.apply_offset('n.-455T>A', offset)
+        )
+        
+    def test_applies_offset_to_protein_variant_modulo_3(self):
+        variant = 'p.Leu10=, p.Leu13='
+        offset = 10
+        self.assertEquals(
+            'p.Leu7=, p.Leu10=',
+            enrich2.apply_offset(variant, offset)
+        )
+        self.assertEquals(
+            'p.Leu7=',
+            enrich2.apply_offset('p.Leu10=', offset)
+        )
+        
+
+class TestFixSilentHGVSSyntax(TestCase):
+    pass

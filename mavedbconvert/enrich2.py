@@ -27,6 +27,64 @@ __all__ = [
 logger = logging.getLogger(LOGGER)
 
 
+def apply_offset(variant, offset):
+    variants = []
+    for v in variant.split(','):
+        if len(v.strip().split(' ')) == 2:
+            nt, pro = v.strip().split(' ')
+        elif v.strip()[0] == 'p':
+            nt, pro = None, v.strip()
+        else:
+            nt, pro = v.strip(), None
+        
+        if nt is not None:
+            import hgvsp
+            nt = utilities.NucleotideSubstitutionEvent(nt)
+            nt.position -= offset
+            if nt.position < 1:
+                raise ValueError(
+                    "Position after offset {} "
+                    "applied to {} is negative.".format(offset, nt.variant)
+                )
+            nt = nt.format
+        if pro is not None:
+            use_brackets = False
+            if pro.startswith('(') and pro.endswith(')'):
+                pro = pro[1:-1]
+                use_brackets = True
+            pro = utilities.ProteinSubstitutionEvent(pro)
+            adjusted_offset = (1, -1)[offset < 0] * (abs(offset) // 3)
+            pro.position -= adjusted_offset
+            if pro.position < 1:
+                raise ValueError(
+                    "Position after offset {} "
+                    "applied to {} is negative.".format(
+                        adjusted_offset, nt.variant)
+                )
+            pro = pro.format
+            if use_brackets:
+                pro = '({})'.format(pro)
+
+        variants.append('{} {}'.format(
+            '' if nt is None else nt,
+            '' if pro is None else pro
+        ).strip())
+        
+    return ', '.join(variants)
+
+
+def fix_silent_hgvs_syntax(variant):
+    variants = []
+    
+    for v in variant.split(','):
+        if len(v.strip().split(' ')) != 2:
+            variants.append(v)
+        
+        nt, pro = v.strip().split(' ')
+        
+    return ', '.join(variants)
+
+
 def drop_null(scores_df, counts_df=None):
     """
     Drops null rows and columns. If `counts_df` is not None, then they
@@ -210,7 +268,10 @@ class Enrich2(base.BaseProgram):
                 return None, variant
             else:
                 return variant, variant
-
+        
+        variant = fix_silent_hgvs_syntax(variant)
+        variant = apply_offset(variant, self.offset)
+        
         is_mixed = any([
             len(v.strip().split(' ')) == 2 for v in variant.split(',')
         ])
@@ -474,11 +535,11 @@ class Enrich2(base.BaseProgram):
                         offset=self.offset, variant=str(v), row=variant))
 
         # aa_pos is returned as 1-based.
-        aa_pos = codon_variants[0].codon_position(one_based=True)
+        aa_pos = codon_variants[0].codon_position()
         wt_codon = self.codons[aa_pos - 1]
         mut_codon = wt_codon
         for v in codon_variants:
-            within_frame_pos = v.codon_frame_position(one_based=True)
+            within_frame_pos = v.codon_frame_position()
             mut_codon = mut_codon[:(within_frame_pos - 1)] + v.alt + \
                 mut_codon[(within_frame_pos - 1) + 1:]
 
