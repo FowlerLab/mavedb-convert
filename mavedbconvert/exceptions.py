@@ -1,11 +1,3 @@
-class VariantMismatchError(Exception):
-    """
-    Throw exception when a variant defines a SNP with a reference base
-    that does not match that in its wild-type sequence/codon list.
-    """
-    pass
-
-
 class HGVSValidationError(Exception):
     """
     Throw exception when a variant defines a SNP with a reference base
@@ -54,4 +46,11 @@ class HGVSParseError(Exception):
     """
     Throw exception when a a multi variant defines events that span
     multiple codons.
+    """
+    
+
+class InvalidVariantType(Exception):
+    """
+    Throw exception when a pariticular type of event is expected (sub, del, etc)
+    but not found.
     """
