@@ -145,14 +145,16 @@ class NucleotideSubstitutionEvent(object):
             raise IndexError("RNA positions cannot be negative.")
 
         if self.ref:
-            self.ref = self.ref.upper()
+            if match_dna:
+                self.ref = self.ref.upper()
         if self.alt:
-            self.alt = self.alt.upper()
+            if match_dna:
+                self.alt = self.alt.upper()
         if self.ref == self.alt:
             self.silent = True
 
     def __repr__(self):
-        return self.variant
+        return self.format
     
     @property
     def format(self):
@@ -179,6 +181,8 @@ class NucleotideSubstitutionEvent(object):
         -------
         int
         """
+        if self.position < 0:
+            raise ValueError("Cannot infer codon from negative position.")
         return (self.position - int(one_based)) // 3 + 1
 
     def codon_frame_position(self, one_based=True):
@@ -195,6 +199,8 @@ class NucleotideSubstitutionEvent(object):
         -------
         int
         """
+        if self.position < 0:
+            raise ValueError("Cannot infer codon frame from negative position.")
         return self.position - 3 * (self.codon_position(one_based) - 1) + \
             int(not one_based)
 
@@ -247,7 +253,7 @@ class ProteinSubstitutionEvent(object):
             self.alt = self.ref
 
     def __repr__(self):
-        return self.variant
+        return self.format
     
     @property
     def position(self):
