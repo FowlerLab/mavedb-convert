@@ -275,6 +275,23 @@ class TestEnrich2ConvertH5Df(ProgramTestCase):
         super().setUp()
         self.path = os.path.join(DATA_DIR, 'enrich2.h5')
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence='AAA')
+        self.bin.append(os.path.join(DATA_DIR, 'enrich2'))
+
+    def test_doesnt_open_invalid_rows_file_if_there_are_no_invalid_rows(self):
+        self.path = os.path.join(DATA_DIR, 'enrich2.tsv')
+        self.enrich2 = enrich2.Enrich2(self.path, wt_sequence='AAA')
+        fpath = str(self.path.split('.')[0]) + '_invalid_rows.csv'
+        
+        df = pd.DataFrame(
+            data={'score': [1, ], },
+            index=['c.1A>G (p.Lys1Val)']
+        )
+        self.enrich2.convert_h5_df(
+            df=df,
+            element=constants.variants_table,
+            df_type=constants.score_type
+        )
+        self.assertFalse(os.path.isfile(fpath))
 
     def test_drops_non_numeric_columns(self):
         df = pd.DataFrame(
@@ -306,7 +323,7 @@ class TestEnrich2ConvertH5Df(ProgramTestCase):
     def test_sets_index_as_input_index(self):
         df = pd.DataFrame({
             'score': [1, ], 'B': ['a', ]},
-            index=['c.1A>G (p.Lys1Val)']
+            index=['c.1A>T (p.Lys1Val)']
         )
         result = self.enrich2.convert_h5_df(
             df=df,
@@ -314,8 +331,46 @@ class TestEnrich2ConvertH5Df(ProgramTestCase):
             df_type=constants.score_type
         )
         assert_index_equal(result.index, df.index)
+        
+    def test_opens_invalid_rows_file_for_invalid_rows(self):
+        self.path = os.path.join(DATA_DIR, 'enrich2.tsv')
+        self.enrich2 = enrich2.Enrich2(self.path, wt_sequence='AAA')
+        df = pd.DataFrame(
+            data={'score': [1, ], 'B': ['a', ], },
+            index=['c.1T>G (p.Lys1Val)']
+        )
+        with self.assertRaises(ValueError):
+            self.enrich2.convert_h5_df(
+                df=df,
+                element=constants.variants_table,
+                df_type=constants.score_type
+            )
 
-    
+        fpath = str(self.path.split('.')[0]) + '_invalid_rows.csv'
+        self.assertTrue(os.path.isfile(fpath))
+        self.bin.append(fpath)
+        
+    def test_invalid_rows_file_contains_error_description(self):
+        self.path = os.path.join(DATA_DIR, 'enrich2.tsv')
+        self.enrich2 = enrich2.Enrich2(self.path, wt_sequence='AAA')
+        fpath = str(self.path.split('.')[0]) + '_invalid_rows.csv'
+        
+        df = pd.DataFrame(
+            data={'score': [1.1, 1.2], },
+            index=['c.1A>T (p.Lys1Val)', 'c.1T>G (p.Lys1Val)']
+        )
+
+        self.enrich2.convert_h5_df(
+            df=df, df_type=constants.score_type, element=None)
+        self.assertTrue(os.path.isfile(fpath))
+        
+        invalid = pd.read_csv(fpath, sep=',', index_col=0)
+        self.assertEquals(len(invalid), 1)
+        self.assertEquals(invalid.index[0], 'c.1T>G (p.Lys1Val)')
+        self.assertIn('error_description', invalid.columns)
+        self.bin.append(fpath)
+            
+
 class TestEnrich2ParseInput(ProgramTestCase):
     def setUp(self):
         super().setUp()
