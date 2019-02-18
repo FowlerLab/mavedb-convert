@@ -12,7 +12,7 @@ numeric where NaN values must be encoded using 'NaN', 'Na', 'None', 'N/A',
 All outputs are in 1-based coordinates.
 
 Usage:
-  mavedb-convert enrich2 <src> [--dst=D] [--wtseq=W] [--offset=O] [--hgvs_column=A] [--is_coding]
+  mavedb-convert enrich2 <src> [--dst=D] [--wtseq=W] [--offset=O] [--hgvs_column=A] [--non_coding] [--input_type=T] [--skip_header=H] [--skip_footer=H]
   mavedb-convert enrich <src> [--dst=D] [--wtseq=W] [--score_column=C] [--input_type=T] [--sheet_name=S] [--skip_header=H] [--skip_footer=H]
   mavedb-convert empiric <src> [--dst=D] [--wtseq=W] [--one_based] [--score_column=C] [--input_type=T] [--sheet_name=S] [--skip_header=H] [--skip_footer=H]
   mavedb-convert -h | --help
@@ -44,7 +44,7 @@ Options:
                     one-based coordinates. Ignored for Enrich and Enrich2
                     [default: False]
                     
-  --is_coding       Set Enrich2 input file specifies coding HGVS syntax.
+  --non_coding      Set Enrich2 input file specifies non-coding HGVS syntax.
                     [default: False]
 
   --offset=O        Number of bases at the beginning of `wtseq` to ignore
@@ -128,7 +128,7 @@ def parse_args(docopt_args=None):
             program = k
         elif k in ('--wtseq', '--offset', '--one_based', '--sheet_name',
                    '--score_column', '--hgvs_column', '--input_type',
-                   '--skip_header', '--skip_footer', '--is_coding'):
+                   '--skip_header', '--skip_footer', '--non_coding'):
             if isinstance(v, str):
                 if v == 'None':
                     kwargs[k[2:]] = None
@@ -205,7 +205,7 @@ def parse_args(docopt_args=None):
                 logger.error("Wild-type sequence must be a multiple of three.")
                 sys.exit()
         else:
-            is_coding = kwargs['is_coding']
+            is_coding = not kwargs['non_coding']
             if is_coding and not is_mult_of_three:
                 logger.error("Coding wild-type sequence must be a multiple of three.")
                 sys.exit()
@@ -219,6 +219,7 @@ def main():
         kwargs['wt_sequence'] = kwargs.pop('wtseq')
         kwargs['skip_header_rows'] = kwargs.pop('skip_header')
         kwargs['skip_footer_rows'] = kwargs.pop('skip_footer')
+        kwargs['is_coding'] = not kwargs.pop('non_coding')
         if program == 'enrich':
             kwargs.pop('one_based')
             kwargs.pop('offset')
