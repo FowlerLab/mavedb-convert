@@ -13,8 +13,8 @@ All outputs are in 1-based coordinates.
 
 Usage:
   mavedb-convert enrich2 <src> [--dst=D] [--wtseq=W] [--offset=O] [--hgvs_column=A] [--non_coding] [--input_type=T] [--skip_header=H] [--skip_footer=H]
-  mavedb-convert enrich <src> [--dst=D] [--wtseq=W] [--score_column=C] [--input_type=T] [--sheet_name=S] [--skip_header=H] [--skip_footer=H]
-  mavedb-convert empiric <src> [--dst=D] [--wtseq=W] [--one_based] [--score_column=C] [--input_type=T] [--sheet_name=S] [--skip_header=H] [--skip_footer=H]
+  mavedb-convert enrich <src> [--dst=D] [--wtseq=W] [--offset=O]  [--score_column=C] [--input_type=T] [--sheet_name=S] [--skip_header=H] [--skip_footer=H]
+  mavedb-convert empiric <src> [--dst=D] [--wtseq=W] [--offset=O] [--zero_based] [--score_column=C] [--input_type=T] [--sheet_name=S] [--skip_header=H] [--skip_footer=H]
   mavedb-convert -h | --help
   mavedb-convert --version
   
@@ -40,7 +40,7 @@ Options:
                     sequence. Required when inputs are from Enrich, Enrich2 or
                     EMPIRIC. Not used for other input sources. [default: None]
 
-  --one_based       Set if the coordinates in an EMPIRIC input file contains
+  --zero_based      Set if the coordinates in an EMPIRIC input file contains
                     one-based coordinates. Ignored for Enrich and Enrich2
                     [default: False]
                     
@@ -126,7 +126,7 @@ def parse_args(docopt_args=None):
             kwargs[k[2:]] = path
         elif k in constants.supported_programs and v:
             program = k
-        elif k in ('--wtseq', '--offset', '--one_based', '--sheet_name',
+        elif k in ('--wtseq', '--offset', '--zero_based', '--sheet_name',
                    '--score_column', '--hgvs_column', '--input_type',
                    '--skip_header', '--skip_footer', '--non_coding'):
             if isinstance(v, str):
@@ -207,7 +207,8 @@ def parse_args(docopt_args=None):
         else:
             is_coding = not kwargs['non_coding']
             if is_coding and not is_mult_of_three:
-                logger.error("Coding wild-type sequence must be a multiple of three.")
+                logger.error(
+                    "Coding wild-type sequence must be a multiple of three.")
                 sys.exit()
 
     return program, kwargs
@@ -221,21 +222,18 @@ def main():
         kwargs['skip_footer_rows'] = kwargs.pop('skip_footer')
         kwargs['is_coding'] = not kwargs.pop('non_coding')
         if program == 'enrich':
-            kwargs.pop('one_based')
-            kwargs.pop('offset')
             kwargs.pop('hgvs_column')
-            
             enrich.Enrich(**kwargs).convert()
+        
         elif program == 'enrich2':
-            kwargs.pop('one_based')
             kwargs.pop('score_column')
-            
             enrich2.Enrich2(**kwargs).convert()
+
         elif program == 'empiric':
-            kwargs.pop('offset')
+            kwargs['one_based'] = not kwargs.pop('zero_based')
             kwargs.pop('hgvs_column')
-            
             empiric.Empiric(**kwargs).convert()
+
         else:
             logger.error("Supported programs are {}".format(
                 ', '.join(constants.supported_programs)))
