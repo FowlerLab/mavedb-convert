@@ -172,13 +172,13 @@ class Empiric(base.BaseProgram):
     def validate_columns(self, df):
         if not len(set(df.columns) & set(self.AA_COLUMNS)):
             raise ValueError(
-                "Input is missing the required 'amino acid' (case-insensitive)"
+                "Input is missing the required 'amino acid' (case-insensitive) "
                 "column."
             )
     
         if not len(set(df.columns) & set(self.POSITION_COLUMNS)):
             raise ValueError(
-                "Input is missing the required 'position' (case-insensitive)"
+                "Input is missing the required 'position' (case-insensitive) "
                 "column."
             )
     
@@ -267,6 +267,7 @@ class Empiric(base.BaseProgram):
         `pd.DataFrame`
             The `MaveDB` formatted dataframe.
         """
+        self.validate_columns(df)
         df['row_num'] = range(0, len(df))
 
         rows = tqdm(
