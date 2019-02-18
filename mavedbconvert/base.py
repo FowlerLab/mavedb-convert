@@ -55,11 +55,6 @@ class BaseProgram(object):
         set as the MaveDB score column. Ignored if `input_type` is 'counts'.
         Used when input is tsv.
         
-    count_column : str, optional.
-        The name of the column in the input column which you would like to
-        set as the MaveDB count column. Ignored if `input_type` is 'scores'.
-        Used when input is tsv.
-        
     hgvs_column : str, optional.
         The name of the column in the input column which you would like to
         set as the MaveDB hgvs_nt column. Used when input is an Enrich2 tsv
@@ -74,8 +69,7 @@ class BaseProgram(object):
     """
     def __init__(self, src, wt_sequence, offset=0, dst=None, one_based=True,
                  skip_header_rows=0, skip_footer_rows=0, score_column='score',
-                 count_column='count', hgvs_column='hgvs', input_type=None,
-                 sheet_name=None, is_coding=True):
+                 hgvs_column='hgvs', input_type=None, sheet_name=None, is_coding=True):
         # Check the input is a readable file.
         self.src = os.path.normpath(os.path.expanduser(src))
         logger.info("Checking read permission for '{}'".format(self.src))
@@ -116,7 +110,6 @@ class BaseProgram(object):
         self.skip_footer_rows = skip_footer_rows
         self.sheet_name = sheet_name
         self.score_column = score_column
-        self.count_column = count_column
         self.hgvs_column = hgvs_column
         self.input_type = input_type
         self.one_based = one_based
@@ -129,15 +122,6 @@ class BaseProgram(object):
         self.offset = offset
         self.wt_sequence = wt_sequence
         
-        # open bin file
-        bin_file = os.path.join(self.output_directory, '{}_bin.csv'.format(
-            self.src_filename,))
-        self.bin_file = open(bin_file, 'wt')
-        
-    def __del__(self):
-        if not self.bin_file.closed:
-            self.bin_file.close()
-
     @property
     def wt_sequence(self):
         return self._wt_sequence
