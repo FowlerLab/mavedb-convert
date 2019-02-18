@@ -15,7 +15,7 @@ class TestArgParsing(TestCase):
     def mock_args(program, src, dst=None, wt_seq='AAA', offset=0,
                   one_based=False, score_column=None, hgvs_column=None,
                   input_type='scores', skip_header='0', skip_footer='0',
-                  sheet_name=None, is_coding=True,
+                  sheet_name=None, non_coding=False,
                   ):
         return {
             'enrich': True if program == 'enrich' else False,
@@ -32,7 +32,7 @@ class TestArgParsing(TestCase):
             '--offset': offset,
             '--input_type': input_type,
             '--one_based': one_based,
-            '--is_coding': is_coding,
+            '--non_coding': non_coding,
         }
         
     def test_io_error_invalid_file(self):
@@ -137,8 +137,15 @@ class TestArgParsing(TestCase):
             with self.assertRaises(SystemExit):
                 parse_args(
                     self.mock_args(
-                        program=program, src=SRC, wt_seq='AAAA')
+                        program=program, src=SRC, wt_seq='AAAA',
+                        non_coding=False)
                 )
+                
+    def test_allows_wtseq_not_multiple_of_three_if_noncoding(self):
+        parse_args(
+            self.mock_args(
+                program='enrich2', src=SRC, wt_seq='AAAA', non_coding=True)
+        )
             
     def test_exit_none_wt_seq(self):
         for program in ('enrich', 'empiric'):

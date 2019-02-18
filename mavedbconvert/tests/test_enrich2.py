@@ -739,21 +739,21 @@ class TestEnrich2LoadInput(TestCase):
         path = os.path.join(DATA_DIR, 'enrich2.tsv')
         p = enrich2.Enrich2(
             path, wt_sequence='AAA',
-            score_column='score',
+            score_column='scores',
+            hgvs_column='sequence',
             input_type=constants.score_type
         )
         with self.assertRaises(KeyError):
             p.load_input_file()
 
-    def test_scores_tsv_missing_count_column(self):
+    def test_input_type_counts_doesnt_raise_keyerror(self):
         path = os.path.join(DATA_DIR, 'enrich2.tsv')
         p = enrich2.Enrich2(
             path, wt_sequence='AAA',
-            count_column='count',
+            hgvs_column='sequence',
             input_type=constants.count_type
         )
-        with self.assertRaises(KeyError):
-            p.load_input_file()
+        p.load_input_file()
 
     def test_scores_tsv_missing_hgvs_column(self):
         path = os.path.join(DATA_DIR, 'enrich2.tsv')
