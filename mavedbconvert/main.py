@@ -240,7 +240,7 @@ def main():
                 ', '.join(constants.supported_programs)))
             sys.exit()
     except Exception:
-        logger.exception("An error occured during conversion.")
+        logger.exception("A critical error has occurred during conversion.")
         sys.exit()
     
         
