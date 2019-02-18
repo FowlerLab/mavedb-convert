@@ -71,7 +71,7 @@ class Enrich(base.BaseProgram):
                         "to parse a specific sheet.".format(
                             ', '.join(list(od.keys())), self.sheet_name)
                     )
-            return od[self.sheet_name]
+            df = od[self.sheet_name]
         else:
             sep = '\t'
             if self.ext.lower() == '.csv':
@@ -83,6 +83,7 @@ class Enrich(base.BaseProgram):
                 skipfooter=self.skip_footer_rows,
                 skiprows=self.skip_header_rows,
             )
+        
         if 'seqID' not in df.columns:
             raise ValueError("Input is missing the required column 'seqID'.")
         return df
