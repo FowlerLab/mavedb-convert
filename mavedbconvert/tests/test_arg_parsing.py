@@ -13,7 +13,7 @@ class TestArgParsing(TestCase):
     
     @staticmethod
     def mock_args(program, src, dst=None, wt_seq='AAA', offset=0,
-                  one_based=False, score_column=None, hgvs_column=None,
+                  zero_based=False, score_column=None, hgvs_column=None,
                   input_type='scores', skip_header='0', skip_footer='0',
                   sheet_name=None, non_coding=False,
                   ):
@@ -31,7 +31,7 @@ class TestArgParsing(TestCase):
             '--wtseq': wt_seq,
             '--offset': offset,
             '--input_type': input_type,
-            '--one_based': one_based,
+            '--zero_based': zero_based,
             '--non_coding': non_coding,
         }
         
@@ -190,11 +190,11 @@ class TestArgParsing(TestCase):
         self.assertEqual(args['skip_header'], 1)
         self.assertEqual(args['skip_footer'], 0)
         
-    def test_parses_one_based_as_false(self):
+    def test_parses_zero_based_as_false(self):
         _, args = parse_args(
-            self.mock_args(program='enrich2', src=SRC, one_based=False)
+            self.mock_args(program='enrich2', src=SRC, zero_based=False)
         )
-        self.assertEqual(args['one_based'], False)
+        self.assertEqual(args['zero_based'], False)
 
     def test_parses_sheet_name(self):
         _, args = parse_args(

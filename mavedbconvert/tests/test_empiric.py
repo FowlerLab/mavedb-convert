@@ -355,14 +355,16 @@ class TestEmpiricLoadInput(ProgramTestCase):
         super().setUp()
         self.path = os.path.join(DATA_DIR, 'empiric.xlsx')
         self.tmp_path = os.path.join(DATA_DIR, 'tmp.csv')
+        self.tmp_path_tsv = os.path.join(DATA_DIR, 'tmp.tsv')
         self.tmp_excel_path = os.path.join(DATA_DIR, 'tmp.xlsx')
         self.bin.append(self.tmp_path)
+        self.bin.append(self.tmp_path_tsv)
 
     def test_extra_na_load_as_nan(self):
         for value in constants.extra_na:
             df = pd.read_excel(self.path)
             df['A'] = [value, ] * len(df)
-            df.to_csv(self.tmp_path, index=False, sep='\t',)
+            df.to_csv(self.tmp_path, index=False)
             e = empiric.Empiric(
                 src=self.tmp_path, wt_sequence='TTTTCTTATTGT', 
                 score_column='col_A', input_type=constants.score_type,
@@ -387,9 +389,20 @@ class TestEmpiricLoadInput(ProgramTestCase):
 
     def test_handles_csv(self):
         df = pd.read_excel(self.path)
-        df.to_csv(self.tmp_path, index=False, sep='\t',)
+        df.to_csv(self.tmp_path, index=False, sep=',',)
         e = empiric.Empiric(
             src=self.tmp_path, wt_sequence='TTTTCTTATTGT', 
+            score_column='col_A', input_type=constants.score_type,
+            one_based=False,
+        )
+        result = e.load_input_file()
+        assert_frame_equal(result, df)
+        
+    def test_handles_tsv(self):
+        df = pd.read_excel(self.path)
+        df.to_csv(self.tmp_path_tsv, index=False, sep='\t',)
+        e = empiric.Empiric(
+            src=self.tmp_path_tsv, wt_sequence='TTTTCTTATTGT',
             score_column='col_A', input_type=constants.score_type,
             one_based=False,
         )

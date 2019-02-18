@@ -160,17 +160,19 @@ class TestEnrichParseInput(ProgramTestCase):
 class TestEnrichLoadInput(ProgramTestCase):
     def setUp(self):
         self.path = os.path.join(DATA_DIR, 'enrich1.tsv')
-        self.path_1based = os.path.join(DATA_DIR, 'enrich1_1based.csv')
+        self.path_1based = os.path.join(DATA_DIR, 'enrich1_1based.tsv')
+        self.path_csv = os.path.join(DATA_DIR, 'enrich1.csv')
         self.expected = os.path.join(DATA_DIR, 'enrich1_expected.csv')
         self.expected_offset = os.path.join(
             DATA_DIR, 'enrich1_expected_offset.csv')
         self.excel_path = os.path.join(DATA_DIR, 'enrich1.xlsx')
-        self.no_seq_id = os.path.join(DATA_DIR, 'enrich1_no_seqid.csv')
+        self.no_seq_id = os.path.join(DATA_DIR, 'enrich1_no_seqid.tsv')
         self.tmp_path = os.path.join(DATA_DIR, 'tmp.xlsx')
 
         self.bin = [
             os.path.join(DATA_DIR, 'mavedb_enrich1.csv'),
             os.path.join(DATA_DIR, 'mavedb_enrich1_1based.csv'),
+            os.path.join(DATA_DIR, self.path_csv),
         ]
 
     def test_error_seq_id_not_in_columns(self):
@@ -203,11 +205,33 @@ class TestEnrichLoadInput(ProgramTestCase):
 
     def test_loads_table(self):
         p = enrich.Enrich(
-            src=self.path, wt_sequence=WT, 
-            score_column='log2_ratio', input_type=constants.score_type)
+            src=self.path,
+            wt_sequence=WT,
+            score_column='log2_ratio',
+            input_type=constants.score_type
+        )
         result = p.load_input_file()
         expected = pd.read_csv(
-            self.path, delimiter='\t', na_values=constants.extra_na)
+            self.path,
+            delimiter='\t',
+            na_values=constants.extra_na
+        )
+        assert_frame_equal(result, expected)
+
+    def test_loads_csv(self):
+        expected = pd.read_csv(
+            self.path,
+            delimiter='\t',
+            na_values=constants.extra_na
+        )
+        expected.to_csv(self.path_csv, index=False)
+        p = enrich.Enrich(
+            src=self.path_csv,
+            wt_sequence=WT,
+            score_column='log2_ratio',
+            input_type=constants.score_type
+        )
+        result = p.load_input_file()
         assert_frame_equal(result, expected)
 
     def test_table_and_excel_load_same_dataframe(self):
@@ -223,9 +247,9 @@ class TestEnrichLoadInput(ProgramTestCase):
 class TestEnrichIntegration(ProgramTestCase):
     def setUp(self):
         self.path = os.path.join(DATA_DIR, 'enrich1.tsv')
-        self.path_1based = os.path.join(DATA_DIR, 'enrich1_1based.csv')
+        self.path_1based = os.path.join(DATA_DIR, 'enrich1_1based.tsv')
         self.excel_path = os.path.join(DATA_DIR, 'enrich1.xlsx')
-        self.no_seq_id = os.path.join(DATA_DIR, 'enrich1_no_seqid.csv')
+        self.no_seq_id = os.path.join(DATA_DIR, 'enrich1_no_seqid.tsv')
 
         self.expected = os.path.join(DATA_DIR, 'enrich1_expected.csv')
         self.expected_offset = os.path.join(
