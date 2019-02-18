@@ -27,40 +27,51 @@ __all__ = [
 logger = logging.getLogger(LOGGER)
 
 
-def apply_offset(variant, offset):
+def apply_offset(variant, offset, enrich2=None):
     variants = []
     for v in variant.split(','):
+        nt_instance = None
         if len(v.strip().split(' ')) == 2:
             nt, pro = v.strip().split(' ')
         elif v.strip()[0] == 'p':
             nt, pro = None, v.strip()
         else:
             nt, pro = v.strip(), None
-        
+            
         if nt is not None:
-            import hgvsp
             nt = utilities.NucleotideSubstitutionEvent(nt)
+            nt_instance = nt
             nt.position -= offset
             if nt.position < 1:
                 raise ValueError(
                     "Position after offset {} "
                     "applied to {} is negative.".format(offset, nt.variant)
                 )
+            if enrich2:
+                enrich2.validate_against_wt_sequence(nt.format)
             nt = nt.format
-        if pro is not None:
+        
+        if pro is not None and pro != 'p.=':
             use_brackets = False
             if pro.startswith('(') and pro.endswith(')'):
                 pro = pro[1:-1]
                 use_brackets = True
+            
             pro = utilities.ProteinSubstitutionEvent(pro)
-            adjusted_offset = (1, -1)[offset < 0] * (abs(offset) // 3)
-            pro.position -= adjusted_offset
+            if nt_instance is not None:
+                pro.position = nt_instance.codon_position()
+                pro_offset = None
+            else:
+                pro_offset = (1, -1)[offset < 0] * (abs(offset) // 3)
+                pro.position -= pro_offset
+            
             if pro.position < 1:
                 raise ValueError(
                     "Position after offset {} "
-                    "applied to {} is negative.".format(
-                        adjusted_offset, nt.variant)
-                )
+                    "applied to {} is negative.".format(pro_offset, nt.variant))
+
+            if enrich2:
+                enrich2.validate_against_protein_sequence(pro.format)
             pro = pro.format
             if use_brackets:
                 pro = '({})'.format(pro)
@@ -69,18 +80,6 @@ def apply_offset(variant, offset):
             '' if nt is None else nt,
             '' if pro is None else pro
         ).strip())
-        
-    return ', '.join(variants)
-
-
-def fix_silent_hgvs_syntax(variant):
-    variants = []
-    
-    for v in variant.split(','):
-        if len(v.strip().split(' ')) != 2:
-            variants.append(v)
-        
-        nt, pro = v.strip().split(' ')
         
     return ', '.join(variants)
 
@@ -239,7 +238,10 @@ class Enrich2(base.BaseProgram):
     
     def convert(self):
         logger.info("Processing file {}".format(self.src))
-        self.parse_input(self.load_input_file())
+        if self.input_is_h5:
+            return self.parse_input(self.load_input_file())
+        else:
+            return self.parse_tsv_input(self.load_input_file())
 
     def load_input_file(self):
         """
@@ -249,12 +251,43 @@ class Enrich2(base.BaseProgram):
         -------
         `pd.HDFStore`
         """
-        if not self.input_is_h5:
+        if not (self.input_is_h5 or self.input_is_tsv):
             raise TypeError(
-                "Expected a HDF5 file. Found extension '{}'.".format(
+                "Expected a HDF5 or TSV file. Found extension '{}'.".format(
                     self.extension))
-        return pd.HDFStore(self.src, mode='r')
+        
+        if self.input_is_h5:
+            return pd.HDFStore(self.src, mode='r')
+        else:
+            df = pd.read_csv(
+                self.src,
+                delimiter='\t',
+                na_values=constants.extra_na,
+                skipfooter=self.skip_footer_rows,
+                skiprows=self.skip_header_rows,
+            )
+            if self.input_is_scores_based \
+                    and self.score_column not in df.columns:
+                raise KeyError(
+                    "Input is missing the required score column '{}'.".format(
+                        self.score_column
+                    ))
 
+            if self.input_is_counts_based \
+                    and self.count_column not in df.columns:
+                raise KeyError(
+                    "Input is missing the required count column '{}'.".format(
+                        self.count_column
+                    ))
+            
+            if self.hgvs_column not in df.columns:
+                raise KeyError(
+                    "Input is missing the required hgvs column '{}'.".format(
+                        self.hgvs_column
+                    ))
+            
+            return df
+        
     def parse_row(self, row):
         """Delegates the correct method below."""
         if isinstance(row, (tuple, list)):
@@ -269,8 +302,7 @@ class Enrich2(base.BaseProgram):
             else:
                 return variant, variant
         
-        variant = fix_silent_hgvs_syntax(variant)
-        variant = apply_offset(variant, self.offset)
+        variant = apply_offset(variant, self.offset, enrich2=self)
         
         is_mixed = any([
             len(v.strip().split(' ')) == 2 for v in variant.split(',')
@@ -294,6 +326,19 @@ class Enrich2(base.BaseProgram):
             raise ValueError(
                 "Could not infer type of HGVS string from '{}'.".format(
                     variant))
+        
+    def parse_tsv_input(self, df):
+        """
+        Convert all score and count data frames in the Enrich2 TSV file
+        into MaveDB-ready `.csv` files.
+        """
+        df.index = df[self.hgvs_column]
+        mave_df = self.convert_h5_df(df, element=None, df_type=self.input_type)
+        fname = 'mavedb_{}.csv'.format(self.src_filename)
+        filepath = os.path.normpath(os.path.join(self.output_directory, fname))
+        logger.info("Writting file to {}.".format(filepath))
+        mave_df.to_csv(filepath, sep=',', index=None, na_rep=np.NaN)
+        return mave_df
 
     def parse_input(self, store):
         """
