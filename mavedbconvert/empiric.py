@@ -90,14 +90,19 @@ def infer_pro_substitution(wt_aa, mut_aa, codon_pos):
 
 class Empiric(base.BaseProgram):
     __doc__ = base.BaseProgram.__doc__
+    
+    CODON_COLUMNS = ("Codon", "codon", "CODON", )
+    AA_COLUMNS = ("Amino Acid", "amino acid", "AMINO ACID", )
+    POSITION_COLUMNS = ("Position", "position", "POSITION", )
+    
 
-    def __init__(self, src, wt_sequence, dst=None, one_based=False,
+    def __init__(self, src, wt_sequence, dst=None, one_based=False, offset=0,
                  skip_header_rows=0, skip_footer_rows=0, score_column=None,
                  input_type=None, sheet_name=None, **kwargs):
         super().__init__(
             src=src,
             wt_sequence=wt_sequence,
-            offset=0,
+            offset=offset,
             dst=dst,
             one_based=one_based,
             skip_header_rows=skip_header_rows,
@@ -106,9 +111,12 @@ class Empiric(base.BaseProgram):
             score_column=score_column,
             input_type=input_type,
         )
+        self.codon_column = None
+        self.aa_column = None
+        self.position_column = None
         if not self.score_column and self.input_type == constants.score_type:
             raise ValueError(
-                "A score column must be sepcified if "
+                "A score column must be specified if "
                 "the input file is a scores file."
             )
 
@@ -144,27 +152,51 @@ class Empiric(base.BaseProgram):
                         "to parse a specific sheet.".format(
                             ', '.join(list(od.keys())), self.sheet_name)
                     )
-            return od[self.sheet_name]
+            df = od[self.sheet_name]
         else:
+            sep = '\t'
+            if self.ext.lower() == '.csv':
+                sep = ','
             df = pd.read_csv(
                 self.src,
-                delimiter='\t',
+                delimiter=sep,
                 na_values=constants.extra_na,
                 skipfooter=self.skip_footer_rows,
                 skiprows=self.skip_header_rows,
             )
-        if 'Position' not in df.columns:
-            raise ValueError(
-                "Input is missing the required column 'Position'.")
-        if 'Amino Acid' not in df.columns:
-            raise ValueError(
-                "Input is missing the required column 'Amino Acid'.")
-        if 'Codon' not in df.columns:
-            logger.warning(
-                "Warning: Input is missing the column 'Codon'. "
-                "Nucelotide level variants will not be inferred."
-            )
+        
+        self.validate_columns(df)
+        df[self.position_column] += self.offset
         return df
+    
+    def validate_columns(self, df):
+        if not len(set(df.columns) & set(self.AA_COLUMNS)):
+            raise ValueError(
+                "Input is missing the required 'amino acid' (case-insensitive)"
+                "column."
+            )
+    
+        if not len(set(df.columns) & set(self.POSITION_COLUMNS)):
+            raise ValueError(
+                "Input is missing the required 'position' (case-insensitive)"
+                "column."
+            )
+    
+        if not len(set(df.columns) & set(self.CODON_COLUMNS)):
+            logger.warning(
+                "Warning: Input is missing the column 'codon' "
+                "(case-insensitive). Nucelotide level variants will not "
+                "be inferred."
+            )
+            self.codon_column = None
+        else:
+            self.codon_column = list(
+                set(df.columns) & set(self.CODON_COLUMNS))[0]
+    
+        self.aa_column = list(
+            set(df.columns) & set(self.AA_COLUMNS))[0]
+        self.position_column = list(
+            set(df.columns) & set(self.POSITION_COLUMNS))[0]
 
     def parse_row(self, row):
         """
@@ -182,9 +214,9 @@ class Empiric(base.BaseProgram):
             A 2-tuple (hgvs_nt, hgvs_pro), where hgvs_nt will be `None` if
             `infer_nt` is `False`.
         """
-        infer_nt = 'Codon' in row.axes[0]
-        codon_pos = int(row['Position']) - int(self.one_based)
-        mut_aa = str(row['Amino Acid']).strip().upper()
+        infer_nt = self.codon_column is not None
+        codon_pos = int(row[self.position_column]) - int(self.one_based)
+        mut_aa = str(row[self.aa_column]).strip().upper()
         if codon_pos < 0:
             raise IndexError(
                 "Negative position encountered after adjusting for 1-based "
@@ -201,17 +233,17 @@ class Empiric(base.BaseProgram):
 
         if utilities.is_null(mut_aa) or not mut_aa:
             raise ValueError(
-                "Missing `Amino Acid` value in row '{}'.".format(
+                "Missing amino acid value in row '{}'.".format(
                     row['row_num'])
             )
 
         wt_codon = self.codons[codon_pos].upper()
         wt_aa = constants.CODON_TABLE[wt_codon].upper()
         if infer_nt:
-            mut_codon = str(row['Codon']).strip().upper()
+            mut_codon = str(row[self.codon_column]).strip().upper()
             if utilities.is_null(mut_codon) or not mut_codon:
                 raise ValueError(
-                    "Missing `Codon` value in row '{}'.".format(row['row_num'])
+                    "Missing codon value in row '{}'.".format(row['row_num'])
                 )
             if constants.CODON_TABLE[mut_codon] != mut_aa:
                 raise ValueError(
@@ -243,9 +275,11 @@ class Empiric(base.BaseProgram):
 
         df[constants.nt_variant_col] = [tup[0] for tup in tups]
         df[constants.pro_variant_col] = [tup[1] for tup in tups]
-        df.drop(columns=['Position', 'Amino Acid', 'row_num'], inplace=True)
-        if 'Codon' in df.columns:
-            df.drop(columns=['Codon'], inplace=True)
+        df.drop(columns=[
+            self.position_column, self.aa_column, 'row_num'
+        ], inplace=True)
+        if self.codon_column:
+            df.drop(columns=[self.codon_column], inplace=True)
 
         data = {}
         mave_columns = list(constants.variant_columns) + \
