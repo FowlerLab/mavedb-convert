@@ -69,7 +69,8 @@ class BaseProgram(object):
     """
     def __init__(self, src, wt_sequence, offset=0, dst=None, one_based=True,
                  skip_header_rows=0, skip_footer_rows=0, score_column='score',
-                 hgvs_column='hgvs', input_type=None, sheet_name=None, is_coding=True):
+                 hgvs_column='hgvs', input_type=None, sheet_name=None,
+                 is_coding=True):
         # Check the input is a readable file.
         self.src = os.path.normpath(os.path.expanduser(src))
         logger.info("Checking read permission for '{}'".format(self.src))

@@ -221,6 +221,8 @@ def main():
         kwargs['skip_header_rows'] = kwargs.pop('skip_header')
         kwargs['skip_footer_rows'] = kwargs.pop('skip_footer')
         kwargs['is_coding'] = not kwargs.pop('non_coding')
+        kwargs['one_based'] = not kwargs.pop('zero_based')
+        
         if program == 'enrich':
             kwargs.pop('hgvs_column')
             enrich.Enrich(**kwargs).convert()
@@ -230,7 +232,6 @@ def main():
             enrich2.Enrich2(**kwargs).convert()
 
         elif program == 'empiric':
-            kwargs['one_based'] = not kwargs.pop('zero_based')
             kwargs.pop('hgvs_column')
             empiric.Empiric(**kwargs).convert()
 
