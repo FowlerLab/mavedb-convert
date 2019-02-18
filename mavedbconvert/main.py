@@ -12,13 +12,9 @@ numeric where NaN values must be encoded using 'NaN', 'Na', 'None', 'N/A',
 All outputs are in 1-based coordinates.
 
 Usage:
-  mavedb-convert enrich2 <src> [--dst=D] [--wtseq=W] [--offset=O]
-  mavedb-convert enrich <src> [--dst=D] [--wtseq=W] [--offset=O]
-                              [--score_column=C] [--input_type=T]
-                              [--sheet_name=S] [--skip_header=H] [--skip_footer=H]
-  mavedb-convert empiric <src> [--dst=D] [--wtseq=W] [--offset=O] [--one_based]
-                               [--score_column=C] [--input_type=T]
-                               [--sheet_name=S] [--skip_header=H] [--skip_footer=H]
+  mavedb-convert enrich2 <src> [--dst=D] [--wtseq=W] [--offset=O] [--hgvs_column=A] [--is_coding]
+  mavedb-convert enrich <src> [--dst=D] [--wtseq=W] [--score_column=C] [--input_type=T] [--sheet_name=S] [--skip_header=H] [--skip_footer=H]
+  mavedb-convert empiric <src> [--dst=D] [--wtseq=W] [--one_based] [--score_column=C] [--input_type=T] [--sheet_name=S] [--skip_header=H] [--skip_footer=H]
   mavedb-convert -h | --help
   mavedb-convert --version
   
@@ -47,14 +43,19 @@ Options:
   --one_based       Set if the coordinates in an EMPIRIC input file contains
                     one-based coordinates. Ignored for Enrich and Enrich2
                     [default: False]
+                    
+  --is_coding       Set Enrich2 input file specifies coding HGVS syntax.
+                    [default: False]
 
   --offset=O        Number of bases at the beginning of `wtseq` to ignore
                     before beginning translation. [default: 0]
 
-  --score_column=C  Column to use as scores. [default: None]
+  --score_column=C  Column to use as scores. Ignored for Enrich2. [default: None]
+  
+  --hgvs_column=A   Column containing HGVS variants. Enrich2 TSV only. [default: hgvs]
 
   --input_type=T    Type of input. Can be either 'counts' or 'scores'.
-                    Ignored for Enrich2. [default: scores]
+                    Ignored for Enrich2 HD5 files. [default: scores]
 
   --skip_header=H   Integer representing the number of rows to skip at the
                     beginning of an Excel file. [default: 0]
@@ -126,8 +127,8 @@ def parse_args(docopt_args=None):
         elif k in constants.supported_programs and v:
             program = k
         elif k in ('--wtseq', '--offset', '--one_based', '--sheet_name',
-                   '--score_column', '--input_type', '--skip_header',
-                   '--skip_footer',):
+                   '--score_column', '--hgvs_column', '--input_type',
+                   '--skip_header', '--skip_footer', '--is_coding'):
             if isinstance(v, str):
                 if v == 'None':
                     kwargs[k[2:]] = None
@@ -168,16 +169,19 @@ def parse_args(docopt_args=None):
             sys.exit()
     
     # ---- Validate offset and wt_seq ----- #
-    if program in ('enrich', 'empiric', 'enrich2'):
+    if program in ('enrich2', ):
         try:
             offset = int(kwargs['offset'])
-            if offset < 0:
-                raise ValueError()
+            # is_coding = kwargs['is_coding']
+            # if is_coding and abs(offset) % 3 != 0:
+            #     logger.error("Coding offset must be a multiple of three.")
+            #     sys.exit()
             kwargs['offset'] = offset
         except (TypeError, ValueError):
-            logger.error("Offset must be zero or greater.")
+            logger.error("Offset must be an integer")
             sys.exit()
-
+            
+    if program in ('enrich', 'empiric', 'enrich2'):
         wt_seq = kwargs['wtseq']
         if wt_seq is None or not wt_seq.strip():
             logger.error(
@@ -194,13 +198,17 @@ def parse_args(docopt_args=None):
             logger.error(
                 "'{}' is not a valid wildtype DNA sequence.".format(wt_seq))
             sys.exit()
-
-        if len(wt_seq[offset:]) % 3 != 0:
-            logger.error(
-                "The length of the sequence derived using an offset of {} is "
-                "not a multiple of 3 and cannot be translated.".format(offset)
-            )
-            sys.exit()
+        
+        is_mult_of_three = len(wt_seq) % 3 == 0
+        if program in ('enrich', 'empiric'):
+            if not is_mult_of_three:
+                logger.error("Wild-type sequence must be a multiple of three.")
+                sys.exit()
+        else:
+            is_coding = kwargs['is_coding']
+            if is_coding and not is_mult_of_three:
+                logger.error("Coding wild-type sequence must be a multiple of three.")
+                sys.exit()
 
     return program, kwargs
     
@@ -212,11 +220,20 @@ def main():
         kwargs['skip_header_rows'] = kwargs.pop('skip_header')
         kwargs['skip_footer_rows'] = kwargs.pop('skip_footer')
         if program == 'enrich':
+            kwargs.pop('one_based')
+            kwargs.pop('offset')
+            kwargs.pop('hgvs_column')
+            
             enrich.Enrich(**kwargs).convert()
         elif program == 'enrich2':
             kwargs.pop('one_based')
+            kwargs.pop('score_column')
+            
             enrich2.Enrich2(**kwargs).convert()
         elif program == 'empiric':
+            kwargs.pop('offset')
+            kwargs.pop('hgvs_column')
+            
             empiric.Empiric(**kwargs).convert()
         else:
             logger.error("Supported programs are {}".format(
