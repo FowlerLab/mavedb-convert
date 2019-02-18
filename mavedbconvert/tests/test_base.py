@@ -121,14 +121,14 @@ class TestBaseProgram(ProgramTestCase):
         with self.assertRaises(ValueError):
             p.wt_sequence = 'fff'
             
-    def test_error_is_coding_and_offset_not_multiple_of_three(self):
-        with self.assertRaises(ValueError):
-            base.BaseProgram(
-                src=self.src,
-                wt_sequence='AAA',
-                is_coding=True,
-                offset=2
-            )
+    # def test_error_is_coding_and_offset_not_multiple_of_three(self):
+    #     with self.assertRaises(ValueError):
+    #         base.BaseProgram(
+    #             src=self.src,
+    #             wt_sequence='AAA',
+    #             is_coding=True,
+    #             offset=2
+    #         )
 
 
 class TestBaseProgramValidateAgainstWTSeq(ProgramTestCase):

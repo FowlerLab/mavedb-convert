@@ -124,13 +124,13 @@ class TestArgParsing(TestCase):
                     program='enrich2', src=SRC, wt_seq='AAA', offset='a')
             )
     
-    def test_exit_is_coding_and_offset_is_not_mult_of_three(self):
-        with self.assertRaises(SystemExit):
-            parse_args(
-                self.mock_args(
-                    program='enrich2', src=SRC,
-                    wt_seq='AAA', is_coding=True, offset=4)
-            )
+    # def test_exit_is_coding_and_offset_is_not_mult_of_three(self):
+    #     with self.assertRaises(SystemExit):
+    #         parse_args(
+    #             self.mock_args(
+    #                 program='enrich2', src=SRC,
+    #                 wt_seq='AAA', is_coding=True, offset=4)
+    #         )
 
     def test_error_wtseq_not_multiple_of_three(self):
         for program in ('enrich', 'empiric', 'enrich2'):
