@@ -437,6 +437,7 @@ class Enrich2(base.BaseProgram):
         variants = tqdm(df.index, desc='Parsing variants', total=len(df.index))
         nt_protein_tups = []
         invalid_rows = []
+        invalid_reasons = []
         valid_rows = []
         for v in variants:
             try:
@@ -444,6 +445,7 @@ class Enrich2(base.BaseProgram):
                 valid_rows.append(v)
             except Exception as e:
                 invalid_rows.append(v)
+                invalid_reasons.append(str(e))
                 logger.warning("Could not parse row '{}'. Reason: {}".format(
                     v, str(e)
                 ))
@@ -462,11 +464,11 @@ class Enrich2(base.BaseProgram):
             fpath = os.path.join(self.output_directory, fname)
             logger.info("Writing invalid rows to {}".format(fpath))
             invalid = df.loc[invalid_rows, :]
-            invalid.to_csv(fpath, sep=',', index=None, na_rep=np.NaN)
+            invalid['error_description'] = invalid_reasons
+            invalid.to_csv(fpath, sep=',', na_rep=np.NaN)
         
         if not nt_protein_tups:
-            logger.error("Could not parse any variants. Aborting.")
-            sys.exit()
+            raise ValueError("Could not parse any variants. Aborting.")
         
         df = df.loc[valid_rows, :]
         data = {
