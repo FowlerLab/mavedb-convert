@@ -1,4 +1,5 @@
 import re
+import sys
 import os
 from itertools import groupby
 import logging
@@ -28,6 +29,12 @@ logger = logging.getLogger(LOGGER)
 
 
 def apply_offset(variant, offset, enrich2=None):
+    """
+    Applies offset to the base position of a HGVS point mutation by
+    subtraction. If `enrich2` is not None, then additional validation
+    against a wild-type NT and Protein sequence are performed after applicaiton
+    of the offset.
+    """
     variants = []
     for v in variant.split(','):
         nt_instance = None
@@ -286,6 +293,7 @@ class Enrich2(base.BaseProgram):
                         self.hgvs_column
                     ))
             
+            df.index = df[self.hgvs_column]
             return df
         
     def parse_row(self, row):
@@ -332,7 +340,6 @@ class Enrich2(base.BaseProgram):
         Convert all score and count data frames in the Enrich2 TSV file
         into MaveDB-ready `.csv` files.
         """
-        df.index = df[self.hgvs_column]
         mave_df = self.convert_h5_df(df, element=None, df_type=self.input_type)
         fname = 'mavedb_{}.csv'.format(self.src_filename)
         filepath = os.path.normpath(os.path.join(self.output_directory, fname))
@@ -433,7 +440,31 @@ class Enrich2(base.BaseProgram):
         that was extracted from an Enrich2 HDF5 file.
         """
         variants = tqdm(df.index, desc='Parsing variants', total=len(df.index))
-        nt_protein_tups = [self.parse_row((v, element)) for v in variants]
+        nt_protein_tups = []
+        invalid_rows = []
+        valid_rows = []
+        for v in variants:
+            try:
+                nt_protein_tups.append(self.parse_row((v, element)))
+                valid_rows.append(v)
+            except Exception as e:
+                invalid_rows.append(v)
+                logger.warning("Could not parse row '{}'. Reason: {}".format(
+                    v, str(e)
+                ))
+        
+        if invalid_rows:
+            logger.info("Writing invalid rows to {}/{}_bin.csv".format(
+                self.output_directory, self.src_filename
+            ))
+            invalid = df.loc[invalid_rows, :]
+            invalid.to_csv(self.bin_file, sep=',', index=None, na_rep=np.NaN)
+        
+        if not nt_protein_tups:
+            logger.error("Could not parse any variants. Aborting.")
+            sys.exit()
+        
+        df = df.loc[valid_rows, :]
         data = {
             constants.nt_variant_col: [tup[0] for tup in nt_protein_tups],
             constants.pro_variant_col: [tup[1] for tup in nt_protein_tups],

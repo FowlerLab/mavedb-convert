@@ -128,6 +128,15 @@ class BaseProgram(object):
         
         self.offset = offset
         self.wt_sequence = wt_sequence
+        
+        # open bin file
+        bin_file = os.path.join(self.output_directory, '{}_bin.csv'.format(
+            self.src_filename,))
+        self.bin_file = open(bin_file, 'wt')
+        
+    def __del__(self):
+        if not self.bin_file.closed:
+            self.bin_file.close()
 
     @property
     def wt_sequence(self):
