@@ -17,13 +17,13 @@ logger = logging.getLogger(LOGGER)
 class Enrich(base.BaseProgram):
     __doc__ = base.BaseProgram.__doc__
 
-    def __init__(self, src, wt_sequence, dst=None, one_based=False,
+    def __init__(self, src, wt_sequence, dst=None, one_based=False, offset=0,
                  skip_header_rows=0, skip_footer_rows=0, score_column=None,
                  input_type=None, sheet_name=None, **kwargs):
         super().__init__(
             src=src,
             wt_sequence=wt_sequence,
-            offset=0,
+            offset=offset,
             is_coding=True,
             dst=dst,
             one_based=one_based,
@@ -35,7 +35,7 @@ class Enrich(base.BaseProgram):
         )
         if not self.score_column and self.input_type == constants.score_type:
             raise ValueError(
-                "A score column must be sepcified if "
+                "A score column must be specified if "
                 "the input file is a scores file."
             )
 
@@ -73,9 +73,12 @@ class Enrich(base.BaseProgram):
                     )
             return od[self.sheet_name]
         else:
+            sep = '\t'
+            if self.ext.lower() == '.csv':
+                sep = ','
             df = pd.read_csv(
                 self.src,
-                delimiter='\t',
+                delimiter=sep,
                 na_values=constants.extra_na,
                 skipfooter=self.skip_footer_rows,
                 skiprows=self.skip_header_rows,
