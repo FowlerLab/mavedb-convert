@@ -280,13 +280,6 @@ class Enrich2(base.BaseProgram):
                         self.score_column
                     ))
 
-            if self.input_is_counts_based \
-                    and self.count_column not in df.columns:
-                raise KeyError(
-                    "Input is missing the required count column '{}'.".format(
-                        self.count_column
-                    ))
-            
             if self.hgvs_column not in df.columns:
                 raise KeyError(
                     "Input is missing the required hgvs column '{}'.".format(
@@ -373,14 +366,16 @@ class Enrich2(base.BaseProgram):
 
                 mave_scores_df = self.convert_h5_df(
                     df=score_df, element=element,
-                    df_type=constants.score_type
+                    df_type=constants.score_type,
+                    cnd=cnd
                 )
                 mave_counts_df = None
                 if count_df is not None:
                     assert_index_equal(score_df.index, count_df.index)
                     mave_counts_df = self.convert_h5_df(
                         df=count_df, element=element,
-                        df_type=constants.count_type
+                        df_type=constants.count_type,
+                        cnd=cnd
                     )
 
                 # This step checks both df define the same variants
@@ -434,7 +429,7 @@ class Enrich2(base.BaseProgram):
                 elem=element, df_type='scores', cnd=cnd, path=filepath))
         return filepath
 
-    def convert_h5_df(self, df, element, df_type):
+    def convert_h5_df(self, df, element, df_type, cnd=None):
         """
         Creates and outputs a mavedb data frame based on the data frame `df`
         that was extracted from an Enrich2 HDF5 file.
@@ -454,11 +449,20 @@ class Enrich2(base.BaseProgram):
                 ))
         
         if invalid_rows:
-            logger.info("Writing invalid rows to {}/{}_bin.csv".format(
-                self.output_directory, self.src_filename
-            ))
+            # open bin file
+            if cnd is not None:
+                fname = self.convert_h5_filepath(
+                    basename=self.src_filename, element=element,
+                    df_type=constants.count_type, cnd=cnd
+                )
+                fname = '{}_invalid_rows.csv'.format(fname.split('.')[0])
+            else:
+                fname = '{}_invalid_rows.csv'.format(self.src_filename)
+            
+            fpath = os.path.join(self.output_directory, fname)
+            logger.info("Writing invalid rows to {}".format(fpath))
             invalid = df.loc[invalid_rows, :]
-            invalid.to_csv(self.bin_file, sep=',', index=None, na_rep=np.NaN)
+            invalid.to_csv(fpath, sep=',', index=None, na_rep=np.NaN)
         
         if not nt_protein_tups:
             logger.error("Could not parse any variants. Aborting.")
