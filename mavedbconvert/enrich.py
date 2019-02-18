@@ -105,6 +105,7 @@ class Enrich(base.BaseProgram):
         `str`
             An hgvs_pro string. The positions reported will be 1-based.
         """
+        # TODO: Add offset
         seq_id = row
         if not seq_id or 'NA' in seq_id.upper():
             raise ValueError(
