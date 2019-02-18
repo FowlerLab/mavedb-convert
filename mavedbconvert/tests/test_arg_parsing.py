@@ -13,8 +13,9 @@ class TestArgParsing(TestCase):
     
     @staticmethod
     def mock_args(program, src, dst=None, wt_seq='AAA', offset=0,
-                  one_based=False, score_column=None, input_type='scores',
-                  skip_header='0', skip_footer='0', sheet_name=None
+                  one_based=False, score_column=None, hgvs_column=None,
+                  input_type='scores', skip_header='0', skip_footer='0',
+                  sheet_name=None, is_coding=True,
                   ):
         return {
             'enrich': True if program == 'enrich' else False,
@@ -23,13 +24,15 @@ class TestArgParsing(TestCase):
             '<src>': os.path.join(DATA_DIR, src),
             '--dst': os.path.join(DATA_DIR, dst) if dst else dst,
             '--score_column': score_column,
+            '--hgvs_column': hgvs_column,
             '--skip_header': skip_header,
             '--skip_footer': skip_footer,
             '--sheet_name': sheet_name,
             '--wtseq': wt_seq,
             '--offset': offset,
             '--input_type': input_type,
-            '--one_based': one_based
+            '--one_based': one_based,
+            '--is_coding': is_coding,
         }
         
     def test_io_error_invalid_file(self):
@@ -115,30 +118,26 @@ class TestArgParsing(TestCase):
         self.assertEqual(expected_p, 'empiric')
         
     def test_exit_non_int_offset(self):
-        for program in ('enrich', 'empiric'):
-            with self.assertRaises(SystemExit):
-                parse_args(
-                    self.mock_args(
-                        program=program, src=SRC, 
-                        wt_seq='AAA', offset='a')
-                )
+        with self.assertRaises(SystemExit):
+            parse_args(
+                self.mock_args(
+                    program='enrich2', src=SRC, wt_seq='AAA', offset='a')
+            )
     
-    def test_exit_neg_offset(self):
-        for program in ('enrich', 'empiric'):
-            with self.assertRaises(SystemExit):
-                parse_args(
-                    self.mock_args(
-                        program=program, src=SRC, 
-                        wt_seq='AAA', offset=-1)
-                )
+    def test_exit_is_coding_and_offset_is_not_mult_of_three(self):
+        with self.assertRaises(SystemExit):
+            parse_args(
+                self.mock_args(
+                    program='enrich2', src=SRC,
+                    wt_seq='AAA', is_coding=True, offset=4)
+            )
 
-    def test_error_seq_using_offset_not_multiple_of_three(self):
-        for program in ('enrich', 'empiric'):
+    def test_error_wtseq_not_multiple_of_three(self):
+        for program in ('enrich', 'empiric', 'enrich2'):
             with self.assertRaises(SystemExit):
                 parse_args(
                     self.mock_args(
-                        program=program, src=SRC,
-                        wt_seq='AAA', offset=1)
+                        program=program, src=SRC, wt_seq='AAAA')
                 )
             
     def test_exit_none_wt_seq(self):

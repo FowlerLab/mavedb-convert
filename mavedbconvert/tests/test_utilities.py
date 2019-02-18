@@ -112,7 +112,7 @@ class TestNucleotideSubstitutionEvent(TestCase):
     def test_error_invalid_dna_substitution_syntax(self):
         with self.assertRaises(exceptions.InvalidVariantType):
             utilities.NucleotideSubstitutionEvent('c.100_101delins')
-
+            
     def test_strips_ws(self):
         self.assertEqual(
             utilities.NucleotideSubstitutionEvent(' c.1A>G ').variant,
@@ -122,6 +122,15 @@ class TestNucleotideSubstitutionEvent(TestCase):
     def test_parses_position(self):
         self.assertEqual(
             utilities.NucleotideSubstitutionEvent('c.1A>G').position, 1)
+        self.assertEqual(
+            utilities.NucleotideSubstitutionEvent('c.-1A>G').position, -1)
+        
+    def test_error_negative_position_when_computing_codon_position(self):
+        nt = utilities.NucleotideSubstitutionEvent('c.-1A>G')
+        with self.assertRaises(ValueError):
+            nt.codon_position()
+        with self.assertRaises(ValueError):
+            nt.codon_frame_position()
 
     def test_parses_ref_base(self):
         self.assertEqual(

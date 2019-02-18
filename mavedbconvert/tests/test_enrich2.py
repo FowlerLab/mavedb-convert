@@ -279,7 +279,7 @@ class TestEnrich2ConvertH5Df(ProgramTestCase):
     def test_drops_non_numeric_columns(self):
         df = pd.DataFrame(
             data={'score': [1, ], 'B': ['a', ], },
-            index=['c.1A>G (p.Leu1Val)']
+            index=['c.1A>G (p.Lys1Val)']
         )
         result = self.enrich2.convert_h5_df(
             df=df,
@@ -291,7 +291,7 @@ class TestEnrich2ConvertH5Df(ProgramTestCase):
     def test_type_casts_numeric_to_int_and_float(self):
         df = pd.DataFrame(
             data={'score': [1, ], 'B': [1.2, ]},
-            index=['c.1A>G (p.Leu1Val)'],
+            index=['c.1A>G (p.Lys1Val)'],
         )
         result = self.enrich2.convert_h5_df(
             df=df,
@@ -306,7 +306,7 @@ class TestEnrich2ConvertH5Df(ProgramTestCase):
     def test_sets_index_as_input_index(self):
         df = pd.DataFrame({
             'score': [1, ], 'B': ['a', ]},
-            index=['c.1A>G (p.Leu1Val)']
+            index=['c.1A>G (p.Lys1Val)']
         )
         result = self.enrich2.convert_h5_df(
             df=df,
@@ -702,11 +702,11 @@ class TestEnrich2ParseInput(ProgramTestCase):
         
         # Add a null row
         scores = scores.reindex(scores.index.values.tolist() +
-                                ['c.1G>G (p.Gly1=)'])
+                                ['c.1G>G (p.Ala1=)'])
         shared = shared.reindex(shared.index.values.tolist() +
-                                ['c.1G>G (p.Gly1=)'])
+                                ['c.1G>G (p.Ala1=)'])
         counts = counts.reindex(counts.index.values.tolist() +
-                                ['c.1G>G (p.Gly1=)'])
+                                ['c.1G>G (p.Ala1=)'])
         self.store['/main/variants/scores/'] = scores
         self.store['/main/variants/scores_shared/'] = shared
         self.store['/main/variants/counts/'] = counts
@@ -717,22 +717,51 @@ class TestEnrich2ParseInput(ProgramTestCase):
         df_scores = pd.read_csv(self.files[6])  # c1
         self.assertNotIn('c.1G>G', df_counts[constants.nt_variant_col])
         self.assertNotIn('c.1G>G', df_scores[constants.nt_variant_col])
-        self.assertNotIn('p.Gly1=', df_counts[constants.pro_variant_col])
-        self.assertNotIn('p.Gly1=', df_scores[constants.pro_variant_col])
+        self.assertNotIn('p.Ala1=', df_counts[constants.pro_variant_col])
+        self.assertNotIn('p.Ala1=', df_scores[constants.pro_variant_col])
     
         df_counts = pd.read_csv(self.files[5])  # c1
         df_scores = pd.read_csv(self.files[7])  # c1
         self.assertNotIn('c.1G>G', df_counts[constants.nt_variant_col])
         self.assertNotIn('c.1G>G', df_scores[constants.nt_variant_col])
-        self.assertNotIn('p.Gly1=', df_counts[constants.pro_variant_col])
-        self.assertNotIn('p.Gly1=', df_scores[constants.pro_variant_col])
+        self.assertNotIn('p.Ala1=', df_counts[constants.pro_variant_col])
+        self.assertNotIn('p.Ala1=', df_scores[constants.pro_variant_col])
 
 
 class TestEnrich2LoadInput(TestCase):
-    def test_error_file_not_h5(self):
-        path = os.path.join(DATA_DIR, 'enrich1.tsv')
+    def test_error_file_not_h5_or_tsv(self):
+        path = os.path.join(DATA_DIR, 'empiric.xlsx')
         p = enrich2.Enrich2(path, wt_sequence='AAA')
         with self.assertRaises(TypeError):
+            p.load_input_file()
+            
+    def test_scores_tsv_missing_score_column(self):
+        path = os.path.join(DATA_DIR, 'enrich2.tsv')
+        p = enrich2.Enrich2(
+            path, wt_sequence='AAA',
+            score_column='score',
+            input_type=constants.score_type
+        )
+        with self.assertRaises(KeyError):
+            p.load_input_file()
+
+    def test_scores_tsv_missing_count_column(self):
+        path = os.path.join(DATA_DIR, 'enrich2.tsv')
+        p = enrich2.Enrich2(
+            path, wt_sequence='AAA',
+            count_column='count',
+            input_type=constants.count_type
+        )
+        with self.assertRaises(KeyError):
+            p.load_input_file()
+
+    def test_scores_tsv_missing_hgvs_column(self):
+        path = os.path.join(DATA_DIR, 'enrich2.tsv')
+        p = enrich2.Enrich2(
+            path, wt_sequence='AAA',
+            hgvs_column='hgvs'
+        )
+        with self.assertRaises(KeyError):
             p.load_input_file()
 
 
@@ -744,19 +773,19 @@ class TestEnrich2ParseRow(ProgramTestCase):
         self.bin.append(self.path.replace('.h5', ''))
 
     def test_valueerr_cannot_deduce_type(self):
-        with self.assertRaises(ValueError):
-            self.enrich2.parse_row(('r.1a>u', None))
+        with self.assertRaises(exceptions.InvalidVariantType):
+            self.enrich2.parse_row(('c.1_2del', None))
 
     def test_delegates_to_dna(self):
         for prefix in hgvsp.constants.dna_prefix:
-            variant = '{0}.100A>G,{0}.101A>G'.format(prefix)
-            expected = '{0}.[100A>G;101A>G]'.format(prefix), None
+            variant = '{0}.1A>G,{0}.2C>G'.format(prefix)
+            expected = '{0}.[1A>G;2C>G]'.format(prefix), None
             self.assertEqual(expected, self.enrich2.parse_row((variant, None)))
 
     def test_delegates_to_protein(self):
-        variant = '{0}.Lys10=,{0}.Lys4Gly'.format(
+        variant = '{0}.Thr1=,{0}.Thr1Gly'.format(
             hgvsp.constants.protein_prefix)
-        expected = None, '{0}.[Lys10=;Lys4Gly]'.format(
+        expected = None, '{0}.[Thr1=;Thr1Gly]'.format(
             hgvsp.constants.protein_prefix)
         self.assertEqual(expected, self.enrich2.parse_row((variant, None)))
 
@@ -774,13 +803,6 @@ class TestEnrich2ParseRow(ProgramTestCase):
         self.enrich2.parse_row((variant, None))
         patch.assert_called()
         
-    @mock.patch("mavedbconvert.enrich2.fix_silent_hgvs_syntax",
-                return_value='c.3T>C (p.Thr1=)')
-    def test_calls_fix_silent_hgvs_syntax(self, patch):
-        variant = 'c.3T>C (p.Thr1=)'
-        self.enrich2.parse_row((variant, None))
-        patch.assert_called()
-
     def test_delegate_to_multi(self):
         variant = 'c.3T>C (p.Thr1=)'
         expected = ('c.3T>C', 'p.Thr1=')
@@ -797,13 +819,10 @@ class TestEnrich2ParseRow(ProgramTestCase):
     def test_converts_X_to_N(self):
         self.assertEqual(
             self.enrich2.parse_row(('c.1A>X', None)), ('c.1A>N', None))
-        self.assertEqual(
-            self.enrich2.parse_row(
-                ('c.1_2delinsXXX', None)), ('c.1_2delinsNNN', None))
         
     def test_converts_triple_q_to_single_q(self):
         self.assertEqual(
-            self.enrich2.parse_row(('p.Gly4???', None)), (None, 'p.Gly4?'))
+            self.enrich2.parse_row(('p.Thr1???', None)), (None, 'p.Thr1?'))
 
 
 # Protein parsing tests
@@ -1072,16 +1091,12 @@ class TestInferSilentAASub(ProgramTestCase):
 
 
 class TestApplyOffset(TestCase):
-    def test_applies_offset_to_mixed_variant(self):
-        variant = 'c.1A>T (p.Thr1Pro), c.4C>A (p.Gln2Lys)'
+    def test_mixed_variant_uses_nt_position_to_compute_codon_pos(self):
+        variant = 'c.-9A>T (p.Thr2Pro), c.-6C>A (p.Gln3Lys)'
         offset = -10
         self.assertEquals(
-            'c.11A>T (p.Thr4Pro), c.14C>A (p.Gln5Lys)',
+            'c.1A>T (p.Thr1Pro), c.4C>A (p.Gln2Lys)',
             enrich2.apply_offset(variant, offset)
-        )
-        self.assertEquals(
-            'c.11A>T (p.Thr4Pro)',
-            enrich2.apply_offset('c.1A>T (p.Thr1Pro)', offset)
         )
 
     def test_error_position_after_offset_non_positive(self):
@@ -1107,14 +1122,38 @@ class TestApplyOffset(TestCase):
         variant = 'p.Leu10=, p.Leu13='
         offset = 10
         self.assertEquals(
-            'p.Leu7=, p.Leu10=',
-            enrich2.apply_offset(variant, offset)
+            'p.Leu7=, p.Leu10=', enrich2.apply_offset(variant, offset)
         )
         self.assertEquals(
-            'p.Leu7=',
-            enrich2.apply_offset('p.Leu10=', offset)
+            'p.Leu7=', enrich2.apply_offset('p.Leu10=', offset)
         )
-        
+    
+    @mock.patch.object(enrich2.base.BaseProgram, 'validate_against_wt_sequence')
+    def test_validates_against_wt_sequence(self, patch):
+        variant = 'c.-9C>T'
+        path = os.path.join(DATA_DIR, 'enrich1.tsv')
+        p = enrich2.Enrich2(path, wt_sequence='ACT')
+        enrich2.apply_offset(variant, offset=-10, enrich2=p)  # pass
+        patch.assert_called_with(*('c.1C>T',))
 
-class TestFixSilentHGVSSyntax(TestCase):
-    pass
+    def test_value_error_base_mismatch_after_offset_applied(self):
+        variant = 'c.-9G>T'
+        path = os.path.join(DATA_DIR, 'enrich1.tsv')
+        p = enrich2.Enrich2(path, wt_sequence='ACT')
+        with self.assertRaises(ValueError):
+            enrich2.apply_offset(variant, offset=-10, enrich2=p)
+            
+    @mock.patch.object(enrich2.base.BaseProgram, 'validate_against_protein_sequence')
+    def test_validates_against_pro_sequence(self, patch):
+        variant = 'p.Gly3Leu'
+        path = os.path.join(DATA_DIR, 'enrich1.tsv')
+        p = enrich2.Enrich2(path, wt_sequence='ACG')
+        enrich2.apply_offset(variant, offset=6, enrich2=p)  # pass
+        patch.assert_called_with(*('p.Gly1Leu',))
+
+    def test_value_error_pro_mismatch_after_offset_applied(self):
+        variant = 'p.Gly3Leu'
+        path = os.path.join(DATA_DIR, 'enrich1.tsv')
+        p = enrich2.Enrich2(path, wt_sequence='ACG')
+        with self.assertRaises(ValueError):
+            enrich2.apply_offset(variant, offset=6, enrich2=p)
