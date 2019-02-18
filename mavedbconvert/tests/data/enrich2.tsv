@@ -1,0 +1,100 @@
+sequence	r_sq	score	slope	barcode.count	scored.unique.barcodes
+n.-455T>A, n.-122A>T, n.-101A>T, n.-42T>A	NaN	0.5816	NaN	1	1
+n.-410A>T, n.-103T>A, n.-36A>T	NaN	0.5445	NaN	1	1
+n.-350A>G, n.-132A>T, n.-80A>G	NaN	0.5445	NaN	1	1
+n.-456G>A, n.-347C>T, n.-342C>G, n.-174G>A	NaN	0.5007	NaN	1	1
+n.-464A>T, n.-410A>T, n.-214A>T	NaN	0.5007	NaN	1	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-409C>A, n.-271C>T, n.-104G>A	NaN	0.447	NaN	1	1
+n.-456G>A, n.-209A>G	NaN	0.447	NaN	1	1
+n.-412C>T, n.-399T>A, n.-174G>A	NaN	0.447	NaN	1	1
+n.-408A>G, n.-325A>T, n.-234A>T	NaN	0.3778	NaN	1	1
+n.-372T>A, n.-370A>G, n.-324A>T, n.-228A>T, n.-192A>T, n.-142T>A, n.-102G>A	NaN	0.3778	NaN	2	1
+n.-420C>G, n.-407G>A, n.-269T>A, n.-217C>T, n.-148C>T, n.-48A>C, n.-33A>G	NaN	0.3778	NaN	1	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-456G>A, n.-104G>A	NaN	0.3778	NaN	1	1
+n.-411C>T, n.-396C>A	NaN	0.3778	NaN	1	1
+n.-419G>T, n.-409C>T, n.-370A>T	NaN	0.3778	NaN	1	1
+n.-411C>A, n.-263T>C, n.-251G>T	NaN	0.3778	NaN	2	1
+n.-412C>G, n.-254A>T	NaN	0.3778	NaN	1	1
+n.-408A>C, n.-161A>G	NaN	0.3778	NaN	1	1
+n.-449T>A, n.-219A>T, n.-195A>T, n.-100A>T, n.-36A>T	NaN	0.3778	NaN	1	1
+n.-463A>T, n.-440C>T	NaN	0.3778	NaN	1	1
+n.-449T>C, n.-175T>C	NaN	0.3778	NaN	1	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-475T>A, n.-449T>C, n.-345T>C, n.-167A>T	NaN	0.3778	NaN	1	1
+n.-361A>T, n.-320A>G, n.-208A>G, n.-77A>G, n.-65C>T	0.8435	0.368	0.368	1	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-457C>T, n.-240T>A, n.-129G>A, n.-67A>G	0.8826	0.3651	0.3651	1	1
+n.-487C>T, n.-450T>C, n.-309A>G, n.-79T>C	NaN	0.3495	NaN	2	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-349C>T, n.-212A>T	0.9814	0.3442	0.3442	1	1
+n.-454G>A, n.-246T>A, n.-165A>G	NaN	0.334	NaN	1	1
+n.-216A>G, n.-120T>C	NaN	0.334	NaN	1	1
+n.-456G>C, n.-381G>A	NaN	0.334	NaN	1	1
+n.-410A>C, n.-353T>C, n.-265T>A	NaN	0.334	NaN	1	1
+n.-411C>G, n.-369C>T, n.-43C>T, n.-16G>A	NaN	0.334	NaN	1	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-183A>T, n.-142T>A	0.808	0.3311	0.3311	1	1
+n.-435T>C, n.-371C>G, n.-253C>A	0.808	0.3311	0.3311	1	1
+n.-410A>T, n.-149T>A	0.858	0.3234	0.3234	1	1
+n.-454G>A, n.-133T>A, n.-74T>A, n.-40T>C, n.-11C>T	0.858	0.3234	0.3234	1	1
+n.-456G>A, n.-246T>C	0.5081	0.2977	0.2977	1	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-455T>A, n.-337G>A, n.-254A>C	0.829	0.2928	0.2928	1	1
+n.-447T>A, n.-405G>T, n.-82A>T, n.-73G>A	0.6124	0.2819	0.2819	1	1
+n.-405G>C, n.-195A>T	NaN	0.2803	NaN	1	1
+n.-450T>A, n.-112T>C, n.-88A>T	NaN	0.2803	NaN	1	1
+n.-314T>C, n.-293A>T, n.-235C>T, n.-79T>C	NaN	0.2803	NaN	1	1
+n.-410A>C, n.-349C>T, n.-114A>G	NaN	0.2803	NaN	1	1
+n.-483G>C, n.-257A>T, n.-94T>C, n.-75C>A	NaN	0.2803	NaN	1	1
+n.-405G>A, n.-392T>C	NaN	0.2803	NaN	1	1
+n.-419G>A, n.-243A>G, n.-171A>G	NaN	0.2803	NaN	1	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-449T>A, n.-297A>T, n.-285C>T	NaN	0.2803	NaN	1	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-246T>C, n.-106T>A, n.-104G>T, n.-103T>G, n.-102G>T, n.-101A>G, n.-98C>A, n.-96G>C, n.-95A>G, n.-94T>A, n.-92A>T, n.-91T>A, n.-90A>T, n.-89T>A, n.-88A>T, n.-84G>A, n.-83T>G, n.-82A>T, n.-81T>A, n.-80A>T, n.-79T>A, n.-77A>T, n.-76G>A, n.-75C>G, n.-74T>C, n.-73G>T, n.-72A>G, n.-71C>A, n.-70A>C, n.-69T>A	NaN	0.2803	NaN	1	1
+n.-421T>C, n.-412C>T	NaN	0.2803	NaN	1	1
+n.-392T>C, n.-156G>A, n.-117T>C	NaN	0.2803	NaN	1	1
+n.-449T>C, n.-409C>G, n.-387A>G, n.-310A>T, n.-131T>C, n.-129G>A	NaN	0.2803	NaN	1	1
+n.-407G>A, n.-319C>A, n.-291T>A	NaN	0.2803	NaN	1	1
+n.-456G>A, n.-226A>G, n.-208A>G	NaN	0.2803	NaN	1	1
+n.-456G>A, n.-399T>C, n.-259C>A	NaN	0.2803	NaN	1	1
+n.-449T>A, n.-223A>G	NaN	0.2803	NaN	1	1
+n.-464A>T, n.-364C>A	NaN	0.2803	NaN	1	1
+n.-412C>T, n.-169G>A	NaN	0.2803	NaN	1	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-406T>A, n.-322G>T, n.-87A>G, n.-32A>G	NaN	0.2803	NaN	1	1
+n.-414A>G, n.-410A>T, n.-326T>A, n.-117T>A	NaN	0.2803	NaN	1	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-408A>G, n.-326T>A, n.-203A>G	NaN	0.2803	NaN	1	1
+n.-465A>T, n.-456G>A	NaN	0.2803	NaN	1	1
+n.-411C>T, n.-10T>A	NaN	0.2803	NaN	1	1
+n.-230T>C, n.-143T>A	NaN	0.2803	NaN	1	1
+n.-412C>T, n.-334G>A, n.-323C>T	NaN	0.2803	NaN	1	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-460T>C, n.-19G>C	NaN	0.2727	NaN	1	1
+n.-406T>A, n.-270A>T, n.-174G>A	NaN	0.2594	NaN	1	1
+n.-464A>T, n.-349C>T, n.-335A>G, n.-329C>T, n.-155T>A, n.-112T>C, n.-95A>G	0.9931	0.2521	0.2521	2	1
+n.-474T>G, n.-150C>A	0.9931	0.2521	0.2521	1	1
+n.-351C>T, n.-140A>T	0.9931	0.2521	0.2521	1	1
+n.-365T>A, n.-192A>T, n.-129G>A, n.-90A>G	0.9931	0.2521	0.2521	1	1
+n.-232T>C, n.-75C>A, n.-66A>G, n.-31A>T	0.9931	0.2521	0.2521	1	1
+n.-429T>A, n.-407G>A	0.9954	0.2508	0.2508	1	1
+n.-471T>C, n.-194A>T	NaN	0.2497	NaN	1	1
+n.-462G>A, n.-157T>G	NaN	0.2497	NaN	1	1
+n.-449T>A, n.-423T>A, n.-369C>T, n.-160T>C	NaN	0.2497	NaN	1	1
+n.-448G>A, n.-410A>T, n.-332A>T, n.-31A>G	NaN	0.2497	NaN	1	1
+n.-410A>G, n.-378T>C, n.-260T>A, n.-175T>C, n.-157T>C	NaN	0.2497	NaN	1	1
+n.-207A>T, n.-98C>T	NaN	0.2497	NaN	1	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-406T>G, n.-97C>A	NaN	0.2482	NaN	1	1
+n.-485T>G, n.-484C>A, n.-483G>C, n.-399T>A, n.-259C>T, n.-175T>C	NaN	0.2482	NaN	1	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-339A>T, n.-265T>C, n.-209A>T	0.9175	0.2411	0.2411	1	1
+n.-485T>G, n.-484C>A, n.-483G>C, n.-361A>T	0.8685	0.239	0.239	1	1
+n.-365T>C, n.-53A>G, n.-35A>G	0.8685	0.239	0.239	1	1
+n.-487C>T, n.-410A>G, n.-305A>C, n.-157T>C, n.-76G>A	0.8685	0.239	0.239	1	1
+n.-383C>T, n.-353T>C, n.-168C>T, n.-7G>C	0.8685	0.239	0.239	1	1
+n.-358A>T, n.-300C>A, n.-199T>A, n.-165A>T	0.8685	0.239	0.239	2	0
+n.-263T>C, n.-126G>T	0.541	0.2262	0.2262	1	1
+n.-392T>C, n.-350A>G, n.-259C>A, n.-176T>A	0.4341	0.2258	0.2258	1	1
+n.-408A>G, n.-345T>A, n.-118T>C	0.8641	0.224	0.224	1	1
+n.-349C>T, n.-331A>T	0.9252	0.224	0.224	1	1
+n.-413A>C, n.-411C>G, n.-326T>C, n.-108A>G	0.8865	0.2164	0.2164	1	1
+n.-351C>T, n.-269T>A	0.6701	0.2134	0.2134	1	1
+n.-410A>T, n.-374A>G, n.-342C>A, n.-216A>T, n.-180T>C	NaN	0.2112	NaN	1	1
+n.-112T>C, n.-90A>G	NaN	0.2112	NaN	1	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-409C>T, n.-318A>T, n.-241A>G	NaN	0.2112	NaN	1	1
+n.-489C>G, n.-485T>G, n.-484C>A, n.-483G>C, n.-449T>C, n.-395A>G, n.-354C>T, n.-327A>T, n.-108A>G	0.9999	0.2084	0.2084	1	1
+n.-454G>A, n.-45A>T, n.-22C>A	NaN	0.2082	NaN	1	1
+n.-461A>G, n.-176T>A, n.-167A>T, n.-85A>G, n.-65C>T	NaN	0.2082	NaN	1	1
+n.-329C>T, n.-299A>C	NaN	0.2082	NaN	1	1
+n.-376T>C, n.-183A>G, n.-151G>A	NaN	0.2082	NaN	1	1
+n.-461A>T, n.-460T>C, n.-449T>G, n.-268G>A, n.-178T>A	0.5788	0.2053	0.2053	1	1
