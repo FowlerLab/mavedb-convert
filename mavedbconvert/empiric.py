@@ -96,12 +96,14 @@ class Empiric(base.BaseProgram):
     POSITION_COLUMNS = ("Position", "position", "POSITION", )
     
 
-    def __init__(self, src, wt_sequence, dst=None, one_based=False, offset=0,
+    def __init__(self, src, wt_sequence, offset=0, dst=None, one_based=False,
                  skip_header_rows=0, skip_footer_rows=0, score_column=None,
-                 input_type=None, sheet_name=None, **kwargs):
+                 hgvs_column=None, input_type=None, sheet_name=None,
+                 is_coding=True):
         super().__init__(
             src=src,
             wt_sequence=wt_sequence,
+            is_coding=is_coding,
             offset=offset,
             dst=dst,
             one_based=one_based,
@@ -109,8 +111,12 @@ class Empiric(base.BaseProgram):
             skip_footer_rows=skip_footer_rows,
             sheet_name=sheet_name,
             score_column=score_column,
+            hgvs_column=hgvs_column,
             input_type=input_type,
         )
+        if not abs(offset) % 3 == 0:
+            raise ValueError("EMPIRIC offset must be a multiple of 3.")
+        
         self.codon_column = None
         self.aa_column = None
         self.position_column = None
@@ -185,7 +191,7 @@ class Empiric(base.BaseProgram):
         if not len(set(df.columns) & set(self.CODON_COLUMNS)):
             logger.warning(
                 "Warning: Input is missing the column 'codon' "
-                "(case-insensitive). Nucelotide level variants will not "
+                "(case-insensitive). Nucleotide level variants will not "
                 "be inferred."
             )
             self.codon_column = None
@@ -259,7 +265,7 @@ class Empiric(base.BaseProgram):
 
     def parse_input(self, df):
         """
-        Formats an input `pd.DataFrame` loaded from an `Empiric` formatted file
+        Formats an input `pd.DataFrame` loaded from an `EMPIRIC` formatted file
         into a format suitable for upload to `MaveDB`.
 
         Returns

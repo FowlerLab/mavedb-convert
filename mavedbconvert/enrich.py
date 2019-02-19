@@ -17,14 +17,14 @@ logger = logging.getLogger(LOGGER)
 class Enrich(base.BaseProgram):
     __doc__ = base.BaseProgram.__doc__
 
-    def __init__(self, src, wt_sequence, dst=None, one_based=False, offset=0,
+    def __init__(self, src, wt_sequence, offset=0, dst=None, one_based=False,
                  skip_header_rows=0, skip_footer_rows=0, score_column=None,
-                 input_type=None, sheet_name=None, **kwargs):
+                 hgvs_column=None, input_type=None, sheet_name=None,
+                 is_coding=True):
         super().__init__(
             src=src,
             wt_sequence=wt_sequence,
             offset=offset,
-            is_coding=True,
             dst=dst,
             one_based=one_based,
             skip_header_rows=skip_header_rows,
@@ -32,7 +32,12 @@ class Enrich(base.BaseProgram):
             sheet_name=sheet_name,
             score_column=score_column,
             input_type=input_type,
+            hgvs_column=hgvs_column,
+            is_coding=is_coding,
         )
+        if not abs(offset) % 3 == 0:
+            raise ValueError("Enrich offset must be a multiple of 3.")
+        
         if not self.score_column and self.input_type == constants.score_type:
             raise ValueError(
                 "A score column must be specified if "
@@ -124,8 +129,9 @@ class Enrich(base.BaseProgram):
                 ))
 
         for position, aa in zip(positions, aa_codes):
+            position += (1, -1)[self.offset < 0] * abs(self.offset) // 3
             aa_position = int(position) - int(self.one_based) + 1
-            if aa_position == 0:
+            if aa_position < 1:
                 raise IndexError(
                     "A negative amino acid position was encountered in "
                     "{seq_id}. Coordinates might not be one-based.".format(
