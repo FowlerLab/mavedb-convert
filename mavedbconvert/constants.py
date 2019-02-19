@@ -14,7 +14,7 @@ extra_na = (
 )
 null_value_re = re.compile(r"\s+|nan|na|none|undefined|n/a|null")
 surrounding_brackets_re = re.compile(r"\((.*)\)")
-dna_re = re.compile(r'[{nucleotides}]+'.format(nucleotides=dna.nucleotides))
+dna_re = re.compile(r'[ATCGatcg]+', flags=re.IGNORECASE)
 
 # HGVS
 dummy_ref = 'NM_000000000.0'
@@ -60,7 +60,7 @@ types = (score_type, count_type, )
 mavedb_score_column = 'score'
 
 
-# Standard codon table for translating wild type and variant DNA sequences
+# Standard codon table for translating wild-type and variant DNA sequences
 unknown = ('???', '?', 'Xaa', 'X', 'N', )
 CODON_TABLE = {
     'TTT': 'F', 'TCT': 'S', 'TAT': 'Y', 'TGT': 'C',
