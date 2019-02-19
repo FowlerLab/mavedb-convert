@@ -83,7 +83,7 @@ logger = logging.getLogger(LOGGER)
 
 def parse_args(docopt_args=None):
     if docopt_args is None:
-        docopt_args = docopt.docopt(__doc__, version='0.3.3-alpha')
+        docopt_args = docopt.docopt(__doc__, version='0.4.0-alpha')
     return parsers.parse_docopt(docopt_args)
     
 
