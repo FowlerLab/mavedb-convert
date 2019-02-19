@@ -6,28 +6,6 @@ class HGVSValidationError(Exception):
     pass
 
 
-class WildTypeIndexError(Exception):
-    """
-    Throw exception when a variant defines a SNP with a position that goes
-    out of bounds relative to its wild-type sequence.
-    """
-    pass
-
-
-class VariantNotOneBased(Exception):
-    """
-    Throw exception when a variant is not 1-based.
-    """
-    pass
-
-
-class VariantNotZeroBased(Exception):
-    """
-    Throw exception when a variant is not 0-based.
-    """
-    pass
-
-
 class HGVSMatchError(Exception):
     """
     Throw exception when a variant could not be pattern matched.
@@ -35,22 +13,29 @@ class HGVSMatchError(Exception):
     pass
 
 
-class OutOfFrameError(Exception):
+class SequenceIndexError(Exception):
     """
-    Throw exception when a DNA sequence is out of frame (length is not
-    a mulitple of 3)
+    Throw exception when a variant defines a SNP with a position that goes
+    out of bounds relative to its wild-type sequence.
+    """
+    pass
+
+
+class InvalidWildTypeSequence(Exception):
+    """
+    Thrown if a wild-type sequence contains unknown characters.
     """
 
 
-class HGVSParseError(Exception):
+class SequenceFrameError(Exception):
     """
-    Throw exception when a a multi variant defines events that span
-    multiple codons.
+    Thrown if a sequence is not a multiple of three.
     """
-    
+    pass
+
 
 class InvalidVariantType(Exception):
     """
-    Throw exception when a pariticular type of event is expected (sub, del, etc)
+    Throw exception when a specific type of event is expected (sub, del, etc)
     but not found.
     """
