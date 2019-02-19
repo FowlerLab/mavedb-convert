@@ -107,6 +107,10 @@ class TestEnrichParseRow(ProgramTestCase):
 
     def test_removes_duplicates(self):
         self.assertEqual(self.enrich.parse_row('0,0-L,L'), 'p.Asp1Leu')
+        
+    def test_applies_offset_divided_by_3(self):
+        self.enrich.offset = -3
+        self.assertEqual(self.enrich.parse_row('0-D'), 'p.Val2Asp')
 
 
 class TestEnrichParseInput(ProgramTestCase):
@@ -273,8 +277,7 @@ class TestEnrichIntegration(ProgramTestCase):
         self.no_seq_id = os.path.join(DATA_DIR, 'enrich1_no_seqid.tsv')
 
         self.expected = os.path.join(DATA_DIR, 'enrich1_expected.csv')
-        self.expected_offset = os.path.join(
-            DATA_DIR, 'enrich1_expected_offset.csv')
+        self.expected_offset = os.path.join(DATA_DIR, 'enrich1_expected_offset.csv')
 
         self.bin = [
             os.path.join(DATA_DIR, 'mavedb_enrich1.csv'),
@@ -288,13 +291,13 @@ class TestEnrichIntegration(ProgramTestCase):
         p.convert()
         self.assertTrue(os.path.isfile(self.bin[0]))
 
-    def test_output_ignores_offset(self):
+    def test_output_with_offset(self):
         p = enrich.Enrich(
-            src=self.path, wt_sequence=WT, offset=9, one_based=False,
+            src=self.path, wt_sequence=WT, offset=-3, one_based=False,
             score_column='log2_ratio', input_type=constants.score_type)
         p.convert()
         result = pd.read_csv(self.bin[0])
-        expected = pd.read_csv(self.expected)
+        expected = pd.read_csv(self.expected_offset)
         assert_frame_equal(expected, result)
 
     def test_output_from_one_based_input(self):

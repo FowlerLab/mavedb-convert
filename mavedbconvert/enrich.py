@@ -110,11 +110,9 @@ class Enrich(base.BaseProgram):
         `str`
             An hgvs_pro string. The positions reported will be 1-based.
         """
-        # TODO: Add offset
         seq_id = row
         if not seq_id or 'NA' in seq_id.upper():
-            raise ValueError(
-                "'{}' is a malformed seqid.".format(seq_id))
+            raise ValueError("'{}' is a malformed SeqID.".format(seq_id))
 
         positions, aa_codes = seq_id.split('-')
         positions = positions.split(',')
@@ -123,28 +121,35 @@ class Enrich(base.BaseProgram):
 
         if len(positions) != len(aa_codes):
             raise ValueError(
-                "Number of positions ({}) in {} "
-                "does not match number of ammino acid codes ({}).".format(
-                    len(positions), seq_id, len(aa_codes)
+                "Number of positions ({pos}) in {seqid} "
+                "does not match number of ammino acid codes ({codes}).".format(
+                    pos=len(positions), seqid=seq_id, codes=len(aa_codes)
                 ))
 
         for position, aa in zip(positions, aa_codes):
-            position += (1, -1)[self.offset < 0] * abs(self.offset) // 3
-            aa_position = int(position) - int(self.one_based) + 1
+            offset = (1, -1)[self.offset < 0] * abs(self.offset) // 3
+            aa_position = int(position) - int(self.one_based) + 1 - offset
             if aa_position < 1:
                 raise IndexError(
-                    "A negative amino acid position was encountered in "
-                    "{seq_id}. Coordinates might not be one-based.".format(
-                        seq_id=seq_id)
-                )
+                    "Position in SeqID '{pos}-{aa}' from row '{seqid}' must "
+                    "be 1 or greater after applying codon adjusted offset "
+                    "{offset} ({raw_offset} / 3). Computed position is "
+                    "{aa_pos}.".format(
+                        pos=position, aa=aa, seqid=seq_id,
+                        raw_offset=self.offset, offset=offset,
+                        aa_pos=aa_position
+                    ))
             if aa_position > len(self.protein_sequence):
                 raise IndexError(
-                    "Coordinate {pos} (1-based) is out of bounds in {seq_id}. "
-                    "The maximum index of the translated sequence is {idx} "
-                    "(length {length}).".format(
-                        seq_id=seq_id, pos=aa_position,
-                        idx=len(self.protein_sequence),
-                        length=len(self.protein_sequence)))
+                    "Position in SeqID '{pos}-{aa}' from row '{seqid}' is "
+                    "out of bounds after applying codon adjusted offset "
+                    "{offset} ({raw_offset} / 3). Computed position is "
+                    "{aa_pos} and the length of the translated sequence "
+                    "is {seqlen}.".format(
+                        pos=position, aa=aa, seqid=seq_id,
+                        raw_offset=self.offset, offset=offset,
+                        aa_pos=aa_position, seqlen=len(self.protein_sequence)
+                    ))
 
             wt_aa = constants.AA_CODES[
                 self.protein_sequence[aa_position - 1].upper()]
