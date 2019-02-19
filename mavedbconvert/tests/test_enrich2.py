@@ -1212,3 +1212,34 @@ class TestApplyOffset(TestCase):
         p = enrich2.Enrich2(path, wt_sequence='ACG')
         with self.assertRaises(ValueError):
             enrich2.apply_offset(variant, offset=6, enrich2=p)
+
+
+class TestEnrich2Init(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.path = os.path.join(DATA_DIR, 'enrich2.tsv')
+    
+    def test_error_is_coding_and_offset_not_mult_of_three(self):
+        with self.assertRaises(ValueError):
+            enrich2.Enrich2(
+                src=self.path,
+                wt_sequence='ATC',
+                is_coding=True,
+                offset=1
+            )
+            
+    def test_ok_is_coding_false_and_offset_not_mult_of_three(self):
+        enrich2.Enrich2(
+            src=self.path,
+            wt_sequence='ATC',
+            is_coding=False,
+            offset=1
+        )
+        
+    def test_ok_is_coding_and_offset_mult_of_three(self):
+        enrich2.Enrich2(
+            src=self.path,
+            wt_sequence='ATC',
+            is_coding=True,
+            offset=-3
+        )

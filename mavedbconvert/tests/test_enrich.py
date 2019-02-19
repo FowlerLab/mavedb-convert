@@ -17,6 +17,27 @@ WT = "GACGTTCCACTGCCGGCTGGTTGGGAAATGGCTAAAACTAGTTCTGGTCAGCGTTACTTC" \
      "CTGAACCACATCGACCAGACCACCACGTGGCAGGACCCGCGT"
 
 
+class TestEnrichInit(ProgramTestCase):
+    def setUp(self):
+        super().setUp()
+        self.path = os.path.join(DATA_DIR, 'enrich2.tsv')
+    
+    def test_error_offset_not_mult_of_three(self):
+        with self.assertRaises(ValueError):
+            enrich.Enrich(
+                src=self.path,
+                wt_sequence='ATC',
+                offset=1
+            )
+    
+    def test_ok_is_mult_of_three(self):
+        enrich.Enrich(
+            src=self.path,
+            wt_sequence='ATC',
+            offset=3
+        )
+    
+
 class TestEnrichParseRow(ProgramTestCase):
     def setUp(self):
         super().setUp()

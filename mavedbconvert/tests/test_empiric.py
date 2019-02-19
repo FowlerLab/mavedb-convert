@@ -14,6 +14,27 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.normpath(BASE_DIR + '/data/')
 
 
+class TestEmpiricInit(ProgramTestCase):
+    def setUp(self):
+        super().setUp()
+        self.path = os.path.join(DATA_DIR, 'enrich2.tsv')
+    
+    def test_error_offset_not_mult_of_three(self):
+        with self.assertRaises(ValueError):
+            empiric.Empiric(
+                src=self.path,
+                wt_sequence='ATC',
+                offset=1
+            )
+    
+    def test_ok_is_mult_of_three(self):
+        empiric.Empiric(
+            src=self.path,
+            wt_sequence='ATC',
+            offset=3
+        )
+
+
 class TestInferProEvent(TestCase):
     def test_infers_equal_event(self):
         self.assertEqual(
