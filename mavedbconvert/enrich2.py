@@ -1,5 +1,4 @@
 import re
-import sys
 import os
 from itertools import groupby
 import logging
@@ -242,6 +241,31 @@ def get_count_dataframe_by_condition(store, cnd,
 class Enrich2(base.BaseProgram):
     __doc__ = base.BaseProgram.__doc__
     LOG_MSG = "Writing {elem} {df_type} for condition '{cnd}' to '{path}'."
+    
+    def __init__(self, src, wt_sequence, offset=0, dst=None, one_based=True,
+                 skip_header_rows=0, skip_footer_rows=0, score_column='score',
+                 hgvs_column='hgvs', input_type=None, sheet_name=None,
+                 is_coding=True):
+        super().__init__(
+            src=src,
+            wt_sequence=wt_sequence,
+            offset=offset,
+            is_coding=is_coding,
+            dst=dst,
+            one_based=one_based,
+            skip_header_rows=skip_header_rows,
+            skip_footer_rows=skip_footer_rows,
+            sheet_name=sheet_name,
+            score_column=score_column,
+            hgvs_column=hgvs_column,
+            input_type=input_type,
+        )
+        if is_coding and not abs(offset) % 3 == 0:
+            raise ValueError(
+                "Enrich2 offset for a coding "
+                "dataset must be a multiple of 3."
+            )
+        
     
     def convert(self):
         logger.info("Processing file {}".format(self.src))
@@ -563,7 +587,7 @@ class Enrich2(base.BaseProgram):
         """
         Enrich2 outputs `p.=` for silent protein changes. This is incorrect.
         The correct format is `p.<aa><position>=`. Given an associated
-        nucleotide substitution event, and the associated wildtype, this
+        nucleotide substitution event, and the associated wild-type, this
         function infers the correct silent protein subsitution syntax.
 
         Parameters

@@ -103,9 +103,6 @@ class BaseProgram(object):
             self.dst))
         os.access(self.dst, os.W_OK)
         
-        # if is_coding and offset % 3 != 0:
-        #     raise ValueError("Coding offset must be a multiple of 3.")
-
         self.is_coding = is_coding
         self.skip_header_rows = skip_header_rows
         self.skip_footer_rows = skip_footer_rows
