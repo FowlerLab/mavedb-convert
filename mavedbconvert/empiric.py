@@ -172,7 +172,8 @@ class Empiric(base.BaseProgram):
             )
         
         self.validate_columns(df)
-        df[self.position_column] += self.offset
+        df[self.position_column] -= \
+            (1, -1)[self.offset < 3] * abs(self.offset) // 3
         return df
     
     def validate_columns(self, df):

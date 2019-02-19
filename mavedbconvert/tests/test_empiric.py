@@ -462,17 +462,16 @@ class TestEmpiricLoadInput(ProgramTestCase):
                 one_based=False,
             )
             
-    def test_adds_offset_to_position_column(self):
+    def test_applies_offset_to_position_column(self):
         e = empiric.Empiric(
             src=self.path, wt_sequence='TTTTCTTATTGT',
             score_column='col_A', input_type=constants.score_type,
-            one_based=False, offset=10
+            one_based=False, offset=-9
         )
         result = e.load_input_file()
-        print(e.position_column)
         self.assertListEqual(
             list(result[e.position_column]),
-            [10, 11, 12]
+            [3, 4, 5]
         )
 
 
