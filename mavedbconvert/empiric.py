@@ -10,11 +10,7 @@ from . import base, utilities, constants, filters, validators, LOGGER
 logger = logging.getLogger(LOGGER)
 
 
-__all__ = [
-    'Empiric',
-    'infer_nt_substitution',
-    'infer_pro_substitution',
-]
+__all__ = ["Empiric", "infer_nt_substitution", "infer_pro_substitution"]
 
 
 def infer_nt_substitution(wt_codon, mut_codon, codon_pos):
@@ -46,12 +42,13 @@ def infer_nt_substitution(wt_codon, mut_codon, codon_pos):
         pos = (3 * codon_pos) + (i + 1)
         if nt.lower() != mut_codon[i].lower():
             events.append(
-                '{pos}{wt_nt}>{mut_nt}'.format(
-                    wt_nt=nt.upper(), pos=pos, mut_nt=mut_codon[i].upper())
+                "{pos}{wt_nt}>{mut_nt}".format(
+                    wt_nt=nt.upper(), pos=pos, mut_nt=mut_codon[i].upper()
+                )
             )
         else:
-            events.append('{pos}='.format(pos=pos))
-    return utilities.hgvs_nt_from_event_list(events, prefix='c')
+            events.append("{pos}=".format(pos=pos))
+    return utilities.hgvs_nt_from_event_list(events, prefix="c")
 
 
 def infer_pro_substitution(wt_aa, mut_aa, codon_pos):
@@ -78,28 +75,49 @@ def infer_pro_substitution(wt_aa, mut_aa, codon_pos):
     """
     wt_aa = constants.AA_CODES[wt_aa.upper()]
     mut_aa = constants.AA_CODES[mut_aa.upper()]
+
+    # Normalize ? to X and ??? to Xaa
+    if wt_aa in ("?", "???"):
+        wt_aa = "Xaa"
+    if mut_aa in ("?", "???"):
+        mut_aa = "Xaa"
+
     if wt_aa.lower() == mut_aa.lower():
-        return utilities.hgvs_pro_from_event_list(['{wt_aa}{pos}='.format(
-            wt_aa=wt_aa, pos=codon_pos + 1)])
+        return utilities.hgvs_pro_from_event_list(
+            ["{wt_aa}{pos}=".format(wt_aa=wt_aa, pos=codon_pos + 1)]
+        )
     else:
         return utilities.hgvs_pro_from_event_list(
-            ['{wt_aa}{pos}{mut_aa}'.format(
-                wt_aa=wt_aa, pos=codon_pos + 1, mut_aa=mut_aa)]
+            [
+                "{wt_aa}{pos}{mut_aa}".format(
+                    wt_aa=wt_aa, pos=codon_pos + 1, mut_aa=mut_aa
+                )
+            ]
         )
 
 
 class Empiric(base.BaseProgram):
     __doc__ = base.BaseProgram.__doc__
-    
-    CODON_COLUMNS = ("Codon", "codon", "CODON", )
-    AA_COLUMNS = ("Amino Acid", "amino acid", "AMINO ACID", )
-    POSITION_COLUMNS = ("Position", "position", "POSITION", )
-    
 
-    def __init__(self, src, wt_sequence, offset=0, dst=None, one_based=False,
-                 skip_header_rows=0, skip_footer_rows=0, score_column=None,
-                 hgvs_column=None, input_type=None, sheet_name=None,
-                 is_coding=True):
+    CODON_COLUMNS = ("Codon", "codon", "CODON")
+    AA_COLUMNS = ("Amino Acid", "amino acid", "AMINO ACID")
+    POSITION_COLUMNS = ("Position", "position", "POSITION")
+
+    def __init__(
+        self,
+        src,
+        wt_sequence,
+        offset=0,
+        dst=None,
+        one_based=False,
+        skip_header_rows=0,
+        skip_footer_rows=0,
+        score_column=None,
+        hgvs_column=None,
+        input_type=None,
+        sheet_name=None,
+        is_coding=True,
+    ):
         super().__init__(
             src=src,
             wt_sequence=wt_sequence,
@@ -116,7 +134,7 @@ class Empiric(base.BaseProgram):
         )
         if not abs(offset) % 3 == 0:
             raise ValueError("EMPIRIC offset must be a multiple of 3.")
-        
+
         self.codon_column = None
         self.aa_column = None
         self.position_column = None
@@ -135,19 +153,21 @@ class Empiric(base.BaseProgram):
         `pd.DataFrame`
         """
         if self.skip_header_rows:
-            logger.info("Skipping first {} row(s).".format(
-                self.skip_footer_rows + 1))
+            logger.info(
+                "Skipping first {} row(s).".format(self.skip_footer_rows + 1)
+            )
         if self.skip_footer_rows:
-            logger.info("Skipping last {} row(s).".format(
-                self.skip_footer_rows + 1))
-            
-        if self.extension in ('.xlsx', '.xls'):
+            logger.info(
+                "Skipping last {} row(s).".format(self.skip_footer_rows + 1)
+            )
+
+        if self.extension in (".xlsx", ".xls"):
             od = pd.read_excel(
                 self.src,
                 na_values=constants.extra_na,
                 skiprows=self.skip_header_rows,
                 skipfooter=self.skip_footer_rows,
-                sheet_name=self.sheet_name
+                sheet_name=self.sheet_name,
             )
             if not self.sheet_name:
                 self.sheet_name = list(od.keys())[0]
@@ -156,13 +176,14 @@ class Empiric(base.BaseProgram):
                         "Multiple sheet names detected ({}). Parsing "
                         "{} only. Re-run with the `sheet_name` argument "
                         "to parse a specific sheet.".format(
-                            ', '.join(list(od.keys())), self.sheet_name)
+                            ", ".join(list(od.keys())), self.sheet_name
+                        )
                     )
             df = od[self.sheet_name]
         else:
-            sep = '\t'
-            if self.ext.lower() == '.csv':
-                sep = ','
+            sep = "\t"
+            if self.ext.lower() == ".csv":
+                sep = ","
             df = pd.read_csv(
                 self.src,
                 delimiter=sep,
@@ -170,25 +191,26 @@ class Empiric(base.BaseProgram):
                 skipfooter=self.skip_footer_rows,
                 skiprows=self.skip_header_rows,
             )
-        
+
         self.validate_columns(df)
-        df[self.position_column] -= \
+        df[self.position_column] -= (
             (1, -1)[self.offset < 3] * abs(self.offset) // 3
+        )
         return df
-    
+
     def validate_columns(self, df):
         if not len(set(df.columns) & set(self.AA_COLUMNS)):
             raise ValueError(
                 "Input is missing the required 'amino acid' (case-insensitive) "
                 "column."
             )
-    
+
         if not len(set(df.columns) & set(self.POSITION_COLUMNS)):
             raise ValueError(
                 "Input is missing the required 'position' (case-insensitive) "
                 "column."
             )
-    
+
         if not len(set(df.columns) & set(self.CODON_COLUMNS)):
             logger.warning(
                 "Warning: Input is missing the column 'codon' "
@@ -198,12 +220,13 @@ class Empiric(base.BaseProgram):
             self.codon_column = None
         else:
             self.codon_column = list(
-                set(df.columns) & set(self.CODON_COLUMNS))[0]
-    
-        self.aa_column = list(
-            set(df.columns) & set(self.AA_COLUMNS))[0]
+                set(df.columns) & set(self.CODON_COLUMNS)
+            )[0]
+
+        self.aa_column = list(set(df.columns) & set(self.AA_COLUMNS))[0]
         self.position_column = list(
-            set(df.columns) & set(self.POSITION_COLUMNS))[0]
+            set(df.columns) & set(self.POSITION_COLUMNS)
+        )[0]
 
     def parse_row(self, row):
         """
@@ -236,12 +259,13 @@ class Empiric(base.BaseProgram):
                 "(length {length}).".format(
                     pos=codon_pos + 1,
                     idx=len(self.codons),
-                    length=len(self.codons)))
+                    length=len(self.codons),
+                )
+            )
 
         if utilities.is_null(mut_aa) or not mut_aa:
             raise ValueError(
-                "Missing amino acid value in row '{}'.".format(
-                    row['row_num'])
+                "Missing amino acid value in row '{}'.".format(row["row_num"])
             )
 
         wt_codon = self.codons[codon_pos].upper()
@@ -250,13 +274,15 @@ class Empiric(base.BaseProgram):
             mut_codon = str(row[self.codon_column]).strip().upper()
             if utilities.is_null(mut_codon) or not mut_codon:
                 raise ValueError(
-                    "Missing codon value in row '{}'.".format(row['row_num'])
+                    "Missing codon value in row '{}'.".format(row["row_num"])
                 )
             if constants.CODON_TABLE[mut_codon] != mut_aa:
                 raise ValueError(
                     "Codon '{}' does not match the amino acid '{}' "
                     "specified in the 'Amino Acid' column in row {}.".format(
-                        mut_codon, mut_aa, row['row_num']))
+                        mut_codon, mut_aa, row["row_num"]
+                    )
+                )
             hgvs_nt = infer_nt_substitution(wt_codon, mut_codon, codon_pos)
         else:
             hgvs_nt = None
@@ -275,23 +301,24 @@ class Empiric(base.BaseProgram):
             The `MaveDB` formatted dataframe.
         """
         self.validate_columns(df)
-        df['row_num'] = range(0, len(df))
+        df["row_num"] = range(0, len(df))
 
-        rows = tqdm(
-            df.iterrows(), desc='Parsing variants', total=len(df))
+        rows = tqdm(df.iterrows(), desc="Parsing variants", total=len(df))
         tups = [self.parse_row(row) for _, row in rows]
 
         df[constants.nt_variant_col] = [tup[0] for tup in tups]
         df[constants.pro_variant_col] = [tup[1] for tup in tups]
-        df.drop(columns=[
-            self.position_column, self.aa_column, 'row_num'
-        ], inplace=True)
+        df.drop(
+            columns=[self.position_column, self.aa_column, "row_num"],
+            inplace=True,
+        )
         if self.codon_column:
             df.drop(columns=[self.codon_column], inplace=True)
 
         data = {}
-        mave_columns = list(constants.variant_columns) + \
-            [c for c in df.columns if c not in constants.variant_columns]
+        mave_columns = list(constants.variant_columns) + [
+            c for c in df.columns if c not in constants.variant_columns
+        ]
 
         for column in df.columns:
             column_type = df.dtypes[column]
@@ -305,7 +332,8 @@ class Empiric(base.BaseProgram):
                 astype = np.int
             else:
                 logger.warning(
-                    "Dropping non-numeric column '{}'".format(column))
+                    "Dropping non-numeric column '{}'".format(column)
+                )
                 mave_columns.remove(column)
                 continue
 
@@ -316,14 +344,17 @@ class Empiric(base.BaseProgram):
 
         # Sort column order so 'score' comes right after hgvs columns.
         if self.input_is_scores_based:
-            mave_columns = mave_columns[:2] + \
-                           [constants.mavedb_score_column] + \
-                           mave_columns[2:]
+            mave_columns = (
+                mave_columns[:2]
+                + [constants.mavedb_score_column]
+                + mave_columns[2:]
+            )
         mavedb_df = pd.DataFrame(data=data, columns=mave_columns)
         filters.drop_na_rows(mavedb_df, inplace=True)
         filters.drop_na_columns(mavedb_df, inplace=True)
 
         logger.info("Running MaveDB compliance validation.")
         validators.validate_mavedb_compliance(
-            mavedb_df, df_type=self.input_type)
+            mavedb_df, df_type=self.input_type
+        )
         return mavedb_df

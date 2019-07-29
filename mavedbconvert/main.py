@@ -83,27 +83,30 @@ logger = logging.getLogger(LOGGER)
 
 def parse_args(docopt_args=None):
     if docopt_args is None:
-        docopt_args = docopt.docopt(__doc__, version='0.4.0-alpha')
+        docopt_args = docopt.docopt(__doc__, version="0.4.0-alpha")
     return parsers.parse_docopt(docopt_args)
-    
+
 
 def main():
     try:
         program, kwargs = parse_args()
-        if program == 'enrich':
+        if program == "enrich":
             enrich.Enrich(**kwargs).convert()
-        elif program == 'enrich2':
+        elif program == "enrich2":
             enrich2.Enrich2(**kwargs).convert()
-        elif program == 'empiric':
+        elif program == "empiric":
             empiric.Empiric(**kwargs).convert()
         else:
-            logger.error("Supported programs are {}".format(
-                ', '.join(constants.supported_programs)))
+            logger.error(
+                "Supported programs are {}".format(
+                    ", ".join(constants.supported_programs)
+                )
+            )
             sys.exit()
     except Exception as e:
         logger.exception("A critical error has occurred during conversion.")
-        sys.exit(getattr(e, 'errno', 0))
-    
-        
-if __name__ == '__main__':
+        sys.exit(getattr(e, "errno", 0))
+
+
+if __name__ == "__main__":
     main()

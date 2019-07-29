@@ -11,7 +11,7 @@ from . import LOGGER, utilities, constants
 logger = logging.getLogger(LOGGER)
 
 
-__all__ = ['BaseProgram', ]
+__all__ = ["BaseProgram"]
 
 
 class BaseProgram(object):
@@ -67,10 +67,22 @@ class BaseProgram(object):
     input_type : str, optional.
         The MaveDB file type. Can be either 'scores' or 'counts'.
     """
-    def __init__(self, src, wt_sequence, offset=0, dst=None, one_based=True,
-                 skip_header_rows=0, skip_footer_rows=0, score_column='score',
-                 hgvs_column='hgvs', input_type=None, sheet_name=None,
-                 is_coding=True):
+
+    def __init__(
+        self,
+        src,
+        wt_sequence,
+        offset=0,
+        dst=None,
+        one_based=True,
+        skip_header_rows=0,
+        skip_footer_rows=0,
+        score_column="score",
+        hgvs_column="hgvs",
+        input_type=None,
+        sheet_name=None,
+        is_coding=True,
+    ):
         # Check the input is a readable file.
         self.src = os.path.normpath(os.path.expanduser(src))
         logger.info("Checking read permission for '{}'".format(self.src))
@@ -78,8 +90,9 @@ class BaseProgram(object):
 
         src_filename, ext = os.path.splitext(os.path.split(src)[1])
         self.src_filename = src_filename
-        self.dst_filename = 'mavedb_{}.csv'.format(
-            re.sub(r'\s+', '_', src_filename))
+        self.dst_filename = "mavedb_{}.csv".format(
+            re.sub(r"\s+", "_", src_filename)
+        )
         self.ext = ext.lower()
 
         # Set directory as the same directory as the input file if not provided
@@ -88,9 +101,10 @@ class BaseProgram(object):
         self.dst = dst
         if self.dst is None:
             dst, _ = os.path.split(src)
-            if self.ext.lower() == '.h5':
+            if self.ext.lower() == ".h5":
                 dst = os.path.normpath(
-                    os.path.join(os.path.expanduser(dst), self.src_filename))
+                    os.path.join(os.path.expanduser(dst), self.src_filename)
+                )
             self.dst = dst
         else:
             self.dst = os.path.normpath(os.path.expanduser(dst))
@@ -99,10 +113,11 @@ class BaseProgram(object):
         if not os.path.isdir(self.dst):
             logger.info("Creating directory '{}'".format(self.dst))
             os.makedirs(self.dst, exist_ok=True)
-        logger.info("Checking write permission to directory '{}'".format(
-            self.dst))
+        logger.info(
+            "Checking write permission to directory '{}'".format(self.dst)
+        )
         os.access(self.dst, os.W_OK)
-        
+
         self.is_coding = is_coding
         self.skip_header_rows = skip_header_rows
         self.skip_footer_rows = skip_footer_rows
@@ -116,10 +131,10 @@ class BaseProgram(object):
         self._wt_sequence = None
         self.codons = None
         self.protein_sequence = None
-        
+
         self.offset = offset
         self.wt_sequence = wt_sequence
-        
+
     @property
     def wt_sequence(self):
         return self._wt_sequence
@@ -141,16 +156,16 @@ class BaseProgram(object):
 
     @property
     def input_is_h5(self):
-        return self.ext.lower() == '.h5'
-    
+        return self.ext.lower() == ".h5"
+
     @property
     def input_is_tsv(self):
-        return self.ext.lower() == '.tsv'
+        return self.ext.lower() == ".tsv"
 
     @property
     def input_is_scores_based(self):
         return self.input_type == constants.score_type
-    
+
     @property
     def input_is_counts_based(self):
         return self.input_type == constants.count_type
@@ -162,7 +177,8 @@ class BaseProgram(object):
     @property
     def output_file(self):
         return os.path.normpath(
-            os.path.join(self.output_directory, self.dst_filename,))
+            os.path.join(self.output_directory, self.dst_filename)
+        )
 
     def convert(self):
         """
@@ -170,8 +186,8 @@ class BaseProgram(object):
         """
         logger.info("Processing file {}".format(self.src))
         mave_df = self.parse_input(self.load_input_file())
-        logger.info('Writing to {}'.format(self.output_file))
-        mave_df.to_csv(self.output_file, sep=',', index=None, na_rep=np.NaN)
+        logger.info("Writing to {}".format(self.output_file))
+        mave_df.to_csv(self.output_file, sep=",", index=None, na_rep=np.NaN)
 
     def load_input_file(self):
         raise NotImplementedError()
@@ -181,7 +197,7 @@ class BaseProgram(object):
 
     def parse_row(self, row):
         raise NotImplementedError()
-    
+
     def validate_against_wt_sequence(self, variant):
         """
         Checks that the reference base in a substitution variant matches that
@@ -208,20 +224,23 @@ class BaseProgram(object):
 
         zero_based_pos = variant.position - int(self.one_based)
         if zero_based_pos < 0:
-            raise IndexError((
-                "Encountered a negative position in {}. "
-                "Positions might not be one-based."
-            ).format(variant, self.one_based))
-        
+            raise IndexError(
+                (
+                    "Encountered a negative position in {}. "
+                    "Positions might not be one-based."
+                ).format(variant, self.one_based)
+            )
+
         if zero_based_pos >= len(self.wt_sequence):
             raise IndexError(
                 "Position {} (index {}) extends beyond the maximum index {} in "
                 "the wild-type sequence {} with length {}.".format(
                     zero_based_pos + int(self.one_based),
-                    zero_based_pos, variant,
+                    zero_based_pos,
+                    variant,
                     len(self.wt_sequence) - 1,
                     self.wt_sequence,
-                    len(self.wt_sequence)
+                    len(self.wt_sequence),
                 )
             )
 
@@ -231,8 +250,12 @@ class BaseProgram(object):
                 "Reference base '{base}' at 1-based position {pos} in the "
                 "wild-type sequence does not match the reference base '{ref}' "
                 "suggested in variant '{variant}'.".format(
-                    pos=zero_based_pos + 1, base=wt_ref_nt,
-                    variant=variant, ref=variant.ref))
+                    pos=zero_based_pos + 1,
+                    base=wt_ref_nt,
+                    variant=variant,
+                    ref=variant.ref,
+                )
+            )
 
     def validate_against_protein_sequence(self, variant):
         """
@@ -251,27 +274,30 @@ class BaseProgram(object):
             ]
             return
 
-        if variant in constants.special_variants or 'p.=' in variant:
+        if variant in constants.special_variants or "p.=" in variant:
             return
 
         variant = utilities.ProteinSubstitutionEvent(variant)
         zero_based_pos = variant.position - int(self.one_based)
         if zero_based_pos < 0:
-            raise IndexError((
-                "Encountered a negative position in {} with one_based "
-                "set as {}. Positions might not be one-based."
-            ).format(variant, self.one_based))
-        
+            raise IndexError(
+                (
+                    "Encountered a negative position in {} with one_based "
+                    "set as {}. Positions might not be one-based."
+                ).format(variant, self.one_based)
+            )
+
         if zero_based_pos >= len(self.protein_sequence):
             raise IndexError(
                 "Position {} (index {}) in {} "
                 "extends beyond the maximum index {} in the translated "
                 "wild-type sequence {} with length {}.".format(
                     zero_based_pos + int(self.one_based),
-                    zero_based_pos, variant,
+                    zero_based_pos,
+                    variant,
                     len(self.protein_sequence) - 1,
                     self.protein_sequence,
-                    len(self.protein_sequence)
+                    len(self.protein_sequence),
                 )
             )
 
@@ -279,8 +305,12 @@ class BaseProgram(object):
         if variant.ref != wt_aa:
             raise ValueError(
                 "Reference AA '{aa}' at 1-based position {pos} in the "
-                "translated protein sequence {seq} does not match the reference "
-                "AA '{ref}' suggested in variant '{variant}'.".format(
-                    pos=zero_based_pos + 1, aa=wt_aa,
-                    variant=variant, ref=variant.ref,
-                    seq=self.protein_sequence))
+                "translated protein sequence {seq} does not match the "
+                "reference AA '{ref}' suggested in variant '{variant}'.".format(
+                    pos=zero_based_pos + 1,
+                    aa=wt_aa,
+                    variant=variant,
+                    ref=variant.ref,
+                    seq=self.protein_sequence,
+                )
+            )

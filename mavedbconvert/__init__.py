@@ -4,61 +4,59 @@ import tempfile
 import logging.config
 
 __all__ = [
-    'tests',
-    'base',
-    'constants',
-    'empiric',
-    'enrich',
-    'enrich2',
-    'exceptions',
-    'fasta',
-    'utilities',
-    'filters',
-    'validators',
-    'disable_logging',
-    'LOGGER',
+    "tests",
+    "base",
+    "constants",
+    "empiric",
+    "enrich",
+    "enrich2",
+    "exceptions",
+    "fasta",
+    "utilities",
+    "filters",
+    "validators",
+    "disable_logging",
+    "LOGGER",
 ]
 
-HOMEDIR = os.path.normpath(os.path.expanduser('~/.mavedb_convert/'))
+HOMEDIR = os.path.normpath(os.path.expanduser("~/.mavedb_convert/"))
 tempfile.tempdir = HOMEDIR
 if not os.path.isdir(HOMEDIR):
     os.mkdir(HOMEDIR)
 
-LOGGER = 'mavedbconvert'
+LOGGER = "mavedbconvert"
 
 # Initialize the logging via dictionary configuration
 logging.config.dictConfig(
     {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'verbose': {
-                'format': '[%(levelname)s] %(asctime)s %(module)s %(message)s'
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "verbose": {
+                "format": "[%(levelname)s] %(asctime)s %(module)s %(message)s"
             },
-            'simple': {
-                'format': '%(levelname)s %(message)s'
+            "simple": {"format": "%(levelname)s %(message)s"},
+        },
+        "handlers": {
+            "file": {
+                "level": "WARNING",
+                "class": "logging.FileHandler",
+                "filename": os.path.join(HOMEDIR, "info.log"),
+                "formatter": "verbose",
+            },
+            "console": {
+                "level": "INFO",
+                "class": "logging.StreamHandler",
+                "stream": sys.stdout,
+                "formatter": "verbose",
             },
         },
-        'handlers': {
-            'file': {
-                'level': 'WARNING',
-                'class': 'logging.FileHandler',
-                'filename': os.path.join(HOMEDIR, 'info.log'),
-                'formatter': 'verbose'
-            },
-            'console': {
-                'level': 'INFO',
-                'class': 'logging.StreamHandler',
-                'stream': sys.stdout,
-                'formatter': 'verbose'
-            },
-        },
-        'loggers': {
+        "loggers": {
             LOGGER: {
-                'handlers': ['file', 'console'],
-                'level': 'INFO',
-                'propagate': True
-            },
+                "handlers": ["file", "console"],
+                "level": "INFO",
+                "propagate": True,
+            }
         },
     }
 )

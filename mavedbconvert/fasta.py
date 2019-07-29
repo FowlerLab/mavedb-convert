@@ -3,7 +3,7 @@ import gzip
 import bz2
 
 
-__all__ = ['split_fasta_path', 'parse_fasta', ]
+__all__ = ["split_fasta_path", "parse_fasta"]
 
 
 from . import constants
@@ -48,7 +48,9 @@ def split_fasta_path(fname):
         else:
             raise IOError(
                 "Warning: unexpected file extension for '{fname}'".format(
-                    fname=fname))
+                    fname=fname
+                )
+            )
     else:
         raise IOError("file '{fname}' doesn't exist".format(fname=fname))
 
@@ -65,17 +67,17 @@ def parse_fasta(file):
     else:
         raise IOError("File extension must be 'gz', 'bz2', 'fa' or 'fasta'.")
 
-    sequence = ''
+    sequence = ""
     sequence_count = 0
     in_sequence = False
-    handle = open_func(file, 'rt')
+    handle = open_func(file, "rt")
     lines = handle.readlines()
     i = 0
     while i < len(lines):
-        if i == 0 and not lines[i].strip().startswith('>'):
+        if i == 0 and not lines[i].strip().startswith(">"):
             raise IOError("'{}' is not a valid FASTA file.".format(file))
 
-        if lines[i].strip().startswith('>'):
+        if lines[i].strip().startswith(">"):
             in_sequence = True
             sequence_count += 1
             i += 1
@@ -83,15 +85,18 @@ def parse_fasta(file):
                 raise ValueError("Fasta file must contain a single sequence.")
 
         while i < len(lines) and in_sequence:
-            if lines[i].strip().startswith('>'):
+            if lines[i].strip().startswith(">"):
                 in_sequence = False
+            elif not lines[i].strip():
+                i += 1
                 continue
-            if not constants.dna_re.fullmatch(lines[i].strip().upper()):
+            elif not constants.dna_re.fullmatch(lines[i].strip().upper()):
                 raise ValueError(
                     "Invalid nucleotide characters in line '{}. "
                     "Supported characters are ATCGatcg.".format(
                         lines[i].strip()
-                    ))
+                    )
+                )
             else:
                 sequence += lines[i].strip()
                 i += 1

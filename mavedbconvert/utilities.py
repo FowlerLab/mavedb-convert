@@ -1,8 +1,7 @@
+import re
 from collections import OrderedDict
 
-from hgvsp import (
-   rna, dna, protein, single_variant_re, multi_variant_re
-)
+from hgvsp import rna, dna, protein, single_variant_re, multi_variant_re
 
 import numpy as np
 import pandas as pd
@@ -12,7 +11,7 @@ from . import constants, exceptions
 
 def slicer(seq, size):
     """Slices a string into chunks of `size`."""
-    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+    return (seq[pos : pos + size] for pos in range(0, len(seq), size))
 
 
 def translate_dna(wt_sequence, offset=0):
@@ -95,8 +94,9 @@ def is_numeric(dtype):
     -------
     bool
     """
-    return np.issubdtype(dtype, np.floating) or \
-        np.issubdtype(dtype, np.signedinteger)
+    return np.issubdtype(dtype, np.floating) or np.issubdtype(
+        dtype, np.signedinteger
+    )
 
 
 class NucleotideSubstitutionEvent(object):
@@ -121,6 +121,7 @@ class NucleotideSubstitutionEvent(object):
     prefix : str
         Prefix of the variant.
     """
+
     def __init__(self, variant):
         self.variant = variant.strip()
         match_dna = dna.substitution_re.fullmatch(self.variant)
@@ -128,19 +129,20 @@ class NucleotideSubstitutionEvent(object):
         if not (match_dna or match_rna):
             raise exceptions.InvalidVariantType(
                 "'{}' is not a valid DNA/RNA "
-                "substitution event.".format(self.variant))
-        
+                "substitution event.".format(self.variant)
+            )
+
         match = match_dna if match_dna is not None else match_rna
         self.dict = match.groupdict()
         self.position = int(match.groupdict()[constants.hgvsp_nt_pos])
         self.ref = match.groupdict()[constants.hgvsp_nt_ref]
         self.alt = match.groupdict()[constants.hgvsp_nt_alt]
-        self.silent = match.groupdict()[constants.hgvsp_silent] == '='
+        self.silent = match.groupdict()[constants.hgvsp_silent] == "="
         self.prefix = variant[0].lower()
-        
-        if self.dict.get('utr', None) == '-':
+
+        if self.dict.get("utr", None) == "-":
             self.position *= -1
-            
+
         if match_rna and self.position < 0:
             raise IndexError("RNA positions cannot be negative.")
 
@@ -155,17 +157,18 @@ class NucleotideSubstitutionEvent(object):
 
     def __repr__(self):
         return self.format
-    
+
     @property
     def format(self):
-        return '{}.{}'.format(self.prefix, self.event)
+        return "{}.{}".format(self.prefix, self.event)
 
     @property
     def event(self):
         if self.silent:
-            return '{pos}='.format(ref=self.ref, pos=self.position)
-        return '{pos}{ref}>{alt}'.format(
-            ref=self.ref, pos=self.position, alt=self.alt)
+            return "{pos}=".format(ref=self.ref, pos=self.position)
+        return "{pos}{ref}>{alt}".format(
+            ref=self.ref, pos=self.position, alt=self.alt
+        )
 
     def codon_position(self, one_based=True):
         """
@@ -200,9 +203,14 @@ class NucleotideSubstitutionEvent(object):
         int
         """
         if self.position < 0:
-            raise ValueError("Cannot infer codon frame from negative position.")
-        return self.position - 3 * (self.codon_position(one_based) - 1) + \
-            int(not one_based)
+            raise ValueError(
+                "Cannot infer codon frame from negative position."
+            )
+        return (
+            self.position
+            - 3 * (self.codon_position(one_based) - 1)
+            + int(not one_based)
+        )
 
 
 class ProteinSubstitutionEvent(object):
@@ -228,22 +236,25 @@ class ProteinSubstitutionEvent(object):
     prefix : str
         Prefix of the variant.
     """
+
     def __init__(self, variant):
         self.variant = variant.strip()
         match = protein.substitution_re.fullmatch(self.variant)
         if not match:
             raise exceptions.InvalidVariantType(
                 "'{}' is not a valid amino acid "
-                "substitution event.".format(self.variant))
+                "substitution event.".format(self.variant)
+            )
 
         self.dict = match.groupdict()
         self._position = None
         self.position = int(match.groupdict()[constants.hgvsp_pro_pos])
         self.ref = match.groupdict()[constants.hgvsp_pro_ref]
         self.alt = match.groupdict()[constants.hgvsp_pro_alt]
-        self.silent = match.groupdict()[constants.hgvsp_silent] == '='
-        self.prefix = 'p'
+        self.silent = match.groupdict()[constants.hgvsp_silent] == "="
+        self.prefix = "p"
 
+        # Normalize to three letter codes
         if self.ref and len(self.ref) == 1:
             self.ref = constants.AA_CODES[self.ref]
         if self.alt and len(self.alt) == 1:
@@ -254,29 +265,31 @@ class ProteinSubstitutionEvent(object):
 
     def __repr__(self):
         return self.format
-    
+
     @property
     def position(self):
         return self._position
-    
+
     @position.setter
     def position(self, value):
         if value < 1:
             raise ValueError(
                 "Protein position cannot be less "
-                "Attempted to set {} in {}".format(value, self.variant))
+                "Attempted to set {} in {}".format(value, self.variant)
+            )
         self._position = value
-    
+
     @property
     def format(self):
-        return '{}.{}'.format(self.prefix, self.event)
+        return "{}.{}".format(self.prefix, self.event)
 
     @property
     def event(self):
         if self.silent:
-            return '{ref}{pos}='.format(ref=self.ref, pos=self.position)
-        return '{ref}{pos}{alt}'.format(
-            ref=self.ref, pos=self.position, alt=self.alt)
+            return "{ref}{pos}=".format(ref=self.ref, pos=self.position)
+        return "{ref}{pos}{alt}".format(
+            ref=self.ref, pos=self.position, alt=self.alt
+        )
 
 
 def split_variant(variant):
@@ -295,16 +308,19 @@ def split_variant(variant):
         A list of single `HGVS` strings.
     """
     prefix = variant[0]
-    if len(variant.split(';')) > 1:
-        return ['{}.{}'.format(prefix, e.strip())
-                for e in variant[3:-1].split(';')]
+    if len(variant.split(";")) > 1:
+        return [
+            "{}.{}".format(prefix, e.strip()) for e in variant[3:-1].split(";")
+        ]
     return [variant]
 
 
-def format_variant(variant):
+def normalize_variant(variant):
     """
-    Replaces `???` for `?` in protein variants and `X` for `N` in
+    Replaces `???` for `Xaa` in protein variants and `X` for `N` in
     nucleotide variants to be compliant with the `hgvs` biocommons package.
+
+    Use for enrich and enrich2 inputs.
 
     Parameters
     ----------
@@ -318,55 +334,88 @@ def format_variant(variant):
     if variant is None:
         return variant
     if protein.substitution_re.fullmatch(variant):
-        variant = variant.replace('???', '?')
-    elif dna.substitution_re.fullmatch(variant) or \
-            dna.deletion_re.fullmatch(variant) or \
-            dna.insertion_re.fullmatch(variant) or \
-            dna.delins_re.fullmatch(variant):
-        variant = variant.replace('X', 'N')
-    elif rna.substitution_re.fullmatch(variant) or \
-            dna.deletion_re.fullmatch(variant) or \
-            dna.insertion_re.fullmatch(variant) or \
-            dna.delins_re.fullmatch(variant):
-        variant = variant.replace('x', 'n')
+        # Sub groups of three first.
+        variant = re.sub(r"\?{3}", "Xaa", variant)
+        # Sub singular next.
+        variant = re.sub(r"\?", "X", variant)
+    elif (
+        dna.substitution_re.fullmatch(variant)
+        or dna.deletion_re.fullmatch(variant)
+        or dna.insertion_re.fullmatch(variant)
+        or dna.delins_re.fullmatch(variant)
+    ):
+        variant = variant.replace(r"X", "N")
+    elif (
+        rna.substitution_re.fullmatch(variant)
+        or rna.deletion_re.fullmatch(variant)
+        or rna.insertion_re.fullmatch(variant)
+        or rna.delins_re.fullmatch(variant)
+    ):
+        variant = variant.replace(r"x", "n")
     return variant.strip()
+
+
+def format_variant(variant):
+    """
+    Return None for null variant and strips trailing whitespaces.
+
+    Parameters
+    ----------
+    variant : str, optional.
+        HGVS_ formatted string.
+
+    Returns
+    -------
+    str
+    """
+    if variant is None:
+        return variant
+    return variant.strip()
+
 
 def hgvs_pro_from_event_list(events):
     """
     Convert a list of protein variant events into a single HGVS string. Removes
     duplicates from `events`.
     """
-    events = list(OrderedDict.fromkeys(
-        [format_variant(e) for e in events]
-    ).keys())
+    events = list(
+        OrderedDict.fromkeys([format_variant(e) for e in events]).keys()
+    )
     if len(events) == 1:
-        mave_hgvs = 'p.{}'.format(format_variant(events[0]))
+        mave_hgvs = "p.{}".format(format_variant(events[0]))
     else:
-        mave_hgvs = 'p.[{}]'.format(';'.join(events))
+        mave_hgvs = "p.[{}]".format(";".join(events))
     if mave_hgvs not in constants.special_variants:
-        match = protein.single_variant_re.fullmatch(mave_hgvs) or \
-                protein.multi_variant_re.fullmatch(mave_hgvs)
+        match = protein.single_variant_re.fullmatch(
+            mave_hgvs
+        ) or protein.multi_variant_re.fullmatch(mave_hgvs)
         if not match:
             raise exceptions.HGVSMatchError(
                 "Could not validate parsed variant '{variant}'.".format(
-                    variant=mave_hgvs))
+                    variant=mave_hgvs
+                )
+            )
     return mave_hgvs
 
 
 def hgvs_nt_from_event_list(events, prefix):
     """Convert a list of variant events into a single HGVS string."""
     if len(events) == 1:
-        mave_hgvs = '{}.{}'.format(prefix, format_variant(events[0]))
+        mave_hgvs = "{}.{}".format(prefix, format_variant(events[0]))
     else:
-        mave_hgvs = '{}.[{}]'.format(
-            prefix, ';'.join([format_variant(e) for e in events]))
+        mave_hgvs = "{}.[{}]".format(
+            prefix, ";".join([format_variant(e) for e in events])
+        )
     if mave_hgvs not in constants.special_variants:
-        match = single_variant_re.fullmatch(mave_hgvs) or \
-                multi_variant_re.fullmatch(mave_hgvs)
+        match = single_variant_re.fullmatch(
+            mave_hgvs
+        ) or multi_variant_re.fullmatch(mave_hgvs)
         if not match:
             raise exceptions.HGVSMatchError(
                 "Could not validate parsed variant '{hgvs}'.".format(
-                    hgvs=mave_hgvs))
+                    hgvs=mave_hgvs
+                )
+            )
     return mave_hgvs
 
 
@@ -377,9 +426,11 @@ def non_hgvs_columns(columns):
 
     The order of the elements is preserved.
     """
-    data_columns = [x for x in columns if
-                    x != constants.nt_variant_col
-                    and x != constants.pro_variant_col]
+    data_columns = [
+        x
+        for x in columns
+        if x != constants.nt_variant_col and x != constants.pro_variant_col
+    ]
     return pd.Index(data_columns)
 
 
@@ -390,7 +441,9 @@ def hgvs_columns(columns):
 
     The order of the elements is preserved.
     """
-    data_columns = [x for x in columns if
-                    x == constants.nt_variant_col
-                    or x == constants.pro_variant_col]
+    data_columns = [
+        x
+        for x in columns
+        if x == constants.nt_variant_col or x == constants.pro_variant_col
+    ]
     return pd.Index(data_columns)
