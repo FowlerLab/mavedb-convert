@@ -275,6 +275,9 @@ class TestNormalizeVariant(TestCase):
         self.assertEqual(utilities.normalize_variant("p.G4???"), "p.G4Xaa")
         self.assertEqual(utilities.normalize_variant("p.G4?"), "p.G4X")
 
+    def test_ignores_invalid_protein_variant(self):
+        self.assertEqual(utilities.normalize_variant("p.G4??"), "p.G4??")
+
     def test_replaces_X_with_N_in_dna_variant(self):
         for p in "cgnm":
             self.assertEqual(
