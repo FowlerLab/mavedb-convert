@@ -349,14 +349,24 @@ class Enrich2(base.BaseProgram):
             return df
 
     def parse_row(self, row):
-        """Delegates the correct method below."""
+        """
+        Delegates the correct method below
+
+        Parameters
+        ----------
+        row : tuple[str, str] | list[str] | str
+            An enrich2 variant or a tuple/list of enrich2 variant and
+            the hd5 element table type (synonymous, etc).
+
+        Returns
+        -------
+        str
+        """
         if isinstance(row, (tuple, list)):
             variant, element = row
         else:
             variant, element = row, None
-        variant = utilities.normalize_variant(
-            utilities.format_variant(variant)
-        )
+        variant = utilities.format_variant(variant)
 
         if variant in constants.special_variants:
             if element == constants.synonymous_table:

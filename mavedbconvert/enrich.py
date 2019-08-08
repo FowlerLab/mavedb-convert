@@ -192,9 +192,7 @@ class Enrich(base.BaseProgram):
             raise ValueError(
                 "Could not parse any variant strings from {}".format(seq_id)
             )
-        return utilities.normalize_variant(
-            utilities.hgvs_pro_from_event_list(events)
-        )
+        return utilities.hgvs_pro_from_event_list(events)
 
     def parse_input(self, df):
         """
