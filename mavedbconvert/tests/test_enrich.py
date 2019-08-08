@@ -48,8 +48,12 @@ class TestEnrichParseRow(ProgramTestCase):
         with self.assertRaises(ValueError):
             self.enrich.parse_row("1,2,3,4-L,Y,T")
 
-    def test_converts_qmark_to_xaa_to_single_q(self):
-        self.assertEqual(self.enrich.parse_row("1-?"), "p.Val2Xaa")
+    # TODO: Uncomment if normalizing variants.
+    # def test_converts_qmark_to_xaa_to_single_q(self):
+    #     self.assertEqual(self.enrich.parse_row("1-?"), "p.Val2Xaa")
+    #     self.assertEqual(
+    #         self.enrich.parse_row("0,1-L,?"), "p.[Asp1Leu;Val2Xaa]"
+    #     )
 
     def test_error_no_events(self):
         with self.assertRaises(ValueError):
@@ -112,6 +116,11 @@ class TestEnrichParseRow(ProgramTestCase):
 
     def test_removes_duplicates(self):
         self.assertEqual(self.enrich.parse_row("0,0-L,L"), "p.Asp1Leu")
+
+    def test_uses_three_qmarks(self):
+        self.assertEqual(
+            self.enrich.parse_row("0,1-?,?"), "p.[Asp1???;Val2???]"
+        )
 
     def test_applies_offset_divided_by_3(self):
         self.enrich.offset = -3

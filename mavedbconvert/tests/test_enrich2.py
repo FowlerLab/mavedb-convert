@@ -391,8 +391,8 @@ class TestEnrich2ConvertH5Df(ProgramTestCase):
         self.assertTrue(os.path.isfile(fpath))
 
         invalid = pd.read_csv(fpath, sep=",", index_col=0)
-        self.assertEquals(len(invalid), 1)
-        self.assertEquals(invalid.index[0], "c.1T>G (p.Lys1Val)")
+        self.assertEqual(len(invalid), 1)
+        self.assertEqual(invalid.index[0], "c.1T>G (p.Lys1Val)")
         self.assertIn("error_description", invalid.columns)
         self.bin.append(fpath)
 
@@ -1004,18 +1004,26 @@ class TestEnrich2ParseRow(ProgramTestCase):
             self.enrich2.parse_row((" c.1A>G ", None)), ("c.1A>G", None)
         )
 
-    def test_converts_X_to_N(self):
+    def test_uses_three_qmarks(self):
+        variant = "c.3T>C (p.Thr1?)"
         self.assertEqual(
-            self.enrich2.parse_row(("c.1A>X", None)), ("c.1A>N", None)
+            ("c.3T>C", "p.Thr1???"), self.enrich2.parse_row((variant, None))
         )
 
-    def test_converts_qmarks_to_Xaa_to_single_q(self):
-        self.assertEqual(
-            self.enrich2.parse_row(("p.Thr1???", None)), (None, "p.Thr1Xaa")
-        )
-        self.assertEqual(
-            self.enrich2.parse_row(("p.T1?", None)), (None, "p.Thr1Xaa")
-        )
+    # TODO: Uncomment if normalizing variants.
+    # def test_converts_X_to_N(self):
+    #     self.assertEqual(
+    #         self.enrich2.parse_row(("c.1A>X", None)), ("c.1A>N", None)
+    #     )
+
+    # TODO: Uncomment if normalizing variants.
+    # def test_converts_qmarks_to_Xaa_to_single_q(self):
+    #     self.assertEqual(
+    #         self.enrich2.parse_row(("p.Thr1???", None)), (None, "p.Thr1Xaa")
+    #     )
+    #     self.assertEqual(
+    #         self.enrich2.parse_row(("p.T1?", None)), (None, "p.Thr1Xaa")
+    #     )
 
 
 # Protein parsing tests
@@ -1296,7 +1304,7 @@ class TestApplyOffset(TestCase):
     def test_mixed_variant_uses_nt_position_to_compute_codon_pos(self):
         variant = "c.-9A>T (p.Thr2Pro), c.-6C>A (p.Gln3Lys)"
         offset = -10
-        self.assertEquals(
+        self.assertEqual(
             "c.1A>T (p.Thr1Pro), c.4C>A (p.Gln2Lys)",
             enrich2.apply_offset(variant, offset),
         )
@@ -1311,33 +1319,33 @@ class TestApplyOffset(TestCase):
     def test_applies_offset_to_non_mixed_variant(self):
         variant = "n.-455T>A, n.-122A>T, n.-101A>T, n.-42T>A"
         offset = -456
-        self.assertEquals(
+        self.assertEqual(
             "n.1T>A, n.334A>T, n.355A>T, n.414T>A",
             enrich2.apply_offset(variant, offset),
         )
-        self.assertEquals("n.1T>A", enrich2.apply_offset("n.-455T>A", offset))
+        self.assertEqual("n.1T>A", enrich2.apply_offset("n.-455T>A", offset))
 
     def test_applies_offset_to_protein_variant_modulo_3(self):
         variant = "p.Leu10=, p.Leu13="
         offset = 10
-        self.assertEquals(
+        self.assertEqual(
             "p.Leu7=, p.Leu10=", enrich2.apply_offset(variant, offset)
         )
-        self.assertEquals("p.Leu7=", enrich2.apply_offset("p.Leu10=", offset))
+        self.assertEqual("p.Leu7=", enrich2.apply_offset("p.Leu10=", offset))
 
     @mock.patch.object(
         enrich2.base.BaseProgram, "validate_against_wt_sequence"
     )
     def test_validates_against_wt_sequence(self, patch):
         variant = "c.-9C>T"
-        path = os.path.join(DATA_DIR, "enrich1.tsv")
+        path = os.path.join(DATA_DIR, "dummy.h5")
         p = enrich2.Enrich2(path, wt_sequence="ACT")
         enrich2.apply_offset(variant, offset=-10, enrich2=p)  # pass
         patch.assert_called_with(*("c.1C>T",))
 
     def test_value_error_base_mismatch_after_offset_applied(self):
         variant = "c.-9G>T"
-        path = os.path.join(DATA_DIR, "enrich1.tsv")
+        path = os.path.join(DATA_DIR, "dummy.h5")
         p = enrich2.Enrich2(path, wt_sequence="ACT")
         with self.assertRaises(ValueError):
             enrich2.apply_offset(variant, offset=-10, enrich2=p)
@@ -1347,14 +1355,14 @@ class TestApplyOffset(TestCase):
     )
     def test_validates_against_pro_sequence(self, patch):
         variant = "p.Gly3Leu"
-        path = os.path.join(DATA_DIR, "enrich1.tsv")
+        path = os.path.join(DATA_DIR, "dummy.h5")
         p = enrich2.Enrich2(path, wt_sequence="ACG")
         enrich2.apply_offset(variant, offset=6, enrich2=p)  # pass
         patch.assert_called_with(*("p.Gly1Leu",))
 
     def test_value_error_pro_mismatch_after_offset_applied(self):
         variant = "p.Gly3Leu"
-        path = os.path.join(DATA_DIR, "enrich1.tsv")
+        path = os.path.join(DATA_DIR, "dummy.h5")
         p = enrich2.Enrich2(path, wt_sequence="ACG")
         with self.assertRaises(ValueError):
             enrich2.apply_offset(variant, offset=6, enrich2=p)
