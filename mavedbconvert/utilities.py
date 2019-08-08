@@ -333,23 +333,26 @@ def normalize_variant(variant):
     """
     if variant is None:
         return variant
-    if protein.substitution_re.fullmatch(variant):
+    if (
+        protein.single_variant_re.fullmatch(variant)
+        or protein.multi_variant_re.fullmatch(variant)
+        or protein.predicted_variant_re.fullmatch(variant)
+        or protein.any_event_re.fullmatch(variant)
+    ):
         # Sub groups of three first.
         variant = re.sub(r"\?{3}", "Xaa", variant)
         # Sub singular next.
         variant = re.sub(r"\?", "X", variant)
     elif (
-        dna.substitution_re.fullmatch(variant)
-        or dna.deletion_re.fullmatch(variant)
-        or dna.insertion_re.fullmatch(variant)
-        or dna.delins_re.fullmatch(variant)
+        dna.single_variant_re.fullmatch(variant)
+        or dna.multi_variant_re.fullmatch(variant)
+        or dna.any_event_re.fullmatch(variant)
     ):
         variant = variant.replace(r"X", "N")
     elif (
-        rna.substitution_re.fullmatch(variant)
-        or rna.deletion_re.fullmatch(variant)
-        or rna.insertion_re.fullmatch(variant)
-        or rna.delins_re.fullmatch(variant)
+        rna.single_variant_re.fullmatch(variant)
+        or rna.multi_variant_re.fullmatch(variant)
+        or rna.any_event_re.fullmatch(variant)
     ):
         variant = variant.replace(r"x", "n")
     return variant.strip()
