@@ -1,0 +1,8 @@
+black
+ipython
+pylint
+tox
+pytest
+pytest-sugar
+pytest-cov
+mock
