@@ -50,25 +50,19 @@ class TestInferProEvent(TestCase):
 class TestInferNTEvent(TestCase):
     def test_infers_equal_event(self):
         self.assertEqual(
-            empiric.infer_nt_substitution(
-                wt_codon="aaa", mut_codon="AAA", codon_pos=0
-            ),
+            empiric.infer_nt_substitution(wt_codon="aaa", mut_codon="AAA", codon_pos=0),
             "c.[1=;2=;3=]",
         )
 
     def test_infers_sub_event_event(self):
         self.assertEqual(
-            empiric.infer_nt_substitution(
-                wt_codon="ATC", mut_codon="GTA", codon_pos=0
-            ),
+            empiric.infer_nt_substitution(wt_codon="ATC", mut_codon="GTA", codon_pos=0),
             "c.[1A>G;2=;3C>A]",
         )
 
     def test_adds_codon_pos_multiplied_by_3_to_position(self):
         self.assertEqual(
-            empiric.infer_nt_substitution(
-                wt_codon="ATC", mut_codon="GTA", codon_pos=1
-            ),
+            empiric.infer_nt_substitution(wt_codon="ATC", mut_codon="GTA", codon_pos=1),
             "c.[4A>G;5=;6C>A]",
         )
 
@@ -83,9 +77,7 @@ class TestEmpiric(ProgramTestCase):
 
     def test_error_missing_amino_acid(self):
         for nan in constants.extra_na:
-            df = pd.DataFrame(
-                {"Position": [0], "Amino Acid": [nan], "row_num": [0]}
-            )
+            df = pd.DataFrame({"Position": [0], "Amino Acid": [nan], "row_num": [0]})
             self.empiric.validate_columns(df)
             with self.assertRaises(ValueError):
                 self.empiric.parse_row(row=df.iloc[0, :])
@@ -93,12 +85,7 @@ class TestEmpiric(ProgramTestCase):
     def test_value_error_codon_doesnt_match_aa_column(self):
         with self.assertRaises(ValueError):
             df = pd.DataFrame(
-                {
-                    "Position": [0],
-                    "Amino Acid": ["V"],
-                    "Codon": ["AAT"],
-                    "row_num": [0],
-                }
+                {"Position": [0], "Amino Acid": ["V"], "Codon": ["AAT"], "row_num": [0]}
             )
             self.empiric.validate_columns(df)
             self.empiric.parse_row(row=df.iloc[0, :])
@@ -106,12 +93,7 @@ class TestEmpiric(ProgramTestCase):
     def test_error_infer_nt_true_but_missing_codon_value(self):
         for nan in constants.extra_na:
             df = pd.DataFrame(
-                {
-                    "Position": [0],
-                    "Amino Acid": ["N"],
-                    "row_num": [0],
-                    "Codon": [nan],
-                }
+                {"Position": [0], "Amino Acid": ["N"], "row_num": [0], "Codon": [nan]}
             )
             self.empiric.validate_columns(df)
             with self.assertRaises(ValueError):
@@ -119,12 +101,7 @@ class TestEmpiric(ProgramTestCase):
 
     def test_index_error_negative_position(self):
         df = pd.DataFrame(
-            {
-                "Position": [0],
-                "Amino Acid": ["K"],
-                "row_num": [0],
-                "Codon": ["AAA"],
-            }
+            {"Position": [0], "Amino Acid": ["K"], "row_num": [0], "Codon": ["AAA"]}
         )
         self.empiric.validate_columns(df)
         self.empiric.one_based = True
@@ -133,12 +110,7 @@ class TestEmpiric(ProgramTestCase):
 
     def test_index_error_out_of_codon_bounds(self):
         df = pd.DataFrame(
-            {
-                "Position": [56],
-                "Amino Acid": ["K"],
-                "row_num": [0],
-                "Codon": ["AAA"],
-            }
+            {"Position": [56], "Amino Acid": ["K"], "row_num": [0], "Codon": ["AAA"]}
         )
         self.empiric.validate_columns(df)
         with self.assertRaises(IndexError):
@@ -146,12 +118,7 @@ class TestEmpiric(ProgramTestCase):
 
     def test_amino_acid_column_is_case_insensitive(self):
         df = pd.DataFrame(
-            {
-                "Position": [0],
-                "Amino Acid": ["v"],
-                "row_num": [0],
-                "Codon": ["GTA"],
-            }
+            {"Position": [0], "Amino Acid": ["v"], "row_num": [0], "Codon": ["GTA"]}
         )
         self.empiric.validate_columns(df)
         _, hgvs_pro = self.empiric.parse_row(row=df.iloc[0, :])
@@ -159,12 +126,7 @@ class TestEmpiric(ProgramTestCase):
 
     def test_infers_hgvs_pro_event_from_one_based_position(self):
         df = pd.DataFrame(
-            {
-                "Position": [1],
-                "Amino Acid": ["V"],
-                "row_num": [0],
-                "Codon": ["GTA"],
-            }
+            {"Position": [1], "Amino Acid": ["V"], "row_num": [0], "Codon": ["GTA"]}
         )
         self.empiric.validate_columns(df)
         self.empiric.one_based = True
@@ -173,12 +135,7 @@ class TestEmpiric(ProgramTestCase):
 
     def test_infers_hgvs_pro_event_from_zero_based_position(self):
         df = pd.DataFrame(
-            {
-                "Position": [1],
-                "Amino Acid": ["V"],
-                "row_num": [0],
-                "Codon": ["GTA"],
-            }
+            {"Position": [1], "Amino Acid": ["V"], "row_num": [0], "Codon": ["GTA"]}
         )
         self.empiric.validate_columns(df)
         self.empiric.wt_sequence = "GTAAAA"
@@ -188,12 +145,7 @@ class TestEmpiric(ProgramTestCase):
 
     def test_protein_output_is_singular_when_inferring_nt(self):
         df = pd.DataFrame(
-            {
-                "Position": [0],
-                "Amino Acid": ["V"],
-                "row_num": [0],
-                "Codon": ["GTA"],
-            }
+            {"Position": [0], "Amino Acid": ["V"], "row_num": [0], "Codon": ["GTA"]}
         )
         self.empiric.validate_columns(df)
         hgvs_nt, hgvs_pro = self.empiric.parse_row(row=df.iloc[0, :])
@@ -201,21 +153,14 @@ class TestEmpiric(ProgramTestCase):
         self.assertEqual(hgvs_pro, "p.Lys1Val")
 
     def test_hgvs_nt_is_none_when_codon_is_not_in_axes(self):
-        df = pd.DataFrame(
-            {"Position": [0], "Amino Acid": ["V"], "row_num": [0]}
-        )
+        df = pd.DataFrame({"Position": [0], "Amino Acid": ["V"], "row_num": [0]})
         self.empiric.validate_columns(df)
         hgvs_nt, _ = self.empiric.parse_row(row=df.iloc[0, :])
         self.assertIsNone(hgvs_nt)
 
     def test_correctly_infers_hgvs_nt_positions_when_zero_based(self):
         df = pd.DataFrame(
-            {
-                "Position": [1],
-                "Amino Acid": ["V"],
-                "row_num": [0],
-                "Codon": ["GTA"],
-            }
+            {"Position": [1], "Amino Acid": ["V"], "row_num": [0], "Codon": ["GTA"]}
         )
         self.empiric.validate_columns(df)
         self.empiric.one_based = False
@@ -224,9 +169,7 @@ class TestEmpiric(ProgramTestCase):
         self.assertEqual(hgvs_nt, "c.[4A>G;5A>T;6T>A]")
 
     def test_correctly_infers_hgvs_nt_positions_when_one_based(self):
-        df = pd.DataFrame(
-            {"Position": [1], "Amino Acid": ["N"], "Codon": ["AAT"]}
-        )
+        df = pd.DataFrame({"Position": [1], "Amino Acid": ["N"], "Codon": ["AAT"]})
         self.empiric.validate_columns(df)
         self.empiric.one_based = True
         self.empiric.wt_sequence = "GTAAAA"
@@ -258,23 +201,17 @@ class TestEmpiricValidateColumns(TestCase):
         self.assertEqual(self.empiric.codon_column, None)
 
     def test_sets_codon_column_if_present(self):
-        df = pd.DataFrame(
-            {"Position": [1], "Amino Acid": ["N"], "Codon": ["AAT"]}
-        )
+        df = pd.DataFrame({"Position": [1], "Amino Acid": ["N"], "Codon": ["AAT"]})
         self.empiric.validate_columns(df)
         self.assertEqual(self.empiric.codon_column, "Codon")
 
     def test_sets_position_column(self):
-        df = pd.DataFrame(
-            {"Position": [1], "Amino Acid": ["N"], "Codon": ["AAT"]}
-        )
+        df = pd.DataFrame({"Position": [1], "Amino Acid": ["N"], "Codon": ["AAT"]})
         self.empiric.validate_columns(df)
         self.assertEqual(self.empiric.position_column, "Position")
 
     def test_sets_aa_column(self):
-        df = pd.DataFrame(
-            {"Position": [1], "amino acid": ["N"], "Codon": ["AAT"]}
-        )
+        df = pd.DataFrame({"Position": [1], "amino acid": ["N"], "Codon": ["AAT"]})
         self.empiric.validate_columns(df)
         self.assertEqual(self.empiric.aa_column, "amino acid")
 
@@ -293,12 +230,7 @@ class TestEmpiricParseInput(ProgramTestCase):
 
     def test_deletes_position_amino_acid_codon_row_num_columns(self):
         df = pd.DataFrame(
-            {
-                "Position": [0],
-                "Amino Acid": ["N"],
-                "Codon": ["AAT"],
-                "A": [1.2],
-            }
+            {"Position": [0], "Amino Acid": ["N"], "Codon": ["AAT"], "A": [1.2]}
         )
         result = self.empiric.parse_input(df)
         self.assertNotIn("Position", result.columns)
@@ -345,9 +277,7 @@ class TestEmpiricParseInput(ProgramTestCase):
             }
         )
         result = self.empiric.parse_input(df)
-        self.assertEqual(
-            result[constants.pro_variant_col].values[0], "p.Lys1Asn"
-        )
+        self.assertEqual(result[constants.pro_variant_col].values[0], "p.Lys1Asn")
 
     def test_correctly_infers_hgvs_nt_column_when_codon_column_present(self):
         df = pd.DataFrame(
@@ -362,9 +292,7 @@ class TestEmpiricParseInput(ProgramTestCase):
         self.empiric.one_based = False
         self.empiric.wt_sequence = "GGGAAA"
         result = self.empiric.parse_input(df)
-        self.assertEqual(
-            result[constants.nt_variant_col].values[0], "c.[4=;5=;6A>T]"
-        )
+        self.assertEqual(result[constants.nt_variant_col].values[0], "c.[4=;5=;6A>T]")
 
     def test_orders_columns(self):
         df = pd.DataFrame(
@@ -377,12 +305,8 @@ class TestEmpiricParseInput(ProgramTestCase):
             }
         )
         result = self.empiric.parse_input(df)
-        self.assertEqual(
-            list(result.columns).index(constants.nt_variant_col), 0
-        )
-        self.assertEqual(
-            list(result.columns).index(constants.pro_variant_col), 1
-        )
+        self.assertEqual(list(result.columns).index(constants.nt_variant_col), 0)
+        self.assertEqual(list(result.columns).index(constants.pro_variant_col), 1)
 
     def test_removes_null_columns(self):
         df = pd.DataFrame(
@@ -424,8 +348,7 @@ class TestEmpiricParseInput(ProgramTestCase):
         result = self.empiric.parse_input(df)
         self.assertTrue(
             np.issubdtype(
-                result[constants.mavedb_score_column].values[0],
-                np.signedinteger,
+                result[constants.mavedb_score_column].values[0], np.signedinteger
             )
         )
 

@@ -54,14 +54,10 @@ def drop_na_rows(df, inplace=False):
     if not inplace:
         df = utilities.copy_dataframe(df)
 
-    null_rows = (
-        df.loc[:, utilities.non_hgvs_columns(df.columns)].isnull().all(axis=1)
-    )
+    null_rows = df.loc[:, utilities.non_hgvs_columns(df.columns)].isnull().all(axis=1)
     if sum(null_rows) > 0:
         logger.warning(
-            "Dropping {} rows that contain all null values".format(
-                sum(null_rows)
-            )
+            "Dropping {} rows that contain all null values".format(sum(null_rows))
         )
         df.drop(index=df.index[null_rows], inplace=True)
 

@@ -13,7 +13,5 @@ setup(
         "file formats into a MaveDB compliant format."
     ),
     install_requires=open("requirements/install.txt", "rt").read().split("\n"),
-    entry_points={
-        "console_scripts": ["mavedb-convert=mavedbconvert.main:main"]
-    },
+    entry_points={"console_scripts": ["mavedb-convert=mavedbconvert.main:main"]},
 )

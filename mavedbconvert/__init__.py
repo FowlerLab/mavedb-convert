@@ -32,9 +32,7 @@ logging.config.dictConfig(
         "version": 1,
         "disable_existing_loggers": False,
         "formatters": {
-            "verbose": {
-                "format": "[%(levelname)s] %(asctime)s %(module)s %(message)s"
-            },
+            "verbose": {"format": "[%(levelname)s] %(asctime)s %(module)s %(message)s"},
             "simple": {"format": "%(levelname)s %(message)s"},
         },
         "handlers": {

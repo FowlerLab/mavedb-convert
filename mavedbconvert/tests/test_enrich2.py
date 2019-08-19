@@ -60,9 +60,7 @@ class TestGetCountDataFrames(TestCase):
 
     def test_index_of_dfs_match_index_of_scores(self):
         cnd_df = enrich2.get_count_dataframe_by_condition(self.store, cnd="c1")
-        assert_index_equal(
-            self.store["/main/variants/scores/"].index, cnd_df.index
-        )
+        assert_index_equal(self.store["/main/variants/scores/"].index, cnd_df.index)
 
     def test_row_filled_with_nans_filtered_index_not_in_counts(self):
         cnd_df = enrich2.get_count_dataframe_by_condition(self.store, cnd="c1")
@@ -96,9 +94,7 @@ class TestFlattenColumnNames(TestCase):
         cnames = enrich2.flatten_column_names(
             self.df.loc[:, pd.IndexSlice["c1", :, :]].columns, ordering=(2, 1)
         )
-        self.assertListEqual(
-            cnames, ["t0_rep1", "t1_rep1", "t0_rep2", "t1_rep2"]
-        )
+        self.assertListEqual(cnames, ["t0_rep1", "t1_rep1", "t0_rep2", "t1_rep2"])
 
 
 class TestReplicateScoreDataFrames(TestCase):
@@ -116,8 +112,7 @@ class TestReplicateScoreDataFrames(TestCase):
             names=["condition", "selection", "value"],
         )
         index = pd.MultiIndex.from_product(
-            [["c1", "c2"], ["SE", "epsilon", "score"]],
-            names=["condition", "value"],
+            [["c1", "c2"], ["SE", "epsilon", "score"]], names=["condition", "value"]
         )
 
         hgvs = ["c.1A>G", "c.2A>G"]
@@ -287,19 +282,13 @@ class TestEnrich2ConvertH5Filepath(ProgramTestCase):
         self.bin.append(self.path.replace(".h5", ""))
 
     def test_replaces_underscore_with_spaces(self):
-        res = self.enrich2.convert_h5_filepath(
-            "base", "syn vars", "scores", "c1"
-        )
+        res = self.enrich2.convert_h5_filepath("base", "syn vars", "scores", "c1")
         self.assertIn("syn_vars", res)
 
     def test_concats_basename_elem_type_then_cnd_and_csv_ext(self):
-        res = self.enrich2.convert_h5_filepath(
-            "base", "syn vars", "scores", "c1"
-        )
+        res = self.enrich2.convert_h5_filepath("base", "syn vars", "scores", "c1")
         expected = "mavedb_base_syn_vars_scores_c1.csv"
-        self.assertEqual(
-            res, os.path.join(self.enrich2.output_directory, expected)
-        )
+        self.assertEqual(res, os.path.join(self.enrich2.output_directory, expected))
 
 
 class TestEnrich2ConvertH5Df(ProgramTestCase):
@@ -316,59 +305,39 @@ class TestEnrich2ConvertH5Df(ProgramTestCase):
 
         df = pd.DataFrame(data={"score": [1]}, index=["c.1A>G (p.Lys1Val)"])
         self.enrich2.convert_h5_df(
-            df=df,
-            element=constants.variants_table,
-            df_type=constants.score_type,
+            df=df, element=constants.variants_table, df_type=constants.score_type
         )
         self.assertFalse(os.path.isfile(fpath))
 
     def test_drops_non_numeric_columns(self):
-        df = pd.DataFrame(
-            data={"score": [1], "B": ["a"]}, index=["c.1A>G (p.Lys1Val)"]
-        )
+        df = pd.DataFrame(data={"score": [1], "B": ["a"]}, index=["c.1A>G (p.Lys1Val)"])
         result = self.enrich2.convert_h5_df(
-            df=df,
-            element=constants.variants_table,
-            df_type=constants.score_type,
+            df=df, element=constants.variants_table, df_type=constants.score_type
         )
         self.assertNotIn("B", result)
 
     def test_type_casts_numeric_to_int_and_float(self):
-        df = pd.DataFrame(
-            data={"score": [1], "B": [1.2]}, index=["c.1A>G (p.Lys1Val)"]
-        )
+        df = pd.DataFrame(data={"score": [1], "B": [1.2]}, index=["c.1A>G (p.Lys1Val)"])
         result = self.enrich2.convert_h5_df(
-            df=df,
-            element=constants.variants_table,
-            df_type=constants.score_type,
+            df=df, element=constants.variants_table, df_type=constants.score_type
         )
-        self.assertTrue(
-            np.issubdtype(result["score"].values[0], np.signedinteger)
-        )
+        self.assertTrue(np.issubdtype(result["score"].values[0], np.signedinteger))
         self.assertTrue(np.issubdtype(result["B"].values[0], np.floating))
 
     def test_sets_index_as_input_index(self):
-        df = pd.DataFrame(
-            {"score": [1], "B": ["a"]}, index=["c.1A>T (p.Lys1Val)"]
-        )
+        df = pd.DataFrame({"score": [1], "B": ["a"]}, index=["c.1A>T (p.Lys1Val)"])
         result = self.enrich2.convert_h5_df(
-            df=df,
-            element=constants.variants_table,
-            df_type=constants.score_type,
+            df=df, element=constants.variants_table, df_type=constants.score_type
         )
         assert_index_equal(result.index, df.index)
 
     def test_opens_invalid_rows_file_for_invalid_rows(self):
         self.path = os.path.join(DATA_DIR, "enrich2.tsv")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="AAA")
-        df = pd.DataFrame(
-            data={"score": [1], "B": ["a"]}, index=["c.1T>G (p.Lys1Val)"]
-        )
+        df = pd.DataFrame(data={"score": [1], "B": ["a"]}, index=["c.1T>G (p.Lys1Val)"])
         with self.assertRaises(ValueError):
             self.enrich2.convert_h5_df(
-                df=df,
-                element=constants.variants_table,
-                df_type=constants.score_type,
+                df=df, element=constants.variants_table, df_type=constants.score_type
             )
 
         fpath = str(self.path.split(".")[0]) + "_invalid_rows.csv"
@@ -385,9 +354,7 @@ class TestEnrich2ConvertH5Df(ProgramTestCase):
             index=["c.1A>T (p.Lys1Val)", "c.1T>G (p.Lys1Val)"],
         )
 
-        self.enrich2.convert_h5_df(
-            df=df, df_type=constants.score_type, element=None
-        )
+        self.enrich2.convert_h5_df(df=df, df_type=constants.score_type, element=None)
         self.assertTrue(os.path.isfile(fpath))
 
         invalid = pd.read_csv(fpath, sep=",", index_col=0)
@@ -420,58 +387,42 @@ class TestEnrich2ParseInput(ProgramTestCase):
         self.files = [
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR,
-                    "test_store",
-                    "mavedb_test_store_synonymous_counts_c1.csv",
+                    DATA_DIR, "test_store", "mavedb_test_store_synonymous_counts_c1.csv"
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR,
-                    "test_store",
-                    "mavedb_test_store_synonymous_counts_c2.csv",
+                    DATA_DIR, "test_store", "mavedb_test_store_synonymous_counts_c2.csv"
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR,
-                    "test_store",
-                    "mavedb_test_store_synonymous_scores_c1.csv",
+                    DATA_DIR, "test_store", "mavedb_test_store_synonymous_scores_c1.csv"
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR,
-                    "test_store",
-                    "mavedb_test_store_synonymous_scores_c2.csv",
+                    DATA_DIR, "test_store", "mavedb_test_store_synonymous_scores_c2.csv"
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR,
-                    "test_store",
-                    "mavedb_test_store_variants_counts_c1.csv",
+                    DATA_DIR, "test_store", "mavedb_test_store_variants_counts_c1.csv"
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR,
-                    "test_store",
-                    "mavedb_test_store_variants_counts_c2.csv",
+                    DATA_DIR, "test_store", "mavedb_test_store_variants_counts_c2.csv"
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR,
-                    "test_store",
-                    "mavedb_test_store_variants_scores_c1.csv",
+                    DATA_DIR, "test_store", "mavedb_test_store_variants_scores_c1.csv"
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR,
-                    "test_store",
-                    "mavedb_test_store_variants_scores_c2.csv",
+                    DATA_DIR, "test_store", "mavedb_test_store_variants_scores_c2.csv"
                 )
             ),
         ]
@@ -491,8 +442,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
             names=["condition", "selection", "value"],
         )
         scores_index = pd.MultiIndex.from_product(
-            [["c1", "c2"], ["SE", "epsilon", "score"]],
-            names=["condition", "value"],
+            [["c1", "c2"], ["SE", "epsilon", "score"]], names=["condition", "value"]
         )
 
         if scores_hgvs is None:
@@ -539,8 +489,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
             names=["condition", "selection", "value"],
         )
         scores_index = pd.MultiIndex.from_product(
-            [["c1", "c2"], ["SE", "epsilon", "score"]],
-            names=["condition", "value"],
+            [["c1", "c2"], ["SE", "epsilon", "score"]], names=["condition", "value"]
         )
 
         if scores_hgvs is None:
@@ -583,9 +532,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
     @mock.patch.object(pd.DataFrame, "to_csv", return_value=None)
     def test_saves_to_output_directory(self, patch):
         output = os.path.join(DATA_DIR, "new")
-        p = enrich2.Enrich2(
-            src=self.store, dst=output, wt_sequence=self.wt, offset=0
-        )
+        p = enrich2.Enrich2(src=self.store, dst=output, wt_sequence=self.wt, offset=0)
         p.parse_input(p.load_input_file())
         for call_args in patch.call_args_list:
             self.assertIn(output, call_args[0][0])
@@ -595,9 +542,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
     def test_saves_to_file_location_if_no_dst_supplied(self, patch):
         p = enrich2.Enrich2(src=self.store, wt_sequence=self.wt, offset=0)
         p.parse_input(self.enrich2.load_input_file())
-        expected_base_path = os.path.normpath(
-            os.path.join(DATA_DIR, "test_store")
-        )
+        expected_base_path = os.path.normpath(os.path.join(DATA_DIR, "test_store"))
         for call_args in patch.call_args_list:
             self.assertIn(expected_base_path, call_args[0][0])
 
@@ -657,18 +602,18 @@ class TestEnrich2ParseInput(ProgramTestCase):
         result = pd.read_csv(self.files[0], sep=",")
         expected = pd.DataFrame({constants.pro_variant_col: expected_pro})
         for (rep, tp) in product(["rep1", "rep2"], ["t0", "t1"]):
-            expected[rep + "_" + tp] = self.store["/main/synonymous/counts/"][
-                "c1"
-            ][rep][tp].values.astype(int)
+            expected[rep + "_" + tp] = self.store["/main/synonymous/counts/"]["c1"][
+                rep
+            ][tp].values.astype(int)
         assert_frame_equal(result, expected)
 
         # C2
         result = pd.read_csv(self.files[1], sep=",")
         expected = pd.DataFrame({constants.pro_variant_col: expected_pro})
         for (rep, tp) in product(["rep1", "rep2"], ["t0", "t1"]):
-            expected[rep + "_" + tp] = self.store["/main/synonymous/counts/"][
-                "c2"
-            ][rep][tp].values.astype(int)
+            expected[rep + "_" + tp] = self.store["/main/synonymous/counts/"]["c2"][
+                rep
+            ][tp].values.astype(int)
         assert_frame_equal(result, expected)
 
     def test_outputs_expected_synonymous_scores_for_each_condition(self):
@@ -682,15 +627,11 @@ class TestEnrich2ParseInput(ProgramTestCase):
         expected = pd.DataFrame(
             {
                 constants.pro_variant_col: expected_pro,
-                "SE": self.store[table_scores]["c1"]["SE"].values.astype(
+                "SE": self.store[table_scores]["c1"]["SE"].values.astype(float),
+                "epsilon": self.store[table_scores]["c1"]["epsilon"].values.astype(
                     float
                 ),
-                "epsilon": self.store[table_scores]["c1"][
-                    "epsilon"
-                ].values.astype(float),
-                "score": self.store[table_scores]["c1"]["score"].values.astype(
-                    float
-                ),
+                "score": self.store[table_scores]["c1"]["score"].values.astype(float),
             },
             columns=[
                 constants.pro_variant_col,
@@ -714,15 +655,11 @@ class TestEnrich2ParseInput(ProgramTestCase):
         expected = pd.DataFrame(
             {
                 constants.pro_variant_col: expected_pro,
-                "SE": self.store[table_scores]["c2"]["SE"].values.astype(
+                "SE": self.store[table_scores]["c2"]["SE"].values.astype(float),
+                "epsilon": self.store[table_scores]["c2"]["epsilon"].values.astype(
                     float
                 ),
-                "epsilon": self.store[table_scores]["c2"][
-                    "epsilon"
-                ].values.astype(float),
-                "score": self.store[table_scores]["c2"]["score"].values.astype(
-                    float
-                ),
+                "score": self.store[table_scores]["c2"]["score"].values.astype(float),
             },
             columns=[
                 constants.pro_variant_col,
@@ -754,9 +691,9 @@ class TestEnrich2ParseInput(ProgramTestCase):
             }
         )
         for (rep, tp) in product(["rep1", "rep2"], ["t0", "t1"]):
-            expected[rep + "_" + tp] = self.store["/main/variants/counts/"][
-                "c1"
-            ][rep][tp].values.astype(int)
+            expected[rep + "_" + tp] = self.store["/main/variants/counts/"]["c1"][rep][
+                tp
+            ].values.astype(int)
         assert_frame_equal(result, expected)
 
         # C2
@@ -768,9 +705,9 @@ class TestEnrich2ParseInput(ProgramTestCase):
             }
         )
         for (rep, tp) in product(["rep1", "rep2"], ["t0", "t1"]):
-            expected[rep + "_" + tp] = self.store["/main/variants/counts/"][
-                "c2"
-            ][rep][tp].values.astype(int)
+            expected[rep + "_" + tp] = self.store["/main/variants/counts/"]["c2"][rep][
+                tp
+            ].values.astype(int)
         assert_frame_equal(result, expected)
 
     def test_outputs_expected_variants_scores_for_each_condition(self):
@@ -785,15 +722,11 @@ class TestEnrich2ParseInput(ProgramTestCase):
             {
                 constants.pro_variant_col: expected_pro,
                 constants.nt_variant_col: expected_nt,
-                "SE": self.store[table_scores]["c1"]["SE"].values.astype(
+                "SE": self.store[table_scores]["c1"]["SE"].values.astype(float),
+                "epsilon": self.store[table_scores]["c1"]["epsilon"].values.astype(
                     float
                 ),
-                "epsilon": self.store[table_scores]["c1"][
-                    "epsilon"
-                ].values.astype(float),
-                "score": self.store[table_scores]["c1"]["score"].values.astype(
-                    float
-                ),
+                "score": self.store[table_scores]["c1"]["score"].values.astype(float),
             },
             columns=[
                 constants.nt_variant_col,
@@ -819,15 +752,11 @@ class TestEnrich2ParseInput(ProgramTestCase):
             {
                 constants.pro_variant_col: expected_pro,
                 constants.nt_variant_col: expected_nt,
-                "SE": self.store[table_scores]["c2"]["SE"].values.astype(
+                "SE": self.store[table_scores]["c2"]["SE"].values.astype(float),
+                "epsilon": self.store[table_scores]["c2"]["epsilon"].values.astype(
                     float
                 ),
-                "epsilon": self.store[table_scores]["c2"][
-                    "epsilon"
-                ].values.astype(float),
-                "score": self.store[table_scores]["c2"]["score"].values.astype(
-                    float
-                ),
+                "score": self.store[table_scores]["c2"]["score"].values.astype(float),
             },
             columns=[
                 constants.nt_variant_col,
@@ -847,9 +776,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
             ].values.astype(float)
         assert_frame_equal(result, expected)
 
-    def test_counts_and_scores_output_define_same_variants_when_input_does_not(
-        self
-    ):
+    def test_counts_and_scores_output_define_same_variants_when_input_does_not(self):
         self.store.close()
         self.store = pd.HDFStore(self.path, "w")
         scores, shared, counts, expected_nt, expected_pro = self.mock_variants_frames(
@@ -876,20 +803,12 @@ class TestEnrich2ParseInput(ProgramTestCase):
     def test_drops_null_rows(self):
         self.store.close()
         self.store = pd.HDFStore(self.path, "w")
-        scores, shared, counts, expected_nt, expected_pro = (
-            self.mock_variants_frames()
-        )
+        scores, shared, counts, expected_nt, expected_pro = self.mock_variants_frames()
 
         # Add a null row
-        scores = scores.reindex(
-            scores.index.values.tolist() + ["c.1G>G (p.Ala1=)"]
-        )
-        shared = shared.reindex(
-            shared.index.values.tolist() + ["c.1G>G (p.Ala1=)"]
-        )
-        counts = counts.reindex(
-            counts.index.values.tolist() + ["c.1G>G (p.Ala1=)"]
-        )
+        scores = scores.reindex(scores.index.values.tolist() + ["c.1G>G (p.Ala1=)"])
+        shared = shared.reindex(shared.index.values.tolist() + ["c.1G>G (p.Ala1=)"])
+        counts = counts.reindex(counts.index.values.tolist() + ["c.1G>G (p.Ala1=)"])
         self.store["/main/variants/scores/"] = scores
         self.store["/main/variants/scores_shared/"] = shared
         self.store["/main/variants/counts/"] = counts
@@ -965,13 +884,8 @@ class TestEnrich2ParseRow(ProgramTestCase):
             self.assertEqual(expected, self.enrich2.parse_row((variant, None)))
 
     def test_delegates_to_protein(self):
-        variant = "{0}.Thr1=,{0}.Thr1Gly".format(
-            hgvsp.constants.protein_prefix
-        )
-        expected = (
-            None,
-            "{0}.[Thr1=;Thr1Gly]".format(hgvsp.constants.protein_prefix),
-        )
+        variant = "{0}.Thr1=,{0}.Thr1Gly".format(hgvsp.constants.protein_prefix)
+        expected = (None, "{0}.[Thr1=;Thr1Gly]".format(hgvsp.constants.protein_prefix))
         self.assertEqual(expected, self.enrich2.parse_row((variant, None)))
 
     def test_nt_variant_is_none_special_variant_is_from_synonymous_table(self):
@@ -982,9 +896,7 @@ class TestEnrich2ParseRow(ProgramTestCase):
             ),
         )
 
-    @mock.patch(
-        "mavedbconvert.enrich2.apply_offset", return_value="c.3T>C (p.Thr1=)"
-    )
+    @mock.patch("mavedbconvert.enrich2.apply_offset", return_value="c.3T>C (p.Thr1=)")
     def test_calls_apply_offset_to_variant(self, patch):
         variant = "c.3T>C (p.=)"
         self.enrich2.parse_row((variant, None))
@@ -1000,9 +912,7 @@ class TestEnrich2ParseRow(ProgramTestCase):
         self.assertEqual(self.enrich2.parse_row(("_sy", None)), ("_sy", "_sy"))
 
     def test_strips_whitespace(self):
-        self.assertEqual(
-            self.enrich2.parse_row((" c.1A>G ", None)), ("c.1A>G", None)
-        )
+        self.assertEqual(self.enrich2.parse_row((" c.1A>G ", None)), ("c.1A>G", None))
 
     def test_uses_three_qmarks(self):
         variant = "c.3T>C (p.Thr1?)"
@@ -1209,21 +1119,15 @@ class TestEnrich2MixedHGVSParsing(ProgramTestCase):
 
     def test_valueerror_multiple_prefix_types(self):
         with self.assertRaises(ValueError):
-            self.enrich2.parse_mixed_variant(
-                "c.1A>G (p.=), r.2u>a (p.Lys4Arg)"
-            )
+            self.enrich2.parse_mixed_variant("c.1A>G (p.=), r.2u>a (p.Lys4Arg)")
         with self.assertRaises(ValueError):
-            self.enrich2.parse_mixed_variant(
-                "c.1A>G (p.=), n.2T>A (p.Lys4Arg)"
-            )
+            self.enrich2.parse_mixed_variant("c.1A>G (p.=), n.2T>A (p.Lys4Arg)")
         with self.assertRaises(ValueError):
             self.enrich2.parse_mixed_variant("c.1A>G (p.=), (p.Lys4Arg)")
         with self.assertRaises(ValueError):
             self.enrich2.parse_mixed_variant("c.1A>G (p.=), p.Lys4Arg")
         with self.assertRaises(ValueError):
-            self.enrich2.parse_mixed_variant(
-                "c.1A>G (p.=), c.2T>A (g.Lys4Arg)"
-            )
+            self.enrich2.parse_mixed_variant("c.1A>G (p.=), c.2T>A (g.Lys4Arg)")
 
     def test_doesnt_collapse_single_variants_into_multivariant(self):
         nt, pro = self.enrich2.parse_mixed_variant("c.3T>C (p.=)")
@@ -1232,9 +1136,7 @@ class TestEnrich2MixedHGVSParsing(ProgramTestCase):
         self.assertIsNotNone(hgvsp.single_variant_re.fullmatch(nt))
         self.assertIsNotNone(hgvsp.single_variant_re.fullmatch(pro))
 
-    def test_protein_set_as_nt_when_table_is_not_syn_and_variant_is_special(
-        self
-    ):
+    def test_protein_set_as_nt_when_table_is_not_syn_and_variant_is_special(self):
         nt, pro = self.enrich2.parse_mixed_variant("_wt")
         self.assertEqual(nt, "_wt")
         self.assertEqual(pro, "_wt")
@@ -1266,15 +1168,11 @@ class TestInferSilentAASub(ProgramTestCase):
 
     def test_correct_wt_aa_inferred(self):
         self.enrich2.wt_sequence = "TCT"
-        self.assertEqual(
-            "p.Ser1=", self.enrich2.infer_silent_aa_substitution("c.3T>C")
-        )
+        self.assertEqual("p.Ser1=", self.enrich2.infer_silent_aa_substitution("c.3T>C"))
 
     def test_correct_aa_position_inferred(self):
         self.enrich2.wt_sequence = "AAAGGGTCT"
-        self.assertEqual(
-            "p.Ser3=", self.enrich2.infer_silent_aa_substitution("c.9T>C")
-        )
+        self.assertEqual("p.Ser3=", self.enrich2.infer_silent_aa_substitution("c.9T>C"))
 
     def test_error_mutant_codon_does_not_match_wild_type(self):
         self.enrich2.wt_sequence = "ATG"
@@ -1284,9 +1182,7 @@ class TestInferSilentAASub(ProgramTestCase):
     def test_correctly_infers_aa_from_codon_group(self):
         self.enrich2.wt_sequence = "TTA"
         group = ["c.1T>C", "c.2=", "c.3A>T"]
-        self.assertEqual(
-            "p.Leu1=", self.enrich2.infer_silent_aa_substitution(group)
-        )
+        self.assertEqual("p.Leu1=", self.enrich2.infer_silent_aa_substitution(group))
 
     def test_valueerror_mixed_codons_in_group(self):
         with self.assertRaises(ValueError):
@@ -1295,9 +1191,7 @@ class TestInferSilentAASub(ProgramTestCase):
     def test_correctly_infers_aa_from_silent_variants(self):
         self.enrich2.wt_sequence = "TTA"
         group = ["c.1=", "c.2=", "c.3="]
-        self.assertEqual(
-            "p.Leu1=", self.enrich2.infer_silent_aa_substitution(group)
-        )
+        self.assertEqual("p.Leu1=", self.enrich2.infer_silent_aa_substitution(group))
 
 
 class TestApplyOffset(TestCase):
@@ -1328,14 +1222,10 @@ class TestApplyOffset(TestCase):
     def test_applies_offset_to_protein_variant_modulo_3(self):
         variant = "p.Leu10=, p.Leu13="
         offset = 10
-        self.assertEqual(
-            "p.Leu7=, p.Leu10=", enrich2.apply_offset(variant, offset)
-        )
+        self.assertEqual("p.Leu7=, p.Leu10=", enrich2.apply_offset(variant, offset))
         self.assertEqual("p.Leu7=", enrich2.apply_offset("p.Leu10=", offset))
 
-    @mock.patch.object(
-        enrich2.base.BaseProgram, "validate_against_wt_sequence"
-    )
+    @mock.patch.object(enrich2.base.BaseProgram, "validate_against_wt_sequence")
     def test_validates_against_wt_sequence(self, patch):
         variant = "c.-9C>T"
         path = os.path.join(DATA_DIR, "dummy.h5")
@@ -1350,9 +1240,7 @@ class TestApplyOffset(TestCase):
         with self.assertRaises(ValueError):
             enrich2.apply_offset(variant, offset=-10, enrich2=p)
 
-    @mock.patch.object(
-        enrich2.base.BaseProgram, "validate_against_protein_sequence"
-    )
+    @mock.patch.object(enrich2.base.BaseProgram, "validate_against_protein_sequence")
     def test_validates_against_pro_sequence(self, patch):
         variant = "p.Gly3Leu"
         path = os.path.join(DATA_DIR, "dummy.h5")
@@ -1375,16 +1263,10 @@ class TestEnrich2Init(TestCase):
 
     def test_error_is_coding_and_offset_not_mult_of_three(self):
         with self.assertRaises(ValueError):
-            enrich2.Enrich2(
-                src=self.path, wt_sequence="ATC", is_coding=True, offset=1
-            )
+            enrich2.Enrich2(src=self.path, wt_sequence="ATC", is_coding=True, offset=1)
 
     def test_ok_is_coding_false_and_offset_not_mult_of_three(self):
-        enrich2.Enrich2(
-            src=self.path, wt_sequence="ATC", is_coding=False, offset=1
-        )
+        enrich2.Enrich2(src=self.path, wt_sequence="ATC", is_coding=False, offset=1)
 
     def test_ok_is_coding_and_offset_mult_of_three(self):
-        enrich2.Enrich2(
-            src=self.path, wt_sequence="ATC", is_coding=True, offset=-3
-        )
+        enrich2.Enrich2(src=self.path, wt_sequence="ATC", is_coding=True, offset=-3)

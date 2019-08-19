@@ -153,13 +153,9 @@ class Empiric(base.BaseProgram):
         `pd.DataFrame`
         """
         if self.skip_header_rows:
-            logger.info(
-                "Skipping first {} row(s).".format(self.skip_footer_rows + 1)
-            )
+            logger.info("Skipping first {} row(s).".format(self.skip_footer_rows + 1))
         if self.skip_footer_rows:
-            logger.info(
-                "Skipping last {} row(s).".format(self.skip_footer_rows + 1)
-            )
+            logger.info("Skipping last {} row(s).".format(self.skip_footer_rows + 1))
 
         if self.extension in (".xlsx", ".xls"):
             od = pd.read_excel(
@@ -193,9 +189,7 @@ class Empiric(base.BaseProgram):
             )
 
         self.validate_columns(df)
-        df[self.position_column] -= (
-            (1, -1)[self.offset < 3] * abs(self.offset) // 3
-        )
+        df[self.position_column] -= (1, -1)[self.offset < 3] * abs(self.offset) // 3
         return df
 
     def validate_columns(self, df):
@@ -207,8 +201,7 @@ class Empiric(base.BaseProgram):
 
         if not len(set(df.columns) & set(self.POSITION_COLUMNS)):
             raise ValueError(
-                "Input is missing the required 'position' (case-insensitive) "
-                "column."
+                "Input is missing the required 'position' (case-insensitive) " "column."
             )
 
         if not len(set(df.columns) & set(self.CODON_COLUMNS)):
@@ -219,14 +212,10 @@ class Empiric(base.BaseProgram):
             )
             self.codon_column = None
         else:
-            self.codon_column = list(
-                set(df.columns) & set(self.CODON_COLUMNS)
-            )[0]
+            self.codon_column = list(set(df.columns) & set(self.CODON_COLUMNS))[0]
 
         self.aa_column = list(set(df.columns) & set(self.AA_COLUMNS))[0]
-        self.position_column = list(
-            set(df.columns) & set(self.POSITION_COLUMNS)
-        )[0]
+        self.position_column = list(set(df.columns) & set(self.POSITION_COLUMNS))[0]
 
     def parse_row(self, row):
         """
@@ -257,9 +246,7 @@ class Empiric(base.BaseProgram):
                 "Coordinate {pos} (1-based) is out of bounds. The maximum "
                 "index of the translated sequence is {idx} "
                 "(length {length}).".format(
-                    pos=codon_pos + 1,
-                    idx=len(self.codons),
-                    length=len(self.codons),
+                    pos=codon_pos + 1, idx=len(self.codons), length=len(self.codons)
                 )
             )
 
@@ -308,10 +295,7 @@ class Empiric(base.BaseProgram):
 
         df[constants.nt_variant_col] = [tup[0] for tup in tups]
         df[constants.pro_variant_col] = [tup[1] for tup in tups]
-        df.drop(
-            columns=[self.position_column, self.aa_column, "row_num"],
-            inplace=True,
-        )
+        df.drop(columns=[self.position_column, self.aa_column, "row_num"], inplace=True)
         if self.codon_column:
             df.drop(columns=[self.codon_column], inplace=True)
 
@@ -331,9 +315,7 @@ class Empiric(base.BaseProgram):
             elif np.issubdtype(column_type, np.signedinteger):
                 astype = np.int
             else:
-                logger.warning(
-                    "Dropping non-numeric column '{}'".format(column)
-                )
+                logger.warning("Dropping non-numeric column '{}'".format(column))
                 mave_columns.remove(column)
                 continue
 
@@ -345,16 +327,12 @@ class Empiric(base.BaseProgram):
         # Sort column order so 'score' comes right after hgvs columns.
         if self.input_is_scores_based:
             mave_columns = (
-                mave_columns[:2]
-                + [constants.mavedb_score_column]
-                + mave_columns[2:]
+                mave_columns[:2] + [constants.mavedb_score_column] + mave_columns[2:]
             )
         mavedb_df = pd.DataFrame(data=data, columns=mave_columns)
         filters.drop_na_rows(mavedb_df, inplace=True)
         filters.drop_na_columns(mavedb_df, inplace=True)
 
         logger.info("Running MaveDB compliance validation.")
-        validators.validate_mavedb_compliance(
-            mavedb_df, df_type=self.input_type
-        )
+        validators.validate_mavedb_compliance(mavedb_df, df_type=self.input_type)
         return mavedb_df

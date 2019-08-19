@@ -64,13 +64,9 @@ class Enrich(base.BaseProgram):
         `pd.DataFrame`
         """
         if self.skip_header_rows:
-            logger.info(
-                "Skipping first {} row(s).".format(self.skip_footer_rows + 1)
-            )
+            logger.info("Skipping first {} row(s).".format(self.skip_footer_rows + 1))
         if self.skip_footer_rows:
-            logger.info(
-                "Skipping last {} row(s).".format(self.skip_footer_rows + 1)
-            )
+            logger.info("Skipping last {} row(s).".format(self.skip_footer_rows + 1))
 
         if self.extension in (".xlsx", ".xls"):
             od = pd.read_excel(
@@ -175,17 +171,13 @@ class Enrich(base.BaseProgram):
                     )
                 )
 
-            wt_aa = constants.AA_CODES[
-                self.protein_sequence[aa_position - 1].upper()
-            ]
+            wt_aa = constants.AA_CODES[self.protein_sequence[aa_position - 1].upper()]
             mut_aa = constants.AA_CODES[aa.upper()]
             if wt_aa == mut_aa:
                 events.append("{wt}{pos}=".format(wt=wt_aa, pos=aa_position))
             else:
                 events.append(
-                    "{wt}{pos}{mut}".format(
-                        wt=wt_aa, pos=aa_position, mut=mut_aa
-                    )
+                    "{wt}{pos}{mut}".format(wt=wt_aa, pos=aa_position, mut=mut_aa)
                 )
 
         if len(events) == 0:
@@ -220,9 +212,9 @@ class Enrich(base.BaseProgram):
 
         # output the conversion progress with a progress bar
         tqdm.pandas(desc="Parsing seqIDs")
-        df.loc[:, constants.pro_variant_col] = df.loc[
-            :, "seqID"
-        ].progress_apply(self.parse_row)
+        df.loc[:, constants.pro_variant_col] = df.loc[:, "seqID"].progress_apply(
+            self.parse_row
+        )
 
         # enrich output has no nucleotide data
         df.loc[:, constants.nt_variant_col] = None
@@ -245,9 +237,7 @@ class Enrich(base.BaseProgram):
             elif np.issubdtype(column_type, np.signedinteger):
                 astype = np.int
             else:
-                logger.warning(
-                    "Dropping non-numeric column '{}'".format(column)
-                )
+                logger.warning("Dropping non-numeric column '{}'".format(column))
                 mave_columns.remove(column)
                 continue
 
@@ -259,16 +249,12 @@ class Enrich(base.BaseProgram):
         # Sort column order so 'score' comes right after hgvs columns.
         if self.input_is_scores_based:
             mave_columns = (
-                mave_columns[:2]
-                + [constants.mavedb_score_column]
-                + mave_columns[2:]
+                mave_columns[:2] + [constants.mavedb_score_column] + mave_columns[2:]
             )
         mavedb_df = pd.DataFrame(data=data, columns=mave_columns)
         filters.drop_na_rows(mavedb_df, inplace=True)
         filters.drop_na_columns(mavedb_df, inplace=True)
 
         logger.info("Running MaveDB compliance validation.")
-        validators.validate_mavedb_compliance(
-            mavedb_df, df_type=self.input_type
-        )
+        validators.validate_mavedb_compliance(mavedb_df, df_type=self.input_type)
         return mavedb_df

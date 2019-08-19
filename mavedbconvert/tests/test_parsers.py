@@ -126,9 +126,7 @@ class TestParseProgram(TestCase):
 class TestParseWildTypeSequence(TestCase):
     def test_can_read_from_fasta(self):
         path = os.path.join(DATA_DIR, "lower.fa")
-        wtseq = parsers.parse_wt_sequence(
-            path, program="enrich2", non_coding=True
-        )
+        wtseq = parsers.parse_wt_sequence(path, program="enrich2", non_coding=True)
         expected = (
             "ACAGTTGGATATAGTAGTTTGTACGAGTTGCTTGTGGCTT"
             "CGCCAGCGCATACCAGCATAGTAAAGGCAACGGCCTCTGA"
@@ -139,9 +137,7 @@ class TestParseWildTypeSequence(TestCase):
 
     def test_error_invalid_chars(self):
         with self.assertRaises(exceptions.InvalidWildTypeSequence):
-            parsers.parse_wt_sequence(
-                "ATXG", program="enrich2", non_coding=True
-            )
+            parsers.parse_wt_sequence("ATXG", program="enrich2", non_coding=True)
 
     def test_error_not_divisible_by_three_enrich_empiric(self):
         with self.assertRaises(exceptions.SequenceFrameError):
@@ -182,9 +178,7 @@ class TestParseInputType(TestCase):
 class TestParseScoreColumn(TestCase):
     @mock.patch("mavedbconvert.parsers.parse_string", return_value="score")
     def test_calls_parse_string(self, patch):
-        parsers.parse_score_column(
-            "score", constants.score_type, program="enrich"
-        )
+        parsers.parse_score_column("score", constants.score_type, program="enrich")
         patch.assert_called()
 
     def test_error_enrich_scores_input_and_column_not_defined(self):
@@ -226,14 +220,10 @@ class TestParseOffset(TestCase):
             parsers.parse_offset(1, "enrich2", non_coding=False)
 
     def test_ok_enrich2_is_coding_and_mult_of_three(self):
-        self.assertEqual(
-            -6, parsers.parse_offset("-6", "enrich2", non_coding=False)
-        )
+        self.assertEqual(-6, parsers.parse_offset("-6", "enrich2", non_coding=False))
 
     def test_ok_enrich2_non_coding_and_not_mult_of_three(self):
-        self.assertEqual(
-            -7, parsers.parse_offset("-7", "enrich2", non_coding=True)
-        )
+        self.assertEqual(-7, parsers.parse_offset("-7", "enrich2", non_coding=True))
 
     def test_error_enrich_empiric_offset_not_mult_of_three(self):
         with self.assertRaises(ValueError):

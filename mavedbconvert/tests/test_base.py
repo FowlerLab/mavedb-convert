@@ -68,9 +68,7 @@ class TestBaseProgram(ProgramTestCase):
         self.assertEqual(p.ext, ".tsv")
 
     def test_lower_cases_ext(self):
-        p = base.BaseProgram(
-            src=self.src.replace("tsv", "TSV"), wt_sequence="AAA"
-        )
+        p = base.BaseProgram(src=self.src.replace("tsv", "TSV"), wt_sequence="AAA")
         self.assertEqual(p.ext, ".tsv")
 
     def test_value_error_coding_offset_not_multiple_of_three(self):
@@ -83,9 +81,7 @@ class TestBaseProgram(ProgramTestCase):
 
     def test_output_file_joins_dst_and_dst_filename(self):
         p = base.BaseProgram(src=self.src, wt_sequence="AAA")
-        self.assertEqual(
-            p.output_file, os.path.join(DATA_DIR, "mavedb_enrich1.csv")
-        )
+        self.assertEqual(p.output_file, os.path.join(DATA_DIR, "mavedb_enrich1.csv"))
 
     def test_output_directory_expands_user_and_norms_path(self):
         p = base.BaseProgram(src=self.src, wt_sequence="AAA")
@@ -106,9 +102,7 @@ class TestBaseProgram(ProgramTestCase):
         p.wt_sequence = "ATGCGA"
         self.assertEqual(p.wt_sequence, "ATGCGA")
 
-    def test_wt_setter_creates_codons_from_wt_sequence_and_ignores_offset(
-        self
-    ):
+    def test_wt_setter_creates_codons_from_wt_sequence_and_ignores_offset(self):
         p = base.BaseProgram(src=self.src, wt_sequence="AAA")
         p.offset = 3
         p.wt_sequence = "ATGCGA"
@@ -133,9 +127,7 @@ class TestBaseProgramValidateAgainstWTSeq(ProgramTestCase):
     def setUp(self):
         super().setUp()
         self.src = os.path.join(DATA_DIR, "enrich1.tsv")
-        self.base = base.BaseProgram(
-            src=self.src, wt_sequence="ATG", one_based=True
-        )
+        self.base = base.BaseProgram(src=self.src, wt_sequence="ATG", one_based=True)
 
     def test_error_not_a_dna_sub(self):
         with self.assertRaises(exceptions.InvalidVariantType):
@@ -186,9 +178,7 @@ class TestBaseProgramValidateAgainstProteinSeq(ProgramTestCase):
     def setUp(self):
         super().setUp()
         self.src = os.path.join(DATA_DIR, "enrich1.tsv")
-        self.base = base.BaseProgram(
-            src=self.src, wt_sequence="ATGAAA", one_based=True
-        )
+        self.base = base.BaseProgram(src=self.src, wt_sequence="ATGAAA", one_based=True)
 
     def test_error_not_a_protein_sub(self):
         with self.assertRaises(exceptions.InvalidVariantType):

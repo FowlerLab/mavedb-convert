@@ -94,9 +94,7 @@ def is_numeric(dtype):
     -------
     bool
     """
-    return np.issubdtype(dtype, np.floating) or np.issubdtype(
-        dtype, np.signedinteger
-    )
+    return np.issubdtype(dtype, np.floating) or np.issubdtype(dtype, np.signedinteger)
 
 
 class NucleotideSubstitutionEvent(object):
@@ -166,9 +164,7 @@ class NucleotideSubstitutionEvent(object):
     def event(self):
         if self.silent:
             return "{pos}=".format(ref=self.ref, pos=self.position)
-        return "{pos}{ref}>{alt}".format(
-            ref=self.ref, pos=self.position, alt=self.alt
-        )
+        return "{pos}{ref}>{alt}".format(ref=self.ref, pos=self.position, alt=self.alt)
 
     def codon_position(self, one_based=True):
         """
@@ -203,9 +199,7 @@ class NucleotideSubstitutionEvent(object):
         int
         """
         if self.position < 0:
-            raise ValueError(
-                "Cannot infer codon frame from negative position."
-            )
+            raise ValueError("Cannot infer codon frame from negative position.")
         return (
             self.position
             - 3 * (self.codon_position(one_based) - 1)
@@ -287,9 +281,7 @@ class ProteinSubstitutionEvent(object):
     def event(self):
         if self.silent:
             return "{ref}{pos}=".format(ref=self.ref, pos=self.position)
-        return "{ref}{pos}{alt}".format(
-            ref=self.ref, pos=self.position, alt=self.alt
-        )
+        return "{ref}{pos}{alt}".format(ref=self.ref, pos=self.position, alt=self.alt)
 
 
 def split_variant(variant):
@@ -309,9 +301,7 @@ def split_variant(variant):
     """
     prefix = variant[0]
     if len(variant.split(";")) > 1:
-        return [
-            "{}.{}".format(prefix, e.strip()) for e in variant[3:-1].split(";")
-        ]
+        return ["{}.{}".format(prefix, e.strip()) for e in variant[3:-1].split(";")]
     return [variant]
 
 
@@ -381,9 +371,7 @@ def hgvs_pro_from_event_list(events):
     Convert a list of protein variant events into a single HGVS string. Removes
     duplicates from `events`.
     """
-    events = list(
-        OrderedDict.fromkeys([format_variant(e) for e in events]).keys()
-    )
+    events = list(OrderedDict.fromkeys([format_variant(e) for e in events]).keys())
     if len(events) == 1:
         mave_hgvs = "p.{}".format(format_variant(events[0]))
     else:
@@ -410,14 +398,12 @@ def hgvs_nt_from_event_list(events, prefix):
             prefix, ";".join([format_variant(e) for e in events])
         )
     if mave_hgvs not in constants.special_variants:
-        match = single_variant_re.fullmatch(
+        match = single_variant_re.fullmatch(mave_hgvs) or multi_variant_re.fullmatch(
             mave_hgvs
-        ) or multi_variant_re.fullmatch(mave_hgvs)
+        )
         if not match:
             raise exceptions.HGVSMatchError(
-                "Could not validate parsed variant '{hgvs}'.".format(
-                    hgvs=mave_hgvs
-                )
+                "Could not validate parsed variant '{hgvs}'.".format(hgvs=mave_hgvs)
             )
     return mave_hgvs
 

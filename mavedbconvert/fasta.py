@@ -47,9 +47,7 @@ def split_fasta_path(fname):
             return head, base, ext, compression
         else:
             raise IOError(
-                "Warning: unexpected file extension for '{fname}'".format(
-                    fname=fname
-                )
+                "Warning: unexpected file extension for '{fname}'".format(fname=fname)
             )
     else:
         raise IOError("file '{fname}' doesn't exist".format(fname=fname))
@@ -93,9 +91,7 @@ def parse_fasta(file):
             elif not constants.dna_re.fullmatch(lines[i].strip().upper()):
                 raise ValueError(
                     "Invalid nucleotide characters in line '{}. "
-                    "Supported characters are ATCGatcg.".format(
-                        lines[i].strip()
-                    )
+                    "Supported characters are ATCGatcg.".format(lines[i].strip())
                 )
             else:
                 sequence += lines[i].strip()

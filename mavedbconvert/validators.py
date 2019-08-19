@@ -178,9 +178,7 @@ def validate_hgvs_nt_uniqueness(df):
     if np.any(dups):
         dup_list = [
             "{} ({})".format(x, y)
-            for x, y in zip(
-                df.loc[dups, constants.nt_variant_col], dups.index[dups]
-            )
+            for x, y in zip(df.loc[dups, constants.nt_variant_col], dups.index[dups])
         ]
         raise ValueError(
             "duplicate HGVS nucleotide strings found: {}".format(
@@ -196,9 +194,7 @@ def validate_hgvs_pro_uniqueness(df):
     if np.any(dups):
         dup_list = [
             "{} ({})".format(x, y)
-            for x, y in zip(
-                df.loc[dups, constants.pro_variant_col], dups.index[dups]
-            )
+            for x, y in zip(df.loc[dups, constants.pro_variant_col], dups.index[dups])
         ]
         raise ValueError(
             "Duplicate HGVS protein strings found: {}".format(
@@ -220,12 +216,8 @@ def validate_datasets_define_same_variants(scores_df, counts_df):
         Scores dataframe parsed from an uploaded counts file.
     """
 
-    scores_columns = [
-        c for c in scores_df.columns if c in constants.variant_columns
-    ]
-    counts_columns = [
-        c for c in counts_df.columns if c in constants.variant_columns
-    ]
+    scores_columns = [c for c in scores_df.columns if c in constants.variant_columns]
+    counts_columns = [c for c in counts_df.columns if c in constants.variant_columns]
     if scores_columns != counts_columns:
         raise AssertionError(
             "Dataframes define different hgvs columns. "
@@ -244,8 +236,7 @@ def validate_datasets_define_same_variants(scores_df, counts_df):
             neq_list = [
                 "{} ({})".format(x, y)
                 for x, y in zip(
-                    scores_nt[not_equal_selector],
-                    counts_nt[not_equal_selector],
+                    scores_nt[not_equal_selector], counts_nt[not_equal_selector]
                 )
                 if (x is not np.NaN) and (y is not np.NaN)
             ]
@@ -258,16 +249,13 @@ def validate_datasets_define_same_variants(scores_df, counts_df):
         scores_pro = scores_df[constants.pro_variant_col].values
         counts_pro = counts_df[constants.pro_variant_col].values
         try:
-            assert_array_equal(
-                scores_pro, counts_pro
-            )  # Treats np.NaN as equal
+            assert_array_equal(scores_pro, counts_pro)  # Treats np.NaN as equal
         except AssertionError:
             not_equal_selector = scores_pro != counts_pro
             neq_list = [
                 "{} ({})".format(x, y)
                 for x, y in zip(
-                    scores_pro[not_equal_selector],
-                    counts_pro[not_equal_selector],
+                    scores_pro[not_equal_selector], counts_pro[not_equal_selector]
                 )
                 if (x is not np.NaN) and (y is not np.NaN)
             ]
@@ -293,18 +281,14 @@ def validate_mavedb_compliance(df, df_type):
     primary_col = None
     if has_nt_col:
         defines_nt = not all(
-            df.loc[:, constants.nt_variant_col].progress_apply(
-                utilities.is_null
-            )
+            df.loc[:, constants.nt_variant_col].progress_apply(utilities.is_null)
         )
         if defines_nt:
             primary_col = constants.nt_variant_col
 
     if has_pro_col and primary_col is None:
         defines_pro = not all(
-            df.loc[:, constants.pro_variant_col].progress_apply(
-                utilities.is_null
-            )
+            df.loc[:, constants.pro_variant_col].progress_apply(utilities.is_null)
         )
         if defines_pro:
             primary_col = constants.pro_variant_col

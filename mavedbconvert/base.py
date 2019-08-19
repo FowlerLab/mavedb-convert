@@ -90,9 +90,7 @@ class BaseProgram(object):
 
         src_filename, ext = os.path.splitext(os.path.split(src)[1])
         self.src_filename = src_filename
-        self.dst_filename = "mavedb_{}.csv".format(
-            re.sub(r"\s+", "_", src_filename)
-        )
+        self.dst_filename = "mavedb_{}.csv".format(re.sub(r"\s+", "_", src_filename))
         self.ext = ext.lower()
 
         # Set directory as the same directory as the input file if not provided
@@ -113,9 +111,7 @@ class BaseProgram(object):
         if not os.path.isdir(self.dst):
             logger.info("Creating directory '{}'".format(self.dst))
             os.makedirs(self.dst, exist_ok=True)
-        logger.info(
-            "Checking write permission to directory '{}'".format(self.dst)
-        )
+        logger.info("Checking write permission to directory '{}'".format(self.dst))
         os.access(self.dst, os.W_OK)
 
         self.is_coding = is_coding
@@ -176,9 +172,7 @@ class BaseProgram(object):
 
     @property
     def output_file(self):
-        return os.path.normpath(
-            os.path.join(self.output_directory, self.dst_filename)
-        )
+        return os.path.normpath(os.path.join(self.output_directory, self.dst_filename))
 
     def convert(self):
         """

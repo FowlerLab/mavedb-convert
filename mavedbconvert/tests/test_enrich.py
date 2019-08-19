@@ -118,9 +118,7 @@ class TestEnrichParseRow(ProgramTestCase):
         self.assertEqual(self.enrich.parse_row("0,0-L,L"), "p.Asp1Leu")
 
     def test_uses_three_qmarks(self):
-        self.assertEqual(
-            self.enrich.parse_row("0,1-?,?"), "p.[Asp1???;Val2???]"
-        )
+        self.assertEqual(self.enrich.parse_row("0,1-?,?"), "p.[Asp1???;Val2???]")
 
     def test_applies_offset_divided_by_3(self):
         self.enrich.offset = -3
@@ -140,38 +138,24 @@ class TestEnrichParseInput(ProgramTestCase):
         )
 
     def test_orders_columns(self):
-        df = pd.DataFrame(
-            {"seqID": ["0,1,2,3-L,Y,T,I"], "A": [1.2], "B": [2.4]}
-        )
+        df = pd.DataFrame({"seqID": ["0,1,2,3-L,Y,T,I"], "A": [1.2], "B": [2.4]})
         result = self.enrich.parse_input(df)
-        self.assertEqual(
-            list(result.columns).index(constants.pro_variant_col), 0
-        )
-        self.assertEqual(
-            list(result.columns).index(constants.mavedb_score_column), 1
-        )
+        self.assertEqual(list(result.columns).index(constants.pro_variant_col), 0)
+        self.assertEqual(list(result.columns).index(constants.mavedb_score_column), 1)
 
     def test_removes_hgvs_nt(self):
-        df = pd.DataFrame(
-            {"seqID": ["0,1,2,3-L,Y,T,I"], "A": [1.2], "B": [2.4]}
-        )
+        df = pd.DataFrame({"seqID": ["0,1,2,3-L,Y,T,I"], "A": [1.2], "B": [2.4]})
         result = self.enrich.parse_input(df)
         self.assertNotIn(constants.nt_variant_col, result.columns)
 
     def test_removes_null_columns(self):
-        df = pd.DataFrame(
-            {"seqID": ["0,1,2,3-L,Y,T,I"], "B": [None], "A": [2.4]}
-        )
+        df = pd.DataFrame({"seqID": ["0,1,2,3-L,Y,T,I"], "B": [None], "A": [2.4]})
         result = self.enrich.parse_input(df)
         self.assertNotIn("B", result.columns)
 
     def test_removes_null_rows(self):
         df = pd.DataFrame(
-            {
-                "seqID": ["0,1-L,Y", "2,3-T,I"],
-                "A": [None, 1.2],
-                "B": [None, 2.4],
-            }
+            {"seqID": ["0,1-L,Y", "2,3-T,I"], "A": [None, 1.2], "B": [None, 2.4]}
         )
         result = self.enrich.parse_input(df)
         self.assertEqual(len(result), 1)
@@ -179,9 +163,7 @@ class TestEnrichParseInput(ProgramTestCase):
         self.assertEqual(result["B"].values[0], 2.4)
 
     def test_renames_score_column_to_score_and_drops_original(self):
-        df = pd.DataFrame(
-            {"seqID": ["0,1,2,3-L,Y,T,I"], "A": [1.2], "B": [2.4]}
-        )
+        df = pd.DataFrame({"seqID": ["0,1,2,3-L,Y,T,I"], "A": [1.2], "B": [2.4]})
         result = self.enrich.parse_input(df)
         self.assertListEqual(list(df["A"]), list(result["score"]))
         self.assertIn("B", result.columns)
@@ -192,15 +174,12 @@ class TestEnrichParseInput(ProgramTestCase):
         result = self.enrich.parse_input(df)
         self.assertTrue(
             np.issubdtype(
-                result[constants.mavedb_score_column].values[0],
-                np.signedinteger,
+                result[constants.mavedb_score_column].values[0], np.signedinteger
             )
         )
 
     def test_removes_non_numeric(self):
-        df = pd.DataFrame(
-            {"seqID": ["0,1,2,3-L,Y,T,I"], "A": [1.2], "B": ["a"]}
-        )
+        df = pd.DataFrame({"seqID": ["0,1,2,3-L,Y,T,I"], "A": [1.2], "B": ["a"]})
         result = self.enrich.parse_input(df)
         self.assertNotIn("B", result)
 
@@ -211,9 +190,7 @@ class TestEnrichLoadInput(ProgramTestCase):
         self.path_1based = os.path.join(DATA_DIR, "enrich1_1based.tsv")
         self.path_csv = os.path.join(DATA_DIR, "enrich1.csv")
         self.expected = os.path.join(DATA_DIR, "enrich1_expected.csv")
-        self.expected_offset = os.path.join(
-            DATA_DIR, "enrich1_expected_offset.csv"
-        )
+        self.expected_offset = os.path.join(DATA_DIR, "enrich1_expected_offset.csv")
         self.excel_path = os.path.join(DATA_DIR, "enrich1.xlsx")
         self.no_seq_id = os.path.join(DATA_DIR, "enrich1_no_seqid.tsv")
         self.tmp_path = os.path.join(DATA_DIR, "tmp.xlsx")
@@ -269,15 +246,11 @@ class TestEnrichLoadInput(ProgramTestCase):
             input_type=constants.score_type,
         )
         result = p.load_input_file()
-        expected = pd.read_csv(
-            self.path, delimiter="\t", na_values=constants.extra_na
-        )
+        expected = pd.read_csv(self.path, delimiter="\t", na_values=constants.extra_na)
         assert_frame_equal(result, expected)
 
     def test_loads_csv(self):
-        expected = pd.read_csv(
-            self.path, delimiter="\t", na_values=constants.extra_na
-        )
+        expected = pd.read_csv(self.path, delimiter="\t", na_values=constants.extra_na)
         expected.to_csv(self.path_csv, index=False)
         p = enrich.Enrich(
             src=self.path_csv,
@@ -312,9 +285,7 @@ class TestEnrichIntegration(ProgramTestCase):
         self.no_seq_id = os.path.join(DATA_DIR, "enrich1_no_seqid.tsv")
 
         self.expected = os.path.join(DATA_DIR, "enrich1_expected.csv")
-        self.expected_offset = os.path.join(
-            DATA_DIR, "enrich1_expected_offset.csv"
-        )
+        self.expected_offset = os.path.join(DATA_DIR, "enrich1_expected_offset.csv")
 
         self.bin = [
             os.path.join(DATA_DIR, "mavedb_enrich1.csv"),

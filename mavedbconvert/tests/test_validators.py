@@ -71,17 +71,12 @@ class TestHGVSBiocommonsBackend(TestCase):
 class TestValidateHGVS(TestCase):
     def test_uses_biocommons_backend_if_transcript_provided(self):
         result = validators.validate_variants(
-            ["c.[1A>G;2A>G]"],
-            n_jobs=2,
-            verbose=0,
-            transcript=constants.dummy_ref,
+            ["c.[1A>G;2A>G]"], n_jobs=2, verbose=0, transcript=constants.dummy_ref
         )
         self.assertIsInstance(result[0][0], SequenceVariant)
 
     def test_uses_patterns_backend_as_default(self):
-        result = validators.validate_variants(
-            ["c.[1A>G;2A>G]"], n_jobs=2, verbose=0
-        )
+        result = validators.validate_variants(["c.[1A>G;2A>G]"], n_jobs=2, verbose=0)
         self.assertIsInstance(result[0], str)
 
 
@@ -209,9 +204,7 @@ class TestMaveDBCompliance(TestCase):
             }
         )
         with self.assertRaises(KeyError):
-            validators.validate_mavedb_compliance(
-                df, df_type=constants.score_type
-            )
+            validators.validate_mavedb_compliance(df, df_type=constants.score_type)
 
 
 class TestValidateSameVariants(TestCase):

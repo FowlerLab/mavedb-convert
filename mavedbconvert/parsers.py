@@ -105,9 +105,7 @@ def parse_wt_sequence(wtseq, program, non_coding=False):
         if len(wtseq) % 3 != 0:
             raise exceptions.SequenceFrameError(
                 "Enrich2 wild-type sequence for a coding dataset "
-                "must be a multiple of three. Found length {}.".format(
-                    len(wtseq)
-                )
+                "must be a multiple of three. Found length {}.".format(len(wtseq))
             )
 
     return wtseq.upper()
@@ -143,8 +141,7 @@ def parse_offset(offset, program, non_coding=False):
     if program == "enrich2":
         if not non_coding and not mult_of_three:
             raise ValueError(
-                "Enrich2 offset for a coding dataset must be a "
-                "multiple of three."
+                "Enrich2 offset for a coding dataset must be a " "multiple of three."
             )
     elif not mult_of_three:
         raise ValueError("EMPIRIC/Enrich offset must be a multiple of three.")
@@ -187,14 +184,10 @@ def parse_docopt(docopt_args):
         program=program,
         input_type=parsed_kwargs["input_type"],
     )
-    parsed_kwargs["hgvs_column"] = parse_string(
-        docopt_args.get("--hgvs-column", None)
-    )
+    parsed_kwargs["hgvs_column"] = parse_string(docopt_args.get("--hgvs-column", None))
 
     # Parse Excel related fields
-    parsed_kwargs["sheet_name"] = parse_string(
-        docopt_args.get("--sheet_name", None)
-    )
+    parsed_kwargs["sheet_name"] = parse_string(docopt_args.get("--sheet_name", None))
     parsed_kwargs["skip_header_rows"] = parse_numeric(
         docopt_args.get("--skip-header", 0), name="skip_header", dtype=int
     )
