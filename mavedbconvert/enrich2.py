@@ -275,7 +275,7 @@ class Enrich2(base.BaseProgram):
             skip_header_rows=skip_header_rows,
             skip_footer_rows=skip_footer_rows,
             sheet_name=sheet_name,
-            score_column=score_column,
+            score_column="score",
             hgvs_column=hgvs_column,
             input_type=input_type,
         )
