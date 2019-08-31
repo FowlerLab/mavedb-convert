@@ -37,7 +37,7 @@ class TestSplitFasta(TestCase):
 
     def test_ioerror_invalid_ext(self):
         with self.assertRaises(IOError):
-            split_fasta_path(os.path.join(DATA_DIR, "enrich1.tsv"))
+            split_fasta_path(os.path.join(DATA_DIR, "enrich.tsv"))
 
 
 class TestFastaReader(TestCase):

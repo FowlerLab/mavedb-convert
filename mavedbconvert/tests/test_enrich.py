@@ -35,7 +35,7 @@ class TestEnrichInit(ProgramTestCase):
 class TestEnrichParseRow(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "enrich1.tsv")
+        self.path = os.path.join(DATA_DIR, "enrich.tsv")
         self.enrich = enrich.Enrich(
             src=self.path,
             wt_sequence=WT,
@@ -128,7 +128,7 @@ class TestEnrichParseRow(ProgramTestCase):
 class TestEnrichParseInput(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "enrich1.tsv")
+        self.path = os.path.join(DATA_DIR, "enrich.tsv")
         self.enrich = enrich.Enrich(
             src=self.path,
             wt_sequence=WT,
@@ -186,13 +186,13 @@ class TestEnrichParseInput(ProgramTestCase):
 
 class TestEnrichLoadInput(ProgramTestCase):
     def setUp(self):
-        self.path = os.path.join(DATA_DIR, "enrich1.tsv")
-        self.path_1based = os.path.join(DATA_DIR, "enrich1_1based.tsv")
+        self.path = os.path.join(DATA_DIR, "enrich.tsv")
+        self.path_1based = os.path.join(DATA_DIR, "enrich_1based.tsv")
         self.path_csv = os.path.join(DATA_DIR, "enrich1.csv")
-        self.expected = os.path.join(DATA_DIR, "enrich1_expected.csv")
-        self.expected_offset = os.path.join(DATA_DIR, "enrich1_expected_offset.csv")
-        self.excel_path = os.path.join(DATA_DIR, "enrich1.xlsx")
-        self.no_seq_id = os.path.join(DATA_DIR, "enrich1_no_seqid.tsv")
+        self.expected = os.path.join(DATA_DIR, "enrich_expected.csv")
+        self.expected_offset = os.path.join(DATA_DIR, "enrich_expected_offset.csv")
+        self.excel_path = os.path.join(DATA_DIR, "enrich.xlsx")
+        self.no_seq_id = os.path.join(DATA_DIR, "enrich_no_seqid.tsv")
         self.tmp_path = os.path.join(DATA_DIR, "tmp.xlsx")
 
         self.bin = [
@@ -279,13 +279,13 @@ class TestEnrichLoadInput(ProgramTestCase):
 
 class TestEnrichIntegration(ProgramTestCase):
     def setUp(self):
-        self.path = os.path.join(DATA_DIR, "enrich1.tsv")
-        self.path_1based = os.path.join(DATA_DIR, "enrich1_1based.tsv")
-        self.excel_path = os.path.join(DATA_DIR, "enrich1.xlsx")
-        self.no_seq_id = os.path.join(DATA_DIR, "enrich1_no_seqid.tsv")
+        self.path = os.path.join(DATA_DIR, "enrich.tsv")
+        self.path_1based = os.path.join(DATA_DIR, "enrich_1based.tsv")
+        self.excel_path = os.path.join(DATA_DIR, "enrich.xlsx")
+        self.no_seq_id = os.path.join(DATA_DIR, "enrich_no_seqid.tsv")
 
-        self.expected = os.path.join(DATA_DIR, "enrich1_expected.csv")
-        self.expected_offset = os.path.join(DATA_DIR, "enrich1_expected_offset.csv")
+        self.expected = os.path.join(DATA_DIR, "enrich_expected.csv")
+        self.expected_offset = os.path.join(DATA_DIR, "enrich_expected_offset.csv")
 
         self.bin = [
             os.path.join(DATA_DIR, "mavedb_enrich1.csv"),

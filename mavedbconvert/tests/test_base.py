@@ -6,8 +6,7 @@ from .. import base, exceptions
 from . import ProgramTestCase
 
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.normpath(BASE_DIR + "/data/")
+TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class TestBaseProgram(ProgramTestCase):
@@ -18,9 +17,9 @@ class TestBaseProgram(ProgramTestCase):
 
     def setUp(self):
         super().setUp()
-        self.src = os.path.join(DATA_DIR, "enrich1.tsv")
-        self.src_with_spaces = os.path.join(DATA_DIR, "enrich   1.tsv")
-        self.h5_src = os.path.join(DATA_DIR, "dummy.h5")
+        self.src = os.path.join(TESTS_DIR, "data", "enrich", "enrich.tsv")
+        self.src_with_spaces = os.path.join(TESTS_DIR, "data", "enrich", "e    nrich.tsv")
+        self.h5_src = os.path.join(TESTS_DIR, "data", "enrich2", "dummy.h5")
 
     def tearDown(self):
         for path in self.bin:
@@ -64,7 +63,7 @@ class TestBaseProgram(ProgramTestCase):
 
     def test_splits_src_into_filename_and_ext(self):
         p = base.BaseProgram(src=self.src, dst=None, wt_sequence="AAA")
-        self.assertEqual(p.src_filename, "enrich1")
+        self.assertEqual(p.src_filename, "enrich")
         self.assertEqual(p.ext, ".tsv")
 
     def test_lower_cases_ext(self):
@@ -77,11 +76,11 @@ class TestBaseProgram(ProgramTestCase):
 
     def test_dst_filename_replaces_whitespace_with_underscores(self):
         p = base.BaseProgram(src=self.src_with_spaces, wt_sequence="AAA")
-        self.assertEqual(p.dst_filename, "mavedb_enrich_1.csv")
+        self.assertEqual(p.dst_filename, "mavedb_e_nrich.csv")
 
     def test_output_file_joins_dst_and_dst_filename(self):
         p = base.BaseProgram(src=self.src, wt_sequence="AAA")
-        self.assertEqual(p.output_file, os.path.join(DATA_DIR, "mavedb_enrich1.csv"))
+        self.assertEqual(p.output_file, os.path.join(TESTS_DIR, "data", "enrich", "mavedb_enrich.csv"))
 
     def test_output_directory_expands_user_and_norms_path(self):
         p = base.BaseProgram(src=self.src, wt_sequence="AAA")
@@ -126,7 +125,7 @@ class TestBaseProgram(ProgramTestCase):
 class TestBaseProgramValidateAgainstWTSeq(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.src = os.path.join(DATA_DIR, "enrich1.tsv")
+        self.src = os.path.join(TESTS_DIR, "data", "enrich", "enrich.tsv")
         self.base = base.BaseProgram(src=self.src, wt_sequence="ATG", one_based=True)
 
     def test_error_not_a_dna_sub(self):
@@ -177,7 +176,7 @@ class TestBaseProgramValidateAgainstWTSeq(ProgramTestCase):
 class TestBaseProgramValidateAgainstProteinSeq(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.src = os.path.join(DATA_DIR, "enrich1.tsv")
+        self.src = os.path.join(TESTS_DIR, "data", "enrich", "enrich.tsv")
         self.base = base.BaseProgram(src=self.src, wt_sequence="ATGAAA", one_based=True)
 
     def test_error_not_a_protein_sub(self):
