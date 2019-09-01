@@ -7,7 +7,7 @@ from .. import parsers, exceptions, constants
 from . import ProgramTestCase
 
 
-TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
+TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
 class TestParseBoolean(TestCase):
@@ -48,14 +48,14 @@ class TestParseString(TestCase):
 class TestParseSrc(TestCase):
     @mock.patch(
         "mavedbconvert.parsers.parse_string",
-        return_value=os.path.join(TESTS_DIR, "data", "enrich2", "enrich2.tsv"),
+        return_value=os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv"),
     )
     def test_calls_parse_string(self, patch):
-        parsers.parse_src(os.path.join(TESTS_DIR, "data", "enrich2", "enrich2.tsv"))
+        parsers.parse_src(os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv"))
         patch.assert_called()
 
     def test_ok_file_exists(self):
-        path = os.path.join(TESTS_DIR, "data", "enrich2", "enrich2.tsv")
+        path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
         self.assertEqual(path, parsers.parse_src(path))
 
     def test_error_no_value(self):
@@ -64,23 +64,23 @@ class TestParseSrc(TestCase):
                 parsers.parse_src(v)
 
     def test_error_file_not_found(self):
-        path = os.path.join(TESTS_DIR, "data", "enrich2", "missing_file.tsv")
+        path = os.path.join(TEST_DATA_DIR, "enrich2", "missing_file.tsv")
         with self.assertRaises(FileNotFoundError):
             parsers.parse_src(path)
 
     def test_error_file_is_a_dir(self):
         with self.assertRaises(IsADirectoryError):
-            parsers.parse_src(os.path.join(TESTS_DIR, "data"))
+            parsers.parse_src(os.path.join(TEST_DATA_DIR))
 
 
 class TestParseDst(ProgramTestCase):
-    @mock.patch("mavedbconvert.parsers.parse_string", return_value=os.path.join(TESTS_DIR, "data"))
+    @mock.patch("mavedbconvert.parsers.parse_string", return_value=os.path.join(TEST_DATA_DIR))
     def test_calls_parse_string(self, patch):
-        parsers.parse_dst(os.path.join(TESTS_DIR, "data"))
+        parsers.parse_dst(os.path.join(TEST_DATA_DIR))
         patch.assert_called()
 
     def test_ok_dst_exists(self):
-        path = os.path.join(os.path.join(TESTS_DIR, "data"))
+        path = os.path.join(os.path.join(TEST_DATA_DIR))
         self.assertEqual(path, parsers.parse_dst(path))
 
     def test_returns_none_no_value(self):
@@ -88,11 +88,11 @@ class TestParseDst(ProgramTestCase):
             self.assertIsNone(parsers.parse_dst(v))
 
     def test_dst_path_is_normalised(self):
-        path = TESTS_DIR + "//data"
-        self.assertEqual(parsers.parse_dst(path), os.path.join(TESTS_DIR, "data"))
+        path = TEST_DATA_DIR + "//fasta"
+        self.assertEqual(parsers.parse_dst(path), os.path.join(TEST_DATA_DIR, "fasta"))
 
     def test_makes_dst_directory_tree(self):
-        path = os.path.join(TESTS_DIR, "data", "subdir")
+        path = os.path.join(TEST_DATA_DIR, "subdir")
         parsers.parse_dst(path)
         self.assertTrue(os.path.isdir(path))
         self.bin.append(path)
@@ -124,7 +124,7 @@ class TestParseProgram(TestCase):
 
 class TestParseWildTypeSequence(TestCase):
     def test_can_read_from_fasta(self):
-        path = os.path.join(TESTS_DIR, "fasta", "lower.fa")
+        path = os.path.join(TEST_DATA_DIR, "fasta", "lower.fa")
         wtseq = parsers.parse_wt_sequence(path, program="enrich2", non_coding=True)
         expected = (
             "ACAGTTGGATATAGTAGTTTGTACGAGTTGCTTGTGGCTT"
@@ -257,13 +257,13 @@ class TestParseDocopt(TestCase):
         if program is None:
             program = "enrich2"
         if src is None:
-            src = os.path.join(TESTS_DIR, "enrich2", "enrich2.tsv")
+            src = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
         return {
             "enrich": True if program == "enrich" else False,
             "enrich2": True if program == "enrich2" else False,
             "empiric": True if program == "empiric" else False,
-            "<src>": os.path.join(TESTS_DIR, "data", program, src),
-            "--dst": os.path.join(TESTS_DIR, "data", program, dst) if dst else dst,
+            "<src>": os.path.join(TEST_DATA_DIR, program, src),
+            "--dst": os.path.join(TEST_DATA_DIR, program, dst) if dst else dst,
             "--score-column": score_column,
             "--hgvs-column": hgvs_column,
             "--skip-header": skip_header,

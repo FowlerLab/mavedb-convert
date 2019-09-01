@@ -15,8 +15,7 @@ from .. import validators, enrich2, constants, exceptions
 from . import ProgramTestCase
 
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.normpath(BASE_DIR + "/data/")
+TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
 # Utility tests
@@ -28,7 +27,7 @@ class TestGetCountDataFrames(TestCase):
     """
 
     def setUp(self):
-        self.path = os.path.join(DATA_DIR, "test_store.h5")
+        self.path = os.path.join(TEST_DATA_DIR, "enrich2", "test_store.h5")
         self.store = pd.HDFStore(self.path, "w")
         index = pd.MultiIndex.from_product(
             [["c1", "c2"], ["rep1", "rep2"], ["t0", "t1"]],
@@ -104,7 +103,7 @@ class TestReplicateScoreDataFrames(TestCase):
     """
 
     def setUp(self):
-        self.path = os.path.join(DATA_DIR, "test_store.h5")
+        self.path = os.path.join(TEST_DATA_DIR, "enrich2", "test_store.h5")
         self.store = pd.HDFStore(self.path, "w")
 
         shared_index = pd.MultiIndex.from_product(
@@ -277,7 +276,7 @@ class TestDropNull(TestCase):
 class TestEnrich2ConvertH5Filepath(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "enrich2.h5")
+        self.path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.h5")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="AAA")
         self.bin.append(self.path.replace(".h5", ""))
 
@@ -294,12 +293,12 @@ class TestEnrich2ConvertH5Filepath(ProgramTestCase):
 class TestEnrich2ConvertH5Df(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "enrich2.h5")
+        self.path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.h5")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="AAA")
-        self.bin.append(os.path.join(DATA_DIR, "enrich2"))
+        self.bin.append(os.path.join(TEST_DATA_DIR, "enrich2", "enrich2"))
 
     def test_doesnt_open_invalid_rows_file_if_there_are_no_invalid_rows(self):
-        self.path = os.path.join(DATA_DIR, "enrich2.tsv")
+        self.path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="AAA")
         fpath = str(self.path.split(".")[0]) + "_invalid_rows.csv"
 
@@ -332,7 +331,7 @@ class TestEnrich2ConvertH5Df(ProgramTestCase):
         assert_index_equal(result.index, df.index)
 
     def test_opens_invalid_rows_file_for_invalid_rows(self):
-        self.path = os.path.join(DATA_DIR, "enrich2.tsv")
+        self.path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="AAA")
         df = pd.DataFrame(data={"score": [1], "B": ["a"]}, index=["c.1T>G (p.Lys1Val)"])
         with self.assertRaises(ValueError):
@@ -345,7 +344,7 @@ class TestEnrich2ConvertH5Df(ProgramTestCase):
         self.bin.append(fpath)
 
     def test_invalid_rows_file_contains_error_description(self):
-        self.path = os.path.join(DATA_DIR, "enrich2.tsv")
+        self.path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="AAA")
         fpath = str(self.path.split(".")[0]) + "_invalid_rows.csv"
 
@@ -368,7 +367,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
     def setUp(self):
         super().setUp()
         self.wt = "GCTGAT"
-        self.path = os.path.join(DATA_DIR, "test_store.h5")
+        self.path = os.path.join(TEST_DATA_DIR, "enrich2", "test_store.h5")
         self.store = pd.HDFStore(self.path, "w")
         self.enrich2 = enrich2.Enrich2(
             self.path, wt_sequence=self.wt, offset=0, one_based=True
@@ -387,42 +386,42 @@ class TestEnrich2ParseInput(ProgramTestCase):
         self.files = [
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR, "test_store", "mavedb_test_store_synonymous_counts_c1.csv"
+                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_synonymous_counts_c1.csv"
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR, "test_store", "mavedb_test_store_synonymous_counts_c2.csv"
+                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_synonymous_counts_c2.csv"
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR, "test_store", "mavedb_test_store_synonymous_scores_c1.csv"
+                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_synonymous_scores_c1.csv"
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR, "test_store", "mavedb_test_store_synonymous_scores_c2.csv"
+                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_synonymous_scores_c2.csv"
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR, "test_store", "mavedb_test_store_variants_counts_c1.csv"
+                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_variants_counts_c1.csv"
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR, "test_store", "mavedb_test_store_variants_counts_c2.csv"
+                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_variants_counts_c2.csv"
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR, "test_store", "mavedb_test_store_variants_scores_c1.csv"
+                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_variants_scores_c1.csv"
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    DATA_DIR, "test_store", "mavedb_test_store_variants_scores_c2.csv"
+                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_variants_scores_c2.csv"
                 )
             ),
         ]
@@ -531,7 +530,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
 
     @mock.patch.object(pd.DataFrame, "to_csv", return_value=None)
     def test_saves_to_output_directory(self, patch):
-        output = os.path.join(DATA_DIR, "new")
+        output = os.path.join(TEST_DATA_DIR, "enrich2", "new")
         p = enrich2.Enrich2(src=self.store, dst=output, wt_sequence=self.wt, offset=0)
         p.parse_input(p.load_input_file())
         for call_args in patch.call_args_list:
@@ -542,7 +541,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
     def test_saves_to_file_location_if_no_dst_supplied(self, patch):
         p = enrich2.Enrich2(src=self.store, wt_sequence=self.wt, offset=0)
         p.parse_input(self.enrich2.load_input_file())
-        expected_base_path = os.path.normpath(os.path.join(DATA_DIR, "test_store"))
+        expected_base_path = os.path.normpath(os.path.join(TEST_DATA_DIR, "enrich2", "test_store"))
         for call_args in patch.call_args_list:
             self.assertIn(expected_base_path, call_args[0][0])
 
@@ -832,13 +831,13 @@ class TestEnrich2ParseInput(ProgramTestCase):
 
 class TestEnrich2LoadInput(TestCase):
     def test_error_file_not_h5_or_tsv(self):
-        path = os.path.join(DATA_DIR, "empiric.xlsx")
+        path = os.path.join(TEST_DATA_DIR, "empiric", "empiric.xlsx")
         p = enrich2.Enrich2(path, wt_sequence="AAA")
         with self.assertRaises(TypeError):
             p.load_input_file()
 
     def test_scores_tsv_missing_score_column(self):
-        path = os.path.join(DATA_DIR, "enrich2.tsv")
+        path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
         p = enrich2.Enrich2(
             path,
             wt_sequence="AAA",
@@ -850,7 +849,7 @@ class TestEnrich2LoadInput(TestCase):
             p.load_input_file()
 
     def test_input_type_counts_doesnt_raise_keyerror(self):
-        path = os.path.join(DATA_DIR, "enrich2.tsv")
+        path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
         p = enrich2.Enrich2(
             path,
             wt_sequence="AAA",
@@ -860,7 +859,7 @@ class TestEnrich2LoadInput(TestCase):
         p.load_input_file()
 
     def test_scores_tsv_missing_hgvs_column(self):
-        path = os.path.join(DATA_DIR, "enrich2.tsv")
+        path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
         p = enrich2.Enrich2(path, wt_sequence="AAA", hgvs_column="hgvs")
         with self.assertRaises(KeyError):
             p.load_input_file()
@@ -869,7 +868,7 @@ class TestEnrich2LoadInput(TestCase):
 class TestEnrich2ParseRow(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "dummy.h5")
+        self.path = os.path.join(TEST_DATA_DIR, "enrich2", "dummy.h5")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="ACT")
         self.bin.append(self.path.replace(".h5", ""))
 
@@ -941,7 +940,7 @@ class TestEnrich2ParseRow(ProgramTestCase):
 class TestProteinHGVSParsing(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "dummy.h5")
+        self.path = os.path.join(TEST_DATA_DIR, "enrich2", "dummy.h5")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="AAA")
         self.bin.append(self.path.replace(".h5", ""))
 
@@ -1001,7 +1000,7 @@ class TestProteinHGVSParsing(ProgramTestCase):
 class TestNucleotideHGVSParing(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "dummy.h5")
+        self.path = os.path.join(TEST_DATA_DIR, "enrich2", "dummy.h5")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="AAA")
         self.bin.append(self.path.replace(".h5", ""))
 
@@ -1055,7 +1054,7 @@ class TestNucleotideHGVSParing(ProgramTestCase):
 class TestEnrich2MixedHGVSParsing(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "dummy.h5")
+        self.path = os.path.join(TEST_DATA_DIR, "enrich2", "dummy.h5")
         self.wt = "ACT"
         self.wt_aa = constants.AA_CODES[constants.CODON_TABLE[self.wt]]
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence=self.wt)
@@ -1149,7 +1148,7 @@ class TestEnrich2MixedHGVSParsing(ProgramTestCase):
 class TestInferSilentAASub(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "dummy.h5")
+        self.path = os.path.join(TEST_DATA_DIR, "enrich2", "dummy.h5")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="AAA", offset=0)
         self.bin.append(self.path.replace(".h5", ""))
 
@@ -1228,14 +1227,14 @@ class TestApplyOffset(TestCase):
     @mock.patch.object(enrich2.base.BaseProgram, "validate_against_wt_sequence")
     def test_validates_against_wt_sequence(self, patch):
         variant = "c.-9C>T"
-        path = os.path.join(DATA_DIR, "dummy.h5")
+        path = os.path.join(TEST_DATA_DIR, "enrich2", "dummy.h5")
         p = enrich2.Enrich2(path, wt_sequence="ACT")
         enrich2.apply_offset(variant, offset=-10, enrich2=p)  # pass
         patch.assert_called_with(*("c.1C>T",))
 
     def test_value_error_base_mismatch_after_offset_applied(self):
         variant = "c.-9G>T"
-        path = os.path.join(DATA_DIR, "dummy.h5")
+        path = os.path.join(TEST_DATA_DIR, "enrich2", "dummy.h5")
         p = enrich2.Enrich2(path, wt_sequence="ACT")
         with self.assertRaises(ValueError):
             enrich2.apply_offset(variant, offset=-10, enrich2=p)
@@ -1243,14 +1242,14 @@ class TestApplyOffset(TestCase):
     @mock.patch.object(enrich2.base.BaseProgram, "validate_against_protein_sequence")
     def test_validates_against_pro_sequence(self, patch):
         variant = "p.Gly3Leu"
-        path = os.path.join(DATA_DIR, "dummy.h5")
+        path = os.path.join(TEST_DATA_DIR, "enrich2", "dummy.h5")
         p = enrich2.Enrich2(path, wt_sequence="ACG")
         enrich2.apply_offset(variant, offset=6, enrich2=p)  # pass
         patch.assert_called_with(*("p.Gly1Leu",))
 
     def test_value_error_pro_mismatch_after_offset_applied(self):
         variant = "p.Gly3Leu"
-        path = os.path.join(DATA_DIR, "dummy.h5")
+        path = os.path.join(TEST_DATA_DIR, "enrich2", "dummy.h5")
         p = enrich2.Enrich2(path, wt_sequence="ACG")
         with self.assertRaises(ValueError):
             enrich2.apply_offset(variant, offset=6, enrich2=p)
@@ -1259,7 +1258,7 @@ class TestApplyOffset(TestCase):
 class TestEnrich2Init(TestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "enrich2.tsv")
+        self.path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
 
     def test_error_is_coding_and_offset_not_mult_of_three(self):
         with self.assertRaises(ValueError):

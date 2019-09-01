@@ -6,7 +6,7 @@ from .. import base, exceptions
 from . import ProgramTestCase
 
 
-TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
+TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
 class TestBaseProgram(ProgramTestCase):
@@ -17,9 +17,9 @@ class TestBaseProgram(ProgramTestCase):
 
     def setUp(self):
         super().setUp()
-        self.src = os.path.join(TESTS_DIR, "data", "enrich", "enrich.tsv")
-        self.src_with_spaces = os.path.join(TESTS_DIR, "data", "enrich", "e    nrich.tsv")
-        self.h5_src = os.path.join(TESTS_DIR, "data", "enrich2", "dummy.h5")
+        self.src = os.path.join(TEST_DATA_DIR, "enrich", "enrich.tsv")
+        self.src_with_spaces = os.path.join(TEST_DATA_DIR, "enrich", "enrich   .tsv")
+        self.h5_src = os.path.join(TEST_DATA_DIR, "enrich2", "dummy.h5")
 
     def tearDown(self):
         for path in self.bin:
@@ -30,7 +30,7 @@ class TestBaseProgram(ProgramTestCase):
 
     def test_sets_directory_as_input_directory_if_dst_is_none(self):
         p = base.BaseProgram(src=self.src, dst=None, wt_sequence="AAA")
-        self.assertEqual(p.dst, DATA_DIR)
+        self.assertEqual(p.dst, os.path.join(TEST_DATA_DIR, "enrich"))
 
     def test_error_file_not_readable(self):
         with self.assertRaises(IOError):
@@ -42,11 +42,11 @@ class TestBaseProgram(ProgramTestCase):
 
     def test_dir_with_input_fname_appended_when_h5_and_dst_is_none(self):
         p = base.BaseProgram(src=self.h5_src, dst=None, wt_sequence="AAA")
-        self.assertEqual(p.dst, os.path.join(DATA_DIR, "dummy"))
-        self.bin.append(os.path.join(DATA_DIR, "dummy"))
+        self.assertEqual(p.dst, os.path.join(TEST_DATA_DIR, "enrich2", "dummy"))
+        self.bin.append(os.path.join(TEST_DATA_DIR, "enrich2", "dummy"))
 
     def test_creates_directory_tree_if_it_doesnt_exist(self):
-        output = os.path.join(DATA_DIR, "outer_dir/inner_dir/")
+        output = os.path.join(TEST_DATA_DIR, "enrich2", "outer_dir", "inner_dir")
         base.BaseProgram(src=self.h5_src, dst=output, wt_sequence="AAA")
         self.assertTrue(os.path.isdir(output))
         self.bin.append(output)
@@ -76,11 +76,11 @@ class TestBaseProgram(ProgramTestCase):
 
     def test_dst_filename_replaces_whitespace_with_underscores(self):
         p = base.BaseProgram(src=self.src_with_spaces, wt_sequence="AAA")
-        self.assertEqual(p.dst_filename, "mavedb_e_nrich.csv")
+        self.assertEqual(p.dst_filename, "mavedb_enrich_.csv")
 
     def test_output_file_joins_dst_and_dst_filename(self):
         p = base.BaseProgram(src=self.src, wt_sequence="AAA")
-        self.assertEqual(p.output_file, os.path.join(TESTS_DIR, "data", "enrich", "mavedb_enrich.csv"))
+        self.assertEqual(p.output_file, os.path.join(TEST_DATA_DIR, "enrich", "mavedb_enrich.csv"))
 
     def test_output_directory_expands_user_and_norms_path(self):
         p = base.BaseProgram(src=self.src, wt_sequence="AAA")
@@ -125,7 +125,7 @@ class TestBaseProgram(ProgramTestCase):
 class TestBaseProgramValidateAgainstWTSeq(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.src = os.path.join(TESTS_DIR, "data", "enrich", "enrich.tsv")
+        self.src = os.path.join(TEST_DATA_DIR, "enrich", "enrich.tsv")
         self.base = base.BaseProgram(src=self.src, wt_sequence="ATG", one_based=True)
 
     def test_error_not_a_dna_sub(self):
@@ -176,7 +176,7 @@ class TestBaseProgramValidateAgainstWTSeq(ProgramTestCase):
 class TestBaseProgramValidateAgainstProteinSeq(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.src = os.path.join(TESTS_DIR, "data", "enrich", "enrich.tsv")
+        self.src = os.path.join(TEST_DATA_DIR, "enrich", "enrich.tsv")
         self.base = base.BaseProgram(src=self.src, wt_sequence="ATGAAA", one_based=True)
 
     def test_error_not_a_protein_sub(self):
