@@ -9,10 +9,10 @@ from . import ProgramTestCase
 TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
-class TestBaseProgram(ProgramTestCase):
+class TestPaths(ProgramTestCase):
     """
     Test __init__ correctly sets up read and write directories,
-    sequence information etc.
+    etc.
     """
 
     def setUp(self):
@@ -70,10 +70,6 @@ class TestBaseProgram(ProgramTestCase):
         p = base.BaseProgram(src=self.src.replace("tsv", "TSV"), wt_sequence="AAA")
         self.assertEqual(p.ext, ".tsv")
 
-    def test_value_error_coding_offset_not_multiple_of_three(self):
-        with self.assertRaises(ValueError):
-            base.BaseProgram(src=self.src, wt_sequence="ATCA", offset=-1)
-
     def test_dst_filename_replaces_whitespace_with_underscores(self):
         p = base.BaseProgram(src=self.src_with_spaces, wt_sequence="AAA")
         self.assertEqual(p.dst_filename, "mavedb_enrich_.csv")
@@ -88,6 +84,29 @@ class TestBaseProgram(ProgramTestCase):
         self.assertEqual(
             p.output_directory, os.path.join(os.path.expanduser("~"), "user")
         )
+
+
+class TestWtSequence(ProgramTestCase):
+    """
+    Test __init__ correctly sets up sequence information etc.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.src = os.path.join(TEST_DATA_DIR, "enrich", "enrich.tsv")
+        self.src_with_spaces = os.path.join(TEST_DATA_DIR, "enrich", "enrich   .tsv")
+        self.h5_src = os.path.join(TEST_DATA_DIR, "enrich2", "dummy.h5")
+
+    def tearDown(self):
+        for path in self.bin:
+            if os.path.exists(path) and os.path.isfile(path):
+                os.remove(path)
+            elif os.path.exists(path) and os.path.isdir(path):
+                os.removedirs(path)
+
+    def test_value_error_coding_offset_not_multiple_of_three(self):
+        with self.assertRaises(ValueError):
+            base.BaseProgram(src=self.src, wt_sequence="ATCA", offset=-1)
 
     # --- Test property setters --- #
     def test_wt_setter_upper_cases_wt_sequence(self):
