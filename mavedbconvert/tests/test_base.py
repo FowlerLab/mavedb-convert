@@ -76,7 +76,9 @@ class TestPaths(ProgramTestCase):
 
     def test_output_file_joins_dst_and_dst_filename(self):
         p = base.BaseProgram(src=self.src, wt_sequence="AAA")
-        self.assertEqual(p.output_file, os.path.join(TEST_DATA_DIR, "enrich", "mavedb_enrich.csv"))
+        self.assertEqual(
+            p.output_file, os.path.join(TEST_DATA_DIR, "enrich", "mavedb_enrich.csv")
+        )
 
     def test_output_directory_expands_user_and_norms_path(self):
         p = base.BaseProgram(src=self.src, wt_sequence="AAA")

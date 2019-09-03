@@ -74,7 +74,9 @@ class TestParseSrc(TestCase):
 
 
 class TestParseDst(ProgramTestCase):
-    @mock.patch("mavedbconvert.parsers.parse_string", return_value=os.path.join(TEST_DATA_DIR))
+    @mock.patch(
+        "mavedbconvert.parsers.parse_string", return_value=os.path.join(TEST_DATA_DIR)
+    )
     def test_calls_parse_string(self, patch):
         parsers.parse_dst(os.path.join(TEST_DATA_DIR))
         patch.assert_called()

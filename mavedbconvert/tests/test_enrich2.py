@@ -386,42 +386,66 @@ class TestEnrich2ParseInput(ProgramTestCase):
         self.files = [
             os.path.normpath(
                 os.path.join(
-                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_synonymous_counts_c1.csv"
+                    TEST_DATA_DIR,
+                    "enrich2",
+                    "test_store",
+                    "mavedb_test_store_synonymous_counts_c1.csv",
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_synonymous_counts_c2.csv"
+                    TEST_DATA_DIR,
+                    "enrich2",
+                    "test_store",
+                    "mavedb_test_store_synonymous_counts_c2.csv",
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_synonymous_scores_c1.csv"
+                    TEST_DATA_DIR,
+                    "enrich2",
+                    "test_store",
+                    "mavedb_test_store_synonymous_scores_c1.csv",
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_synonymous_scores_c2.csv"
+                    TEST_DATA_DIR,
+                    "enrich2",
+                    "test_store",
+                    "mavedb_test_store_synonymous_scores_c2.csv",
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_variants_counts_c1.csv"
+                    TEST_DATA_DIR,
+                    "enrich2",
+                    "test_store",
+                    "mavedb_test_store_variants_counts_c1.csv",
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_variants_counts_c2.csv"
+                    TEST_DATA_DIR,
+                    "enrich2",
+                    "test_store",
+                    "mavedb_test_store_variants_counts_c2.csv",
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_variants_scores_c1.csv"
+                    TEST_DATA_DIR,
+                    "enrich2",
+                    "test_store",
+                    "mavedb_test_store_variants_scores_c1.csv",
                 )
             ),
             os.path.normpath(
                 os.path.join(
-                    TEST_DATA_DIR, "enrich2", "test_store", "mavedb_test_store_variants_scores_c2.csv"
+                    TEST_DATA_DIR,
+                    "enrich2",
+                    "test_store",
+                    "mavedb_test_store_variants_scores_c2.csv",
                 )
             ),
         ]
@@ -541,7 +565,9 @@ class TestEnrich2ParseInput(ProgramTestCase):
     def test_saves_to_file_location_if_no_dst_supplied(self, patch):
         p = enrich2.Enrich2(src=self.store, wt_sequence=self.wt, offset=0)
         p.parse_input(self.enrich2.load_input_file())
-        expected_base_path = os.path.normpath(os.path.join(TEST_DATA_DIR, "enrich2", "test_store"))
+        expected_base_path = os.path.normpath(
+            os.path.join(TEST_DATA_DIR, "enrich2", "test_store")
+        )
         for call_args in patch.call_args_list:
             self.assertIn(expected_base_path, call_args[0][0])
 
