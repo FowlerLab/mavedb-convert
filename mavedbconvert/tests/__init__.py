@@ -22,7 +22,9 @@ __all__ = [
 class ProgramTestCase(TestCase):
     def setUp(self):
         self._data_dir = TemporaryDirectory()  # store the object
-        self.data_dir = os.path.join(self._data_dir.name, "data")  # store the directory path
+        self.data_dir = os.path.join(
+            self._data_dir.name, "data"
+        )  # store the directory path
         shutil.copytree(
             src=os.path.join(os.path.dirname(os.path.abspath(__file__)), "data"),
             dst=self.data_dir,
