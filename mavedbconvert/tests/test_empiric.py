@@ -10,13 +10,10 @@ from .. import empiric, constants
 from . import ProgramTestCase
 
 
-TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
-
-
 class TestEmpiricInit(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
+        self.path = os.path.join(self.data_dir, "enrich2", "enrich2.tsv")
 
     def test_error_offset_not_mult_of_three(self):
         with self.assertRaises(ValueError):
@@ -69,7 +66,7 @@ class TestInferNTEvent(TestCase):
 class TestEmpiric(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.input = os.path.join(TEST_DATA_DIR, "empiric", "empiric.xlsx")
+        self.input = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
         self.empiric = empiric.Empiric(
             src=self.input, wt_sequence="AAA", one_based=False
         )
@@ -176,10 +173,10 @@ class TestEmpiric(ProgramTestCase):
         self.assertEqual(hgvs_nt, "c.[1G>A;2T>A;3A>T]")
 
 
-class TestEmpiricValidateColumns(TestCase):
+class TestEmpiricValidateColumns(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.input = os.path.join(TEST_DATA_DIR, "empiric", "empiric.xlsx")
+        self.input = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
         self.empiric = empiric.Empiric(
             src=self.input, wt_sequence="AAA", one_based=False
         )
@@ -218,7 +215,7 @@ class TestEmpiricValidateColumns(TestCase):
 class TestEmpiricParseInput(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.input = os.path.join(TEST_DATA_DIR, "empiric", "empiric.xlsx")
+        self.input = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
         self.empiric = empiric.Empiric(
             src=self.input,
             wt_sequence="AAA",
@@ -355,10 +352,10 @@ class TestEmpiricParseInput(ProgramTestCase):
 class TestEmpiricLoadInput(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(TEST_DATA_DIR, "empiric", "empiric.xlsx")
-        self.tmp_path = os.path.join(TEST_DATA_DIR, "empiric", "tmp.csv")
-        self.tmp_path_tsv = os.path.join(TEST_DATA_DIR, "empiric", "tmp.tsv")
-        self.tmp_excel_path = os.path.join(TEST_DATA_DIR, "empiric", "tmp.xlsx")
+        self.path = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
+        self.tmp_path = os.path.join(self.data_dir, "empiric", "tmp.csv")
+        self.tmp_path_tsv = os.path.join(self.data_dir, "empiric", "tmp.tsv")
+        self.tmp_excel_path = os.path.join(self.data_dir, "empiric", "tmp.xlsx")
         self.bin.append(self.tmp_path)
         self.bin.append(self.tmp_path_tsv)
 
@@ -474,8 +471,8 @@ class TestEmpiricLoadInput(ProgramTestCase):
 class TestEmpiricConvert(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(TEST_DATA_DIR, "empiric", "empiric.xlsx")
-        self.expected = os.path.join(TEST_DATA_DIR, "empiric", "empiric_expected.csv")
+        self.path = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
+        self.expected = os.path.join(self.data_dir, "empiric", "empiric_expected.csv")
         self.empiric = empiric.Empiric(
             src=self.path,
             wt_sequence="TTTTCTTATTGT",

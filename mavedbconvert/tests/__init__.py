@@ -1,5 +1,7 @@
 import os
+import shutil
 from unittest import TestCase
+from tempfile import TemporaryDirectory
 
 import pandas as pd
 
@@ -19,6 +21,12 @@ __all__ = [
 
 class ProgramTestCase(TestCase):
     def setUp(self):
+        self._data_dir = TemporaryDirectory()  # store the object
+        self.data_dir = os.path.join(self._data_dir.name, "data")  # store the directory path
+        shutil.copytree(
+            src=os.path.join(os.path.dirname(os.path.abspath(__file__)), "data"),
+            dst=self.data_dir,
+        )
         self.bin = []
 
     def mock_multi_sheet_excel_file(self, path, data):
@@ -30,6 +38,7 @@ class ProgramTestCase(TestCase):
         self.bin.append(path)
 
     def tearDown(self):
+        self._data_dir.cleanup()
         for path in self.bin:
             if os.path.exists(path) and os.path.isfile(path):
                 os.remove(path)
