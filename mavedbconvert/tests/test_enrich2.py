@@ -1,6 +1,6 @@
 import os
 import mock
-from unittest import TestCase
+import unittest
 from itertools import product
 
 import hgvsp
@@ -10,9 +10,9 @@ import numpy as np
 import pandas as pd
 from pandas.testing import assert_index_equal, assert_frame_equal
 
-from .. import validators, enrich2, constants, exceptions
+from mavedbconvert import validators, enrich2, constants, exceptions
 
-from . import ProgramTestCase
+from mavedbconvert.tests import ProgramTestCase
 
 
 # Utility tests
@@ -74,7 +74,7 @@ class TestGetCountDataFrames(ProgramTestCase):
         self.assertIsNone(cnd_df)
 
 
-class TestFlattenColumnNames(TestCase):
+class TestFlattenColumnNames(unittest.TestCase):
     def setUp(self):
         index = pd.MultiIndex.from_product(
             [["c1", "c2"], ["rep1", "rep2"], ["t0", "t1"]],
@@ -166,7 +166,7 @@ class TestReplicateScoreDataFrames(ProgramTestCase):
             enrich2.get_replicate_score_dataframes(self.store)
 
 
-class TestDropNull(TestCase):
+class TestDropNull(unittest.TestCase):
     def test_calls_drop_na_rows_from_scores_inplace(self):
         df = pd.DataFrame({"A": [None, 1]})
         enrich2.drop_null(df)
@@ -1302,3 +1302,7 @@ class TestEnrich2Init(ProgramTestCase):
 
     def test_ok_is_coding_and_offset_mult_of_three(self):
         enrich2.Enrich2(src=self.path, wt_sequence="ATC", is_coding=True, offset=-3)
+
+
+if __name__ == "__main__":
+    unittest.main()

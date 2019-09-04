@@ -1,12 +1,13 @@
 import os
+import unittest
 
 import pandas as pd
 import numpy as np
 from pandas.testing import assert_frame_equal
 
-from .. import enrich, constants, utilities
+from mavedbconvert import enrich, constants, utilities
 
-from . import ProgramTestCase
+from mavedbconvert.tests import ProgramTestCase
 
 
 WT = (
@@ -331,3 +332,7 @@ class TestEnrichIntegration(ProgramTestCase):
         result = pd.read_csv(self.bin[1])
         expected = pd.read_csv(self.expected)
         assert_frame_equal(expected, result)
+
+
+if __name__ == "__main__":
+    unittest.main()

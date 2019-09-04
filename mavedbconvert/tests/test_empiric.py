@@ -1,13 +1,13 @@
 import os
-from unittest import TestCase
+import unittest
 
 import pandas as pd
 import numpy as np
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from .. import empiric, constants
+from mavedbconvert import empiric, constants
 
-from . import ProgramTestCase
+from mavedbconvert.tests import ProgramTestCase
 
 
 class TestEmpiricInit(ProgramTestCase):
@@ -23,7 +23,7 @@ class TestEmpiricInit(ProgramTestCase):
         empiric.Empiric(src=self.path, wt_sequence="ATC", offset=3)
 
 
-class TestInferProEvent(TestCase):
+class TestInferProEvent(unittest.TestCase):
     def test_infers_equal_event(self):
         self.assertEqual(
             empiric.infer_pro_substitution(mut_aa="V", wt_aa="v", codon_pos=0),
@@ -43,7 +43,7 @@ class TestInferProEvent(TestCase):
         )
 
 
-class TestInferNTEvent(TestCase):
+class TestInferNTEvent(unittest.TestCase):
     def test_infers_equal_event(self):
         self.assertEqual(
             empiric.infer_nt_substitution(wt_codon="aaa", mut_codon="AAA", codon_pos=0),
@@ -499,3 +499,7 @@ class TestEmpiricConvert(ProgramTestCase):
             pd.read_csv(self.empiric.output_file, delimiter=","),
             pd.read_csv(self.expected, delimiter=","),
         )
+
+
+if __name__ == "__main__":
+    unittest.main()

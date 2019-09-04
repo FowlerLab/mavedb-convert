@@ -1,13 +1,13 @@
-from unittest import TestCase
+import unittest
 
 import pandas as pd
 import numpy as np
 
 
-from .. import filters, constants
+from mavedbconvert import filters, constants
 
 
-class TestDropNaColumns(TestCase):
+class TestDropNaColumns(unittest.TestCase):
     def test_drops_null_nt_column(self):
         df = pd.DataFrame(
             {
@@ -59,7 +59,7 @@ class TestDropNaColumns(TestCase):
         self.assertIn("A", df)
 
 
-class TestDropNaRows(TestCase):
+class TestDropNaRows(unittest.TestCase):
     def test_drops_null_row(self):
         df = pd.DataFrame({"A": [None], "B": [np.NaN]})
         filters.drop_na_rows(df, inplace=True)
@@ -69,3 +69,7 @@ class TestDropNaRows(TestCase):
         df = pd.DataFrame({"A": [None], "B": [0.0]})
         filters.drop_na_rows(df, inplace=True)
         self.assertEqual(len(df), 1)
+
+
+if __name__ == "__main__":
+    unittest.main()

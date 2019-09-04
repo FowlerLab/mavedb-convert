@@ -1,16 +1,16 @@
 import os
 import mock
-from unittest import TestCase
+import unittest
 
-from .. import parsers, exceptions, constants
+from mavedbconvert import parsers, exceptions, constants
 
-from . import ProgramTestCase
+from mavedbconvert.tests import ProgramTestCase
 
 # TODO: convert these tests to use temp directories
 TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
-class TestParseBoolean(TestCase):
+class TestParseBoolean(unittest.TestCase):
     def test_true_if_str_of_true(self):
         self.assertTrue(parsers.parse_boolean(True))
         self.assertTrue(parsers.parse_boolean("True"))
@@ -22,7 +22,7 @@ class TestParseBoolean(TestCase):
         self.assertFalse(parsers.parse_boolean(False))
 
 
-class TestParseNumeric(TestCase):
+class TestParseNumeric(unittest.TestCase):
     def test_converts_to_dtype(self):
         self.assertIsInstance(
             parsers.parse_numeric("1", name="int", dtype=float), float
@@ -35,7 +35,7 @@ class TestParseNumeric(TestCase):
             parsers.parse_numeric("a", name="value", dtype=int)
 
 
-class TestParseString(TestCase):
+class TestParseString(unittest.TestCase):
     def test_returns_none_if_falsey(self):
         self.assertIsNone(parsers.parse_string(None))
         self.assertIsNone(parsers.parse_string(" "))
@@ -45,7 +45,7 @@ class TestParseString(TestCase):
         self.assertEqual(parsers.parse_string(" aaa "), "aaa")
 
 
-class TestParseSrc(TestCase):
+class TestParseSrc(unittest.TestCase):
     @mock.patch(
         "mavedbconvert.parsers.parse_string",
         return_value=os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv"),
@@ -100,7 +100,7 @@ class TestParseDst(ProgramTestCase):
         self.bin.append(path)
 
 
-class TestParseProgram(TestCase):
+class TestParseProgram(unittest.TestCase):
     def test_ok_supported_program(self):
         for p in ("enrich2", "enrich", "empiric"):
             parsers.parse_program(p)
@@ -124,7 +124,7 @@ class TestParseProgram(TestCase):
             parsers.parse_program(program)
 
 
-class TestParseWildTypeSequence(TestCase):
+class TestParseWildTypeSequence(unittest.TestCase):
     def test_can_read_from_fasta(self):
         path = os.path.join(TEST_DATA_DIR, "fasta", "lower.fa")
         wtseq = parsers.parse_wt_sequence(path, program="enrich2", non_coding=True)
@@ -161,7 +161,7 @@ class TestParseWildTypeSequence(TestCase):
         parsers.parse_wt_sequence("ATGATC", program="empiric")
 
 
-class TestParseInputType(TestCase):
+class TestParseInputType(unittest.TestCase):
     @mock.patch("mavedbconvert.parsers.parse_string", return_value="counts")
     def test_calls_parse_string(self, patch):
         parsers.parse_input_type(constants.count_type)
@@ -176,7 +176,7 @@ class TestParseInputType(TestCase):
             parsers.parse_input_type(v)
 
 
-class TestParseScoreColumn(TestCase):
+class TestParseScoreColumn(unittest.TestCase):
     @mock.patch("mavedbconvert.parsers.parse_string", return_value="score")
     def test_calls_parse_string(self, patch):
         parsers.parse_score_column("score", constants.score_type, program="enrich")
@@ -210,7 +210,7 @@ class TestParseScoreColumn(TestCase):
         )
 
 
-class TestParseOffset(TestCase):
+class TestParseOffset(unittest.TestCase):
     @mock.patch("mavedbconvert.parsers.parse_numeric", return_value=0)
     def test_calls_parse_numeric(self, patch):
         parsers.parse_offset(0, program="enrich")
@@ -238,7 +238,7 @@ class TestParseOffset(TestCase):
         self.assertEqual(-6, parsers.parse_offset("-6", "empiric"))
 
 
-class TestParseDocopt(TestCase):
+class TestParseDocopt(unittest.TestCase):
     @staticmethod
     def mock_args(
         program=None,
@@ -315,3 +315,7 @@ class TestParseDocopt(TestCase):
         args = self.mock_args()
         _, kwargs = parsers.parse_docopt(args)
         self.assertIn("skip_header_rows", kwargs)
+
+
+if __name__ == "__main__":
+    unittest.main()

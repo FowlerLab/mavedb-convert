@@ -1,9 +1,10 @@
 import os
 import mock
+import unittest
 
-from .. import base, exceptions
+from mavedbconvert import base, exceptions
 
-from . import ProgramTestCase
+from mavedbconvert.tests import ProgramTestCase
 
 
 class TestPaths(ProgramTestCase):
@@ -241,3 +242,7 @@ class TestBaseProgramValidateAgainstProteinSeq(ProgramTestCase):
         with self.assertRaises(IndexError):
             self.base.one_based = False
             self.base.validate_against_protein_sequence("p.Met2Lys")
+
+
+if __name__ == "__main__":
+    unittest.main()

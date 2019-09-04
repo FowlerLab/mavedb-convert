@@ -1,13 +1,13 @@
-from unittest import TestCase
+import unittest
 
 import pandas as pd
 
 from hgvs.sequencevariant import SequenceVariant
 
-from .. import validators, constants, exceptions
+from mavedbconvert import validators, constants, exceptions
 
 
-class TestHGVSPatternsBackend(TestCase):
+class TestHGVSPatternsBackend(unittest.TestCase):
     def setUp(self):
         self.backend = validators.HGVSPatternsBackend()
 
@@ -25,7 +25,7 @@ class TestHGVSPatternsBackend(TestCase):
         self.assertIsInstance(self.backend.validate("c.1A>G"), str)
 
 
-class TestHGVSBiocommonsBackend(TestCase):
+class TestHGVSBiocommonsBackend(unittest.TestCase):
     def setUp(self):
         self.backend = validators.HGVSBiocommonsBackend("NM_000000001.1")
 
@@ -68,7 +68,7 @@ class TestHGVSBiocommonsBackend(TestCase):
         )
 
 
-class TestValidateHGVS(TestCase):
+class TestValidateHGVS(unittest.TestCase):
     def test_uses_biocommons_backend_if_transcript_provided(self):
         result = validators.validate_variants(
             ["c.[1A>G;2A>G]"], n_jobs=2, verbose=0, transcript=constants.dummy_ref
@@ -80,7 +80,7 @@ class TestValidateHGVS(TestCase):
         self.assertIsInstance(result[0], str)
 
 
-class TestDfValidators(TestCase):
+class TestDfValidators(unittest.TestCase):
     def test_validate_column_raise_keyerror_column_not_exist(self):
         df = pd.DataFrame({"a": [1]})
         with self.assertRaises(KeyError):
@@ -100,7 +100,7 @@ class TestDfValidators(TestCase):
         validators.validate_columns_are_numeric(df)
 
 
-class TestHGVSValidators(TestCase):
+class TestHGVSValidators(unittest.TestCase):
     def test_validate_hgvs_nt_not_redef_raise_error_if_redefined(self):
         df = pd.DataFrame({constants.nt_variant_col: ["a", "b"]})
         validators.validate_hgvs_nt_uniqueness(df)  # Should pass
@@ -124,7 +124,7 @@ class TestHGVSValidators(TestCase):
         validators.validate_hgvs_pro_uniqueness(df)  # Should pass
 
 
-class TestMaveDBCompliance(TestCase):
+class TestMaveDBCompliance(unittest.TestCase):
     def test_error_primary_column_contains_null(self):
         df = pd.DataFrame(
             {
@@ -207,7 +207,7 @@ class TestMaveDBCompliance(TestCase):
             validators.validate_mavedb_compliance(df, df_type=constants.score_type)
 
 
-class TestValidateSameVariants(TestCase):
+class TestValidateSameVariants(unittest.TestCase):
     def test_ve_counts_defines_different_nt_variants(self):
         scores = pd.DataFrame(
             {
@@ -260,3 +260,7 @@ class TestValidateSameVariants(TestCase):
         counts = pd.DataFrame({constants.pro_variant_col: ["p.Leu75Glu"]})
         with self.assertRaises(AssertionError):
             validators.validate_datasets_define_same_variants(scores, counts)
+
+
+if __name__ == "__main__":
+    unittest.main()

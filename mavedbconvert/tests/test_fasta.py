@@ -1,9 +1,9 @@
 import os
-from unittest import TestCase
+import unittest
 
-from . import ProgramTestCase
+from mavedbconvert.tests import ProgramTestCase
 
-from ..fasta import parse_fasta, split_fasta_path
+from mavedbconvert.fasta import parse_fasta, split_fasta_path
 
 
 class TestFastaPath(ProgramTestCase):
@@ -101,3 +101,7 @@ class TestFastaReader(ProgramTestCase):
             "GCCCTTCCTACCGTGCTATGAGAGGAAATCTCGGGCGTAA"
         )
         self.assertEqual(sequence, expected)
+
+
+if __name__ == "__main__":
+    unittest.main()
