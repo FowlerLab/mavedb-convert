@@ -19,6 +19,8 @@ __all__ = [
 ]
 
 
+# TODO: think up a better name for this class
+# TODO: remove the old self.bin stuff
 class ProgramTestCase(TestCase):
     def setUp(self):
         self._data_dir = TemporaryDirectory()  # store the object

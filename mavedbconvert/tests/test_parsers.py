@@ -6,7 +6,7 @@ from .. import parsers, exceptions, constants
 
 from . import ProgramTestCase
 
-
+# TODO: convert these tests to use temp directories
 TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
