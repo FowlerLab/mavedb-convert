@@ -8,3 +8,5 @@ is to install pysam version `0.13` manually:
 `pip install pysam==0.13`
 
 This is the latest version known to compile without errors.
+
+Although `pysam` is not required for `mavedb-convert` directly, it is installed by some of our dependencies. Until it is removed or made optional by those libraries, `mavedb-convert` will unfortunately not be installable on Windows.
