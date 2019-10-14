@@ -356,8 +356,6 @@ class TestEmpiricLoadInput(ProgramTestCase):
         self.csv_path = os.path.join(self.data_dir, "empiric", "tmp.csv")
         self.tsv_path = os.path.join(self.data_dir, "empiric", "tmp.tsv")
         self.multisheet_excel_path = os.path.join(self.data_dir, "empiric", "tmp.xlsx")
-        self.bin.append(self.tmp_path)
-        self.bin.append(self.tmp_path_tsv)
 
     def test_extra_na_load_as_nan(self):
         for value in constants.extra_na:
