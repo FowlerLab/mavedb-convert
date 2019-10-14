@@ -469,10 +469,10 @@ class TestEmpiricLoadInput(ProgramTestCase):
 class TestEmpiricConvert(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
+        self.excel_path = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
         self.expected = os.path.join(self.data_dir, "empiric", "empiric_expected.csv")
         self.empiric = empiric.Empiric(
-            src=self.path,
+            src=self.excel_path,
             wt_sequence="TTTTCTTATTGT",
             score_column="col_A",
             input_type=constants.score_type,
@@ -486,7 +486,7 @@ class TestEmpiricConvert(ProgramTestCase):
 
     def test_integration(self):
         self.empiric = empiric.Empiric(
-            src=self.path,
+            src=self.excel_path,
             wt_sequence="TCTTATTGT",
             score_column="col_A",
             input_type=constants.score_type,
