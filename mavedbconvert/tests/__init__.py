@@ -37,7 +37,7 @@ class ProgramTestCase(TestCase):
         writer = pd.ExcelWriter(path, engine="xlsxwriter")
         for i, di in enumerate(data):
             df = pd.DataFrame(di)
-            df.to_excel(writer, sheet_name="Sheet{}".format(i))
+            df.to_excel(writer, sheet_name="Sheet{}".format(i), index=False)
         writer.save()
         self.bin.append(path)
 
