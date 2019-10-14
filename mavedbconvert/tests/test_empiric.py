@@ -478,7 +478,6 @@ class TestEmpiricConvert(ProgramTestCase):
             input_type=constants.score_type,
             one_based=False,
         )
-        self.bin.append(self.empiric.output_file)
 
     def test_saves_to_dst(self):
         self.empiric.convert()
