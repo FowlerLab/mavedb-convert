@@ -352,20 +352,20 @@ class TestEmpiricParseInput(ProgramTestCase):
 class TestEmpiricLoadInput(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
-        self.tmp_path = os.path.join(self.data_dir, "empiric", "tmp.csv")
-        self.tmp_path_tsv = os.path.join(self.data_dir, "empiric", "tmp.tsv")
-        self.tmp_excel_path = os.path.join(self.data_dir, "empiric", "tmp.xlsx")
+        self.excel_path = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
+        self.csv_path = os.path.join(self.data_dir, "empiric", "tmp.csv")
+        self.tsv_path = os.path.join(self.data_dir, "empiric", "tmp.tsv")
+        self.multisheet_excel_path = os.path.join(self.data_dir, "empiric", "tmp.xlsx")
         self.bin.append(self.tmp_path)
         self.bin.append(self.tmp_path_tsv)
 
     def test_extra_na_load_as_nan(self):
         for value in constants.extra_na:
-            df = pd.read_excel(self.path)
+            df = pd.read_excel(self.excel_path)
             df["A"] = [value] * len(df)
-            df.to_csv(self.tmp_path, index=False)
+            df.to_csv(self.csv_path, index=False)
             e = empiric.Empiric(
-                src=self.tmp_path,
+                src=self.csv_path,
                 wt_sequence="TTTTCTTATTGT",
                 score_column="col_A",
                 input_type=constants.score_type,
@@ -380,9 +380,9 @@ class TestEmpiricLoadInput(ProgramTestCase):
             {"Position": [0], "Amino Acid": ["K"], "score": [1.2]},
             {"Position": [1], "Amino Acid": ["G"], "score": [1.4]},
         ]
-        self.mock_multi_sheet_excel_file(self.tmp_excel_path, data)
+        self.mock_multi_sheet_excel_file(self.multisheet_excel_path, data)
         p = empiric.Empiric(
-            src=self.tmp_excel_path,
+            src=self.multisheet_excel_path,
             wt_sequence="TTTTCTTATTGT",
             score_column="score",
             input_type=constants.score_type,
@@ -392,10 +392,10 @@ class TestEmpiricLoadInput(ProgramTestCase):
         assert_frame_equal(df, expected)
 
     def test_handles_csv(self):
-        df = pd.read_excel(self.path)
-        df.to_csv(self.tmp_path, index=False, sep=",")
+        df = pd.read_excel(self.excel_path)
+        df.to_csv(self.csv_path, index=False, sep=",")
         e = empiric.Empiric(
-            src=self.tmp_path,
+            src=self.csv_path,
             wt_sequence="TTTTCTTATTGT",
             score_column="col_A",
             input_type=constants.score_type,
@@ -405,10 +405,10 @@ class TestEmpiricLoadInput(ProgramTestCase):
         assert_frame_equal(result, df)
 
     def test_handles_tsv(self):
-        df = pd.read_excel(self.path)
-        df.to_csv(self.tmp_path_tsv, index=False, sep="\t")
+        df = pd.read_excel(self.excel_path)
+        df.to_csv(self.tsv_path, index=False, sep="\t")
         e = empiric.Empiric(
-            src=self.tmp_path_tsv,
+            src=self.tsv_path,
             wt_sequence="TTTTCTTATTGT",
             score_column="col_A",
             input_type=constants.score_type,
@@ -418,12 +418,12 @@ class TestEmpiricLoadInput(ProgramTestCase):
         assert_frame_equal(result, df)
 
     def test_error_position_not_in_columns(self):
-        df = pd.read_excel(self.path)
+        df = pd.read_excel(self.excel_path)
         df = df.drop(columns=["Position"])
-        df.to_csv(self.tmp_path, index=False, sep="\t")
+        df.to_csv(self.csv_path, index=False, sep="\t")
         with self.assertRaises(ValueError):
             e = empiric.Empiric(
-                src=self.tmp_path,
+                src=self.csv_path,
                 wt_sequence="TTTTCTTATTGT",
                 score_column="col_A",
                 input_type=constants.score_type,
@@ -432,12 +432,12 @@ class TestEmpiricLoadInput(ProgramTestCase):
             e.load_input_file()
 
     def test_error_amino_acid_not_in_columns(self):
-        df = pd.read_excel(self.path)
+        df = pd.read_excel(self.excel_path)
         df = df.drop(columns=["Amino Acid"])
-        df.to_csv(self.tmp_path, index=False, sep="\t")
+        df.to_csv(self.csv_path, index=False, sep="\t")
         with self.assertRaises(ValueError):
             e = empiric.Empiric(
-                src=self.tmp_path,
+                src=self.csv_path,
                 wt_sequence="TTTTCTTATTGT",
                 score_column="col_A",
                 input_type=constants.score_type,
@@ -448,7 +448,7 @@ class TestEmpiricLoadInput(ProgramTestCase):
     def test_not_scores_column_but_input_type_is_scores(self):
         with self.assertRaises(ValueError):
             empiric.Empiric(
-                src=self.tmp_path,
+                src=self.csv_path,
                 wt_sequence="TTTTCTTATTGT",
                 score_column=None,
                 input_type=constants.score_type,
@@ -457,7 +457,7 @@ class TestEmpiricLoadInput(ProgramTestCase):
 
     def test_applies_offset_to_position_column(self):
         e = empiric.Empiric(
-            src=self.path,
+            src=self.excel_path,
             wt_sequence="TTTTCTTATTGT",
             score_column="col_A",
             input_type=constants.score_type,
