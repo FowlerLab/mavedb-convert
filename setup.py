@@ -12,6 +12,6 @@ setup(
         "A command line tool for converting alternate "
         "file formats into a MaveDB compliant format."
     ),
-    install_requires=open("requirements/install.txt", "rt").read().split("\n"),
+    #install_requires=open("requirements/install.txt", "rt").read().split("\n"),
     entry_points={"console_scripts": ["mavedb-convert=mavedbconvert.main:main"]},
 )
