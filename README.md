@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.com/VariantEffect/mavedbconvert.svg?branch=master)](https://travis-ci.com/VariantEffect/mavedbconvert)
+[![Coverage Status](https://coveralls.io/repos/github/VariantEffect/mavedbconvert/badge.svg?branch=master)](https://coveralls.io/github/VariantEffect/mavedbconvert?branch=master)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 # mavedbconvert
 A command line tool for converting Multiplex Assay of Variant Effect datasets into a MaveDB-ready format.
 
