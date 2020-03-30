@@ -1,6 +1,6 @@
 import os
-import mock
 import unittest
+from unittest.mock import patch
 
 from mavedbconvert import parsers, exceptions, constants
 
@@ -46,7 +46,7 @@ class TestParseString(unittest.TestCase):
 
 
 class TestParseSrc(unittest.TestCase):
-    @mock.patch(
+    @patch(
         "mavedbconvert.parsers.parse_string",
         return_value=os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv"),
     )
@@ -74,7 +74,7 @@ class TestParseSrc(unittest.TestCase):
 
 
 class TestParseDst(ProgramTestCase):
-    @mock.patch(
+    @patch(
         "mavedbconvert.parsers.parse_string", return_value=os.path.join(TEST_DATA_DIR)
     )
     def test_calls_parse_string(self, patch):
@@ -162,7 +162,7 @@ class TestParseWildTypeSequence(unittest.TestCase):
 
 
 class TestParseInputType(unittest.TestCase):
-    @mock.patch("mavedbconvert.parsers.parse_string", return_value="counts")
+    @patch("mavedbconvert.parsers.parse_string", return_value="counts")
     def test_calls_parse_string(self, patch):
         parsers.parse_input_type(constants.count_type)
         patch.assert_called()
@@ -177,7 +177,7 @@ class TestParseInputType(unittest.TestCase):
 
 
 class TestParseScoreColumn(unittest.TestCase):
-    @mock.patch("mavedbconvert.parsers.parse_string", return_value="score")
+    @patch("mavedbconvert.parsers.parse_string", return_value="score")
     def test_calls_parse_string(self, patch):
         parsers.parse_score_column("score", constants.score_type, program="enrich")
         patch.assert_called()
@@ -211,7 +211,7 @@ class TestParseScoreColumn(unittest.TestCase):
 
 
 class TestParseOffset(unittest.TestCase):
-    @mock.patch("mavedbconvert.parsers.parse_numeric", return_value=0)
+    @patch("mavedbconvert.parsers.parse_numeric", return_value=0)
     def test_calls_parse_numeric(self, patch):
         parsers.parse_offset(0, program="enrich")
         patch.assert_called()

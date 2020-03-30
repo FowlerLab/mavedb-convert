@@ -1,6 +1,6 @@
 import os
-import mock
 import unittest
+from unittest.mock import patch
 
 from mavedbconvert import base, exceptions
 
@@ -49,12 +49,12 @@ class TestPaths(ProgramTestCase):
         self.assertTrue(os.path.isdir(output))
         self.bin.append(output)
 
-    @mock.patch("os.access")
+    @patch("os.access")
     def test_checks_read_permission(self, patch):
         p = base.BaseProgram(src=self.src, dst=None, wt_sequence="AAA")
         self.assertEqual(patch.call_args_list[0][0], (p.src, os.R_OK))
 
-    @mock.patch("os.access")
+    @patch("os.access")
     def test_checks_write_permission(self, patch):
         p = base.BaseProgram(src=self.src, dst=None, wt_sequence="AAA")
         self.assertEqual(patch.call_args_list[1][0], (p.dst, os.W_OK))

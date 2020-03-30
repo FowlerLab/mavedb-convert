@@ -1,6 +1,6 @@
 import os
-import mock
 import unittest
+from unittest.mock import patch
 from itertools import product
 
 import hgvsp
@@ -559,7 +559,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
     def parse_rows(self, variants, element=None):
         return [self.enrich2.parse_row((v, element)) for v in list(variants)]
 
-    @mock.patch.object(pd.DataFrame, "to_csv", return_value=None)
+    @patch.object(pd.DataFrame, "to_csv", return_value=None)
     def test_saves_to_output_directory(self, patch):
         output = os.path.join(self.data_dir, "enrich2", "new")
         p = enrich2.Enrich2(src=self.store, dst=output, wt_sequence=self.wt, offset=0)
@@ -568,7 +568,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
             self.assertIn(output, call_args[0][0])
         self.bin.append(output)
 
-    @mock.patch.object(pd.DataFrame, "to_csv", return_value=None)
+    @patch.object(pd.DataFrame, "to_csv", return_value=None)
     def test_saves_to_file_location_if_no_dst_supplied(self, patch):
         p = enrich2.Enrich2(src=self.store, wt_sequence=self.wt, offset=0)
         p.parse_input(self.enrich2.load_input_file())
@@ -578,13 +578,13 @@ class TestEnrich2ParseInput(ProgramTestCase):
         for call_args in patch.call_args_list:
             self.assertIn(expected_base_path, call_args[0][0])
 
-    @mock.patch("mavedbconvert.enrich2.get_replicate_score_dataframes")
+    @patch("mavedbconvert.enrich2.get_replicate_score_dataframes")
     def test_iterates_over_all_available_tables(self, patch):
         self.enrich2.parse_input(self.enrich2.load_input_file())
         self.assertIn(constants.synonymous_table, patch.call_args_list[0][0])
         self.assertIn(constants.variants_table, patch.call_args_list[1][0])
 
-    @mock.patch(
+    @patch(
         "mavedbconvert.enrich2.drop_null",
         side_effect=lambda scores_df, counts_df: (scores_df, counts_df),
     )
@@ -928,7 +928,7 @@ class TestEnrich2ParseRow(ProgramTestCase):
             ),
         )
 
-    @mock.patch("mavedbconvert.enrich2.apply_offset", return_value="c.3T>C (p.Thr1=)")
+    @patch("mavedbconvert.enrich2.apply_offset", return_value="c.3T>C (p.Thr1=)")
     def test_calls_apply_offset_to_variant(self, patch):
         variant = "c.3T>C (p.=)"
         self.enrich2.parse_row((variant, None))
@@ -1123,7 +1123,7 @@ class TestEnrich2MixedHGVSParsing(ProgramTestCase):
         self.assertEqual(nt, "c.[1=;6T>G;2A>T]")
         self.assertEqual(pro, "p.[Lys1Ile;Asn2Lys]")
 
-    @mock.patch.object(
+    @patch.object(
         enrich2.Enrich2, "infer_silent_aa_substitution", return_value="p.Lys1="
     )
     def test_groups_codons(self, patch):
@@ -1132,7 +1132,7 @@ class TestEnrich2MixedHGVSParsing(ProgramTestCase):
         _, _ = self.enrich2.parse_mixed_variant(variant)
         patch.assert_called_with(*(["c.1=", "c.2="], variant))
 
-    @mock.patch.object(
+    @patch.object(
         enrich2.Enrich2, "infer_silent_aa_substitution", return_value="p.Lys1="
     )
     def test_calls_infer_with_synonymous_variants_only(self, patch):
@@ -1257,7 +1257,7 @@ class TestApplyOffset(ProgramTestCase):
         self.assertEqual("p.Leu7=, p.Leu10=", enrich2.apply_offset(variant, offset))
         self.assertEqual("p.Leu7=", enrich2.apply_offset("p.Leu10=", offset))
 
-    @mock.patch.object(enrich2.base.BaseProgram, "validate_against_wt_sequence")
+    @patch.object(enrich2.base.BaseProgram, "validate_against_wt_sequence")
     def test_validates_against_wt_sequence(self, patch):
         variant = "c.-9C>T"
         path = os.path.join(self.data_dir, "enrich2", "dummy.h5")
@@ -1272,7 +1272,7 @@ class TestApplyOffset(ProgramTestCase):
         with self.assertRaises(ValueError):
             enrich2.apply_offset(variant, offset=-10, enrich2=p)
 
-    @mock.patch.object(enrich2.base.BaseProgram, "validate_against_protein_sequence")
+    @patch.object(enrich2.base.BaseProgram, "validate_against_protein_sequence")
     def test_validates_against_pro_sequence(self, patch):
         variant = "p.Gly3Leu"
         path = os.path.join(self.data_dir, "enrich2", "dummy.h5")
