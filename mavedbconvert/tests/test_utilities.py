@@ -1,11 +1,11 @@
-from unittest import TestCase
+import unittest
 
 import numpy as np
 
-from .. import utilities, constants, exceptions
+from mavedbconvert import utilities, constants, exceptions
 
 
-class TestSlicer(TestCase):
+class TestSlicer(unittest.TestCase):
     def test_slicer_returns_chunks_of_size_n(self):
         self.assertEqual(list(utilities.slicer("aaabbbccc", 3)), ["aaa", "bbb", "ccc"])
 
@@ -15,7 +15,7 @@ class TestSlicer(TestCase):
         )
 
 
-class TestTranslateWTSequence(TestCase):
+class TestTranslateWTSequence(unittest.TestCase):
     def test_translate_wt_seq_no_offset(self):
         self.assertEqual(utilities.translate_dna("GTGGCGGAG", offset=0), "VAE")
 
@@ -31,7 +31,7 @@ class TestTranslateWTSequence(TestCase):
             utilities.translate_dna("GTGGCGGAG", offset=-3)
 
 
-class TestIsNull(TestCase):
+class TestIsNull(unittest.TestCase):
     def test_is_null_true_for_none_nan_and_na(self):
         for v in constants.extra_na:
             self.assertTrue(utilities.is_null(v))
@@ -46,7 +46,7 @@ class TestIsNull(TestCase):
         self.assertFalse(utilities.is_null("1.2"))
 
 
-class TestFormatColumn(TestCase):
+class TestFormatColumn(unittest.TestCase):
     def test_replaces_null_with_nan(self):
         self.assertIs(utilities.format_column(["   "])[0], np.NaN)
         self.assertIs(utilities.format_column(["none"])[0], np.NaN)
@@ -67,7 +67,7 @@ class TestFormatColumn(TestCase):
         self.assertIs(utilities.format_column(["none"], astype=str)[0], None)
 
 
-class TestIsNumeric(TestCase):
+class TestIsNumeric(unittest.TestCase):
     def test_true_for_float(self):
         self.assertTrue(utilities.is_numeric(float))
 
@@ -90,7 +90,7 @@ class TestIsNumeric(TestCase):
         self.assertFalse(utilities.is_numeric(np.object))
 
 
-class TestNucleotideSubstitutionEvent(TestCase):
+class TestNucleotideSubstitutionEvent(unittest.TestCase):
     def test_parses_negative_positions(self):
         nt = utilities.NucleotideSubstitutionEvent("n.-100A>T")
         self.assertEqual(nt.position, -100)
@@ -166,7 +166,7 @@ class TestNucleotideSubstitutionEvent(TestCase):
         )
 
 
-class TestProteinSubstitutionEvent(TestCase):
+class TestProteinSubstitutionEvent(unittest.TestCase):
     def test_error_set_position_less_than_1(self):
         pro = utilities.ProteinSubstitutionEvent("p.Gly4Leu")
         with self.assertRaises(ValueError):
@@ -208,7 +208,7 @@ class TestProteinSubstitutionEvent(TestCase):
         )
 
 
-class TestSplitVariant(TestCase):
+class TestSplitVariant(unittest.TestCase):
     def test_split_hgvs_singular_list_non_multi_variant(self):
         self.assertListEqual(["c.100A>G"], utilities.split_variant("c.100A>G"))
 
@@ -218,7 +218,7 @@ class TestSplitVariant(TestCase):
         )
 
 
-class TestNormalizeVariant(TestCase):
+class TestNormalizeVariant(unittest.TestCase):
     def test_stripts_white_space(self):
         self.assertEqual(utilities.normalize_variant(" c.1A>G "), "c.1A>G")
 
@@ -256,7 +256,7 @@ class TestNormalizeVariant(TestCase):
         )
 
 
-class TestFormatVariant(TestCase):
+class TestFormatVariant(unittest.TestCase):
     def test_stripts_white_space(self):
         self.assertEqual(utilities.format_variant(" c.1A>G "), "c.1A>G")
 
@@ -264,7 +264,7 @@ class TestFormatVariant(TestCase):
         self.assertIsNone(utilities.format_variant(None))
 
 
-class TestHGVSProFromEventList(TestCase):
+class TestHGVSProFromEventList(unittest.TestCase):
     def test_returns_single_event(self):
         result = utilities.hgvs_pro_from_event_list(["L4V"])
         self.assertEqual(result, "p.L4V")
@@ -292,7 +292,7 @@ class TestHGVSProFromEventList(TestCase):
             utilities.hgvs_pro_from_event_list(["aaaa"])
 
 
-class TestHGVSNTFromEventList(TestCase):
+class TestHGVSNTFromEventList(unittest.TestCase):
     def test_returns_single_event(self):
         result = utilities.hgvs_nt_from_event_list(["45A>G"], prefix="c")
         self.assertEqual(result, "c.45A>G")
@@ -316,7 +316,7 @@ class TestHGVSNTFromEventList(TestCase):
             utilities.hgvs_nt_from_event_list(["aaaa"], prefix="c")
 
 
-class TestNonHgvsColumns(TestCase):
+class TestNonHgvsColumns(unittest.TestCase):
     def test_returns_non_hgvs_columns(self):
         self.assertListEqual(
             ["score"],
@@ -328,7 +328,7 @@ class TestNonHgvsColumns(TestCase):
         )
 
 
-class TestHgvsColumns(TestCase):
+class TestHgvsColumns(unittest.TestCase):
     def test_returns_only_hgvs_columns(self):
         self.assertListEqual(
             [constants.nt_variant_col, constants.pro_variant_col],
@@ -338,3 +338,7 @@ class TestHgvsColumns(TestCase):
                 )
             ),
         )
+
+
+if __name__ == "__main__":
+    unittest.main()

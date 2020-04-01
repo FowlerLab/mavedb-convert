@@ -1,16 +1,13 @@
 import os
+import unittest
 
 import pandas as pd
 import numpy as np
 from pandas.testing import assert_frame_equal
 
-from .. import enrich, constants, utilities
+from mavedbconvert import enrich, constants, utilities
 
-from . import ProgramTestCase
-
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.normpath(BASE_DIR + "/data/")
+from mavedbconvert.tests import ProgramTestCase
 
 
 WT = (
@@ -22,7 +19,7 @@ WT = (
 class TestEnrichInit(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "enrich2.tsv")
+        self.path = os.path.join(self.data_dir, "enrich", "enrich2.tsv")
 
     def test_error_offset_not_mult_of_three(self):
         with self.assertRaises(ValueError):
@@ -35,7 +32,7 @@ class TestEnrichInit(ProgramTestCase):
 class TestEnrichParseRow(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "enrich1.tsv")
+        self.path = os.path.join(self.data_dir, "enrich", "enrich.tsv")
         self.enrich = enrich.Enrich(
             src=self.path,
             wt_sequence=WT,
@@ -128,7 +125,7 @@ class TestEnrichParseRow(ProgramTestCase):
 class TestEnrichParseInput(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "enrich1.tsv")
+        self.path = os.path.join(self.data_dir, "enrich", "enrich.tsv")
         self.enrich = enrich.Enrich(
             src=self.path,
             wt_sequence=WT,
@@ -186,19 +183,22 @@ class TestEnrichParseInput(ProgramTestCase):
 
 class TestEnrichLoadInput(ProgramTestCase):
     def setUp(self):
-        self.path = os.path.join(DATA_DIR, "enrich1.tsv")
-        self.path_1based = os.path.join(DATA_DIR, "enrich1_1based.tsv")
-        self.path_csv = os.path.join(DATA_DIR, "enrich1.csv")
-        self.expected = os.path.join(DATA_DIR, "enrich1_expected.csv")
-        self.expected_offset = os.path.join(DATA_DIR, "enrich1_expected_offset.csv")
-        self.excel_path = os.path.join(DATA_DIR, "enrich1.xlsx")
-        self.no_seq_id = os.path.join(DATA_DIR, "enrich1_no_seqid.tsv")
-        self.tmp_path = os.path.join(DATA_DIR, "tmp.xlsx")
+        super().setUp()
+        self.path = os.path.join(self.data_dir, "enrich", "enrich.tsv")
+        self.path_1based = os.path.join(self.data_dir, "enrich", "enrich_1based.tsv")
+        self.path_csv = os.path.join(self.data_dir, "enrich", "enrich1.csv")
+        self.expected = os.path.join(self.data_dir, "enrich", "enrich_expected.csv")
+        self.expected_offset = os.path.join(
+            self.data_dir, "enrich", "enrich_expected_offset.csv"
+        )
+        self.excel_path = os.path.join(self.data_dir, "enrich", "enrich.xlsx")
+        self.no_seq_id = os.path.join(self.data_dir, "enrich", "enrich_no_seqid.tsv")
+        self.tmp_path = os.path.join(self.data_dir, "enrich", "tmp.xlsx")
 
         self.bin = [
-            os.path.join(DATA_DIR, "mavedb_enrich1.csv"),
-            os.path.join(DATA_DIR, "mavedb_enrich1_1based.csv"),
-            os.path.join(DATA_DIR, self.path_csv),
+            os.path.join(self.data_dir, "enrich", "mavedb_enrich1.csv"),
+            os.path.join(self.data_dir, "enrich", "mavedb_enrich1_1based.csv"),
+            os.path.join(self.data_dir, "enrich", self.path_csv),
         ]
 
     def test_error_seq_id_not_in_columns(self):
@@ -279,17 +279,20 @@ class TestEnrichLoadInput(ProgramTestCase):
 
 class TestEnrichIntegration(ProgramTestCase):
     def setUp(self):
-        self.path = os.path.join(DATA_DIR, "enrich1.tsv")
-        self.path_1based = os.path.join(DATA_DIR, "enrich1_1based.tsv")
-        self.excel_path = os.path.join(DATA_DIR, "enrich1.xlsx")
-        self.no_seq_id = os.path.join(DATA_DIR, "enrich1_no_seqid.tsv")
+        super().setUp()
+        self.path = os.path.join(self.data_dir, "enrich", "enrich.tsv")
+        self.path_1based = os.path.join(self.data_dir, "enrich", "enrich_1based.tsv")
+        self.excel_path = os.path.join(self.data_dir, "enrich", "enrich.xlsx")
+        self.no_seq_id = os.path.join(self.data_dir, "enrich", "enrich_no_seqid.tsv")
 
-        self.expected = os.path.join(DATA_DIR, "enrich1_expected.csv")
-        self.expected_offset = os.path.join(DATA_DIR, "enrich1_expected_offset.csv")
+        self.expected = os.path.join(self.data_dir, "enrich", "enrich_expected.csv")
+        self.expected_offset = os.path.join(
+            self.data_dir, "enrich", "enrich_expected_offset.csv"
+        )
 
         self.bin = [
-            os.path.join(DATA_DIR, "mavedb_enrich1.csv"),
-            os.path.join(DATA_DIR, "mavedb_enrich1_1based.csv"),
+            os.path.join(self.data_dir, "enrich", "mavedb_enrich.csv"),
+            os.path.join(self.data_dir, "enrich", "mavedb_enrich_1based.csv"),
         ]
 
     def test_saves_to_input_dst_by_default(self):
@@ -329,3 +332,7 @@ class TestEnrichIntegration(ProgramTestCase):
         result = pd.read_csv(self.bin[1])
         expected = pd.read_csv(self.expected)
         assert_frame_equal(expected, result)
+
+
+if __name__ == "__main__":
+    unittest.main()

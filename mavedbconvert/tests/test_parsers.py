@@ -1,17 +1,16 @@
 import os
-import mock
-from unittest import TestCase
+import unittest
+from unittest.mock import patch
 
-from .. import parsers, exceptions, constants
+from mavedbconvert import parsers, exceptions, constants
 
-from . import ProgramTestCase
+from mavedbconvert.tests import ProgramTestCase
+
+# TODO: convert these tests to use temp directories
+TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.normpath(BASE_DIR + "/data/")
-
-
-class TestParseBoolean(TestCase):
+class TestParseBoolean(unittest.TestCase):
     def test_true_if_str_of_true(self):
         self.assertTrue(parsers.parse_boolean(True))
         self.assertTrue(parsers.parse_boolean("True"))
@@ -23,7 +22,7 @@ class TestParseBoolean(TestCase):
         self.assertFalse(parsers.parse_boolean(False))
 
 
-class TestParseNumeric(TestCase):
+class TestParseNumeric(unittest.TestCase):
     def test_converts_to_dtype(self):
         self.assertIsInstance(
             parsers.parse_numeric("1", name="int", dtype=float), float
@@ -36,7 +35,7 @@ class TestParseNumeric(TestCase):
             parsers.parse_numeric("a", name="value", dtype=int)
 
 
-class TestParseString(TestCase):
+class TestParseString(unittest.TestCase):
     def test_returns_none_if_falsey(self):
         self.assertIsNone(parsers.parse_string(None))
         self.assertIsNone(parsers.parse_string(" "))
@@ -46,17 +45,17 @@ class TestParseString(TestCase):
         self.assertEqual(parsers.parse_string(" aaa "), "aaa")
 
 
-class TestParseSrc(TestCase):
-    @mock.patch(
+class TestParseSrc(unittest.TestCase):
+    @patch(
         "mavedbconvert.parsers.parse_string",
-        return_value=os.path.join(DATA_DIR, "enrich2.tsv"),
+        return_value=os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv"),
     )
     def test_calls_parse_string(self, patch):
-        parsers.parse_src(os.path.join(DATA_DIR, "enrich2.tsv"))
+        parsers.parse_src(os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv"))
         patch.assert_called()
 
     def test_ok_file_exists(self):
-        path = os.path.join(DATA_DIR, "enrich2.tsv")
+        path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
         self.assertEqual(path, parsers.parse_src(path))
 
     def test_error_no_value(self):
@@ -65,23 +64,25 @@ class TestParseSrc(TestCase):
                 parsers.parse_src(v)
 
     def test_error_file_not_found(self):
-        path = os.path.join(DATA_DIR, "missing_file.tsv")
+        path = os.path.join(TEST_DATA_DIR, "enrich2", "missing_file.tsv")
         with self.assertRaises(FileNotFoundError):
             parsers.parse_src(path)
 
     def test_error_file_is_a_dir(self):
         with self.assertRaises(IsADirectoryError):
-            parsers.parse_src(DATA_DIR)
+            parsers.parse_src(os.path.join(TEST_DATA_DIR))
 
 
 class TestParseDst(ProgramTestCase):
-    @mock.patch("mavedbconvert.parsers.parse_string", return_value=DATA_DIR)
+    @patch(
+        "mavedbconvert.parsers.parse_string", return_value=os.path.join(TEST_DATA_DIR)
+    )
     def test_calls_parse_string(self, patch):
-        parsers.parse_dst(DATA_DIR)
+        parsers.parse_dst(os.path.join(TEST_DATA_DIR))
         patch.assert_called()
 
     def test_ok_dst_exists(self):
-        path = os.path.join(DATA_DIR)
+        path = os.path.join(os.path.join(TEST_DATA_DIR))
         self.assertEqual(path, parsers.parse_dst(path))
 
     def test_returns_none_no_value(self):
@@ -89,17 +90,17 @@ class TestParseDst(ProgramTestCase):
             self.assertIsNone(parsers.parse_dst(v))
 
     def test_dst_path_is_normalised(self):
-        path = BASE_DIR + "//data"
-        self.assertEqual(parsers.parse_dst(path), DATA_DIR)
+        path = TEST_DATA_DIR + "//fasta"
+        self.assertEqual(parsers.parse_dst(path), os.path.join(TEST_DATA_DIR, "fasta"))
 
     def test_makes_dst_directory_tree(self):
-        path = os.path.join(DATA_DIR, "subdir")
+        path = os.path.join(TEST_DATA_DIR, "subdir")
         parsers.parse_dst(path)
         self.assertTrue(os.path.isdir(path))
         self.bin.append(path)
 
 
-class TestParseProgram(TestCase):
+class TestParseProgram(unittest.TestCase):
     def test_ok_supported_program(self):
         for p in ("enrich2", "enrich", "empiric"):
             parsers.parse_program(p)
@@ -123,9 +124,9 @@ class TestParseProgram(TestCase):
             parsers.parse_program(program)
 
 
-class TestParseWildTypeSequence(TestCase):
+class TestParseWildTypeSequence(unittest.TestCase):
     def test_can_read_from_fasta(self):
-        path = os.path.join(DATA_DIR, "lower.fa")
+        path = os.path.join(TEST_DATA_DIR, "fasta", "lower.fa")
         wtseq = parsers.parse_wt_sequence(path, program="enrich2", non_coding=True)
         expected = (
             "ACAGTTGGATATAGTAGTTTGTACGAGTTGCTTGTGGCTT"
@@ -160,8 +161,8 @@ class TestParseWildTypeSequence(TestCase):
         parsers.parse_wt_sequence("ATGATC", program="empiric")
 
 
-class TestParseInputType(TestCase):
-    @mock.patch("mavedbconvert.parsers.parse_string", return_value="counts")
+class TestParseInputType(unittest.TestCase):
+    @patch("mavedbconvert.parsers.parse_string", return_value="counts")
     def test_calls_parse_string(self, patch):
         parsers.parse_input_type(constants.count_type)
         patch.assert_called()
@@ -175,8 +176,8 @@ class TestParseInputType(TestCase):
             parsers.parse_input_type(v)
 
 
-class TestParseScoreColumn(TestCase):
-    @mock.patch("mavedbconvert.parsers.parse_string", return_value="score")
+class TestParseScoreColumn(unittest.TestCase):
+    @patch("mavedbconvert.parsers.parse_string", return_value="score")
     def test_calls_parse_string(self, patch):
         parsers.parse_score_column("score", constants.score_type, program="enrich")
         patch.assert_called()
@@ -209,8 +210,8 @@ class TestParseScoreColumn(TestCase):
         )
 
 
-class TestParseOffset(TestCase):
-    @mock.patch("mavedbconvert.parsers.parse_numeric", return_value=0)
+class TestParseOffset(unittest.TestCase):
+    @patch("mavedbconvert.parsers.parse_numeric", return_value=0)
     def test_calls_parse_numeric(self, patch):
         parsers.parse_offset(0, program="enrich")
         patch.assert_called()
@@ -237,7 +238,7 @@ class TestParseOffset(TestCase):
         self.assertEqual(-6, parsers.parse_offset("-6", "empiric"))
 
 
-class TestParseDocopt(TestCase):
+class TestParseDocopt(unittest.TestCase):
     @staticmethod
     def mock_args(
         program=None,
@@ -258,13 +259,13 @@ class TestParseDocopt(TestCase):
         if program is None:
             program = "enrich2"
         if src is None:
-            src = os.path.join(DATA_DIR, "enrich2.tsv")
+            src = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
         return {
             "enrich": True if program == "enrich" else False,
             "enrich2": True if program == "enrich2" else False,
             "empiric": True if program == "empiric" else False,
-            "<src>": os.path.join(DATA_DIR, src),
-            "--dst": os.path.join(DATA_DIR, dst) if dst else dst,
+            "<src>": os.path.join(TEST_DATA_DIR, program, src),
+            "--dst": os.path.join(TEST_DATA_DIR, program, dst) if dst else dst,
             "--score-column": score_column,
             "--hgvs-column": hgvs_column,
             "--skip-header": skip_header,
@@ -314,3 +315,7 @@ class TestParseDocopt(TestCase):
         args = self.mock_args()
         _, kwargs = parsers.parse_docopt(args)
         self.assertIn("skip_header_rows", kwargs)
+
+
+if __name__ == "__main__":
+    unittest.main()

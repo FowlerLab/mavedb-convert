@@ -1,23 +1,19 @@
 import os
-from unittest import TestCase
+import unittest
 
 import pandas as pd
 import numpy as np
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from .. import empiric, constants
+from mavedbconvert import empiric, constants
 
-from . import ProgramTestCase
-
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.normpath(BASE_DIR + "/data/")
+from mavedbconvert.tests import ProgramTestCase
 
 
 class TestEmpiricInit(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "enrich2.tsv")
+        self.path = os.path.join(self.data_dir, "enrich2", "enrich2.tsv")
 
     def test_error_offset_not_mult_of_three(self):
         with self.assertRaises(ValueError):
@@ -27,7 +23,7 @@ class TestEmpiricInit(ProgramTestCase):
         empiric.Empiric(src=self.path, wt_sequence="ATC", offset=3)
 
 
-class TestInferProEvent(TestCase):
+class TestInferProEvent(unittest.TestCase):
     def test_infers_equal_event(self):
         self.assertEqual(
             empiric.infer_pro_substitution(mut_aa="V", wt_aa="v", codon_pos=0),
@@ -47,7 +43,7 @@ class TestInferProEvent(TestCase):
         )
 
 
-class TestInferNTEvent(TestCase):
+class TestInferNTEvent(unittest.TestCase):
     def test_infers_equal_event(self):
         self.assertEqual(
             empiric.infer_nt_substitution(wt_codon="aaa", mut_codon="AAA", codon_pos=0),
@@ -70,7 +66,7 @@ class TestInferNTEvent(TestCase):
 class TestEmpiric(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.input = os.path.join(DATA_DIR, "empiric.xlsx")
+        self.input = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
         self.empiric = empiric.Empiric(
             src=self.input, wt_sequence="AAA", one_based=False
         )
@@ -177,10 +173,10 @@ class TestEmpiric(ProgramTestCase):
         self.assertEqual(hgvs_nt, "c.[1G>A;2T>A;3A>T]")
 
 
-class TestEmpiricValidateColumns(TestCase):
+class TestEmpiricValidateColumns(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.input = os.path.join(DATA_DIR, "empiric.xlsx")
+        self.input = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
         self.empiric = empiric.Empiric(
             src=self.input, wt_sequence="AAA", one_based=False
         )
@@ -219,7 +215,7 @@ class TestEmpiricValidateColumns(TestCase):
 class TestEmpiricParseInput(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.input = os.path.join(DATA_DIR, "empiric.xlsx")
+        self.input = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
         self.empiric = empiric.Empiric(
             src=self.input,
             wt_sequence="AAA",
@@ -356,20 +352,18 @@ class TestEmpiricParseInput(ProgramTestCase):
 class TestEmpiricLoadInput(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "empiric.xlsx")
-        self.tmp_path = os.path.join(DATA_DIR, "tmp.csv")
-        self.tmp_path_tsv = os.path.join(DATA_DIR, "tmp.tsv")
-        self.tmp_excel_path = os.path.join(DATA_DIR, "tmp.xlsx")
-        self.bin.append(self.tmp_path)
-        self.bin.append(self.tmp_path_tsv)
+        self.excel_path = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
+        self.csv_path = os.path.join(self.data_dir, "empiric", "tmp.csv")
+        self.tsv_path = os.path.join(self.data_dir, "empiric", "tmp.tsv")
+        self.multisheet_excel_path = os.path.join(self.data_dir, "empiric", "tmp.xlsx")
 
     def test_extra_na_load_as_nan(self):
         for value in constants.extra_na:
-            df = pd.read_excel(self.path)
+            df = pd.read_excel(self.excel_path)
             df["A"] = [value] * len(df)
-            df.to_csv(self.tmp_path, index=False)
+            df.to_csv(self.csv_path, index=False)
             e = empiric.Empiric(
-                src=self.tmp_path,
+                src=self.csv_path,
                 wt_sequence="TTTTCTTATTGT",
                 score_column="col_A",
                 input_type=constants.score_type,
@@ -384,9 +378,9 @@ class TestEmpiricLoadInput(ProgramTestCase):
             {"Position": [0], "Amino Acid": ["K"], "score": [1.2]},
             {"Position": [1], "Amino Acid": ["G"], "score": [1.4]},
         ]
-        self.mock_multi_sheet_excel_file(self.tmp_excel_path, data)
+        self.mock_multi_sheet_excel_file(self.multisheet_excel_path, data)
         p = empiric.Empiric(
-            src=self.tmp_excel_path,
+            src=self.multisheet_excel_path,
             wt_sequence="TTTTCTTATTGT",
             score_column="score",
             input_type=constants.score_type,
@@ -396,10 +390,10 @@ class TestEmpiricLoadInput(ProgramTestCase):
         assert_frame_equal(df, expected)
 
     def test_handles_csv(self):
-        df = pd.read_excel(self.path)
-        df.to_csv(self.tmp_path, index=False, sep=",")
+        df = pd.read_excel(self.excel_path)
+        df.to_csv(self.csv_path, index=False, sep=",")
         e = empiric.Empiric(
-            src=self.tmp_path,
+            src=self.csv_path,
             wt_sequence="TTTTCTTATTGT",
             score_column="col_A",
             input_type=constants.score_type,
@@ -409,10 +403,10 @@ class TestEmpiricLoadInput(ProgramTestCase):
         assert_frame_equal(result, df)
 
     def test_handles_tsv(self):
-        df = pd.read_excel(self.path)
-        df.to_csv(self.tmp_path_tsv, index=False, sep="\t")
+        df = pd.read_excel(self.excel_path)
+        df.to_csv(self.tsv_path, index=False, sep="\t")
         e = empiric.Empiric(
-            src=self.tmp_path_tsv,
+            src=self.tsv_path,
             wt_sequence="TTTTCTTATTGT",
             score_column="col_A",
             input_type=constants.score_type,
@@ -422,12 +416,12 @@ class TestEmpiricLoadInput(ProgramTestCase):
         assert_frame_equal(result, df)
 
     def test_error_position_not_in_columns(self):
-        df = pd.read_excel(self.path)
+        df = pd.read_excel(self.excel_path)
         df = df.drop(columns=["Position"])
-        df.to_csv(self.tmp_path, index=False, sep="\t")
+        df.to_csv(self.csv_path, index=False, sep="\t")
         with self.assertRaises(ValueError):
             e = empiric.Empiric(
-                src=self.tmp_path,
+                src=self.csv_path,
                 wt_sequence="TTTTCTTATTGT",
                 score_column="col_A",
                 input_type=constants.score_type,
@@ -436,12 +430,12 @@ class TestEmpiricLoadInput(ProgramTestCase):
             e.load_input_file()
 
     def test_error_amino_acid_not_in_columns(self):
-        df = pd.read_excel(self.path)
+        df = pd.read_excel(self.excel_path)
         df = df.drop(columns=["Amino Acid"])
-        df.to_csv(self.tmp_path, index=False, sep="\t")
+        df.to_csv(self.csv_path, index=False, sep="\t")
         with self.assertRaises(ValueError):
             e = empiric.Empiric(
-                src=self.tmp_path,
+                src=self.csv_path,
                 wt_sequence="TTTTCTTATTGT",
                 score_column="col_A",
                 input_type=constants.score_type,
@@ -452,7 +446,7 @@ class TestEmpiricLoadInput(ProgramTestCase):
     def test_not_scores_column_but_input_type_is_scores(self):
         with self.assertRaises(ValueError):
             empiric.Empiric(
-                src=self.tmp_path,
+                src=self.csv_path,
                 wt_sequence="TTTTCTTATTGT",
                 score_column=None,
                 input_type=constants.score_type,
@@ -461,7 +455,7 @@ class TestEmpiricLoadInput(ProgramTestCase):
 
     def test_applies_offset_to_position_column(self):
         e = empiric.Empiric(
-            src=self.path,
+            src=self.excel_path,
             wt_sequence="TTTTCTTATTGT",
             score_column="col_A",
             input_type=constants.score_type,
@@ -475,16 +469,15 @@ class TestEmpiricLoadInput(ProgramTestCase):
 class TestEmpiricConvert(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(DATA_DIR, "empiric.xlsx")
-        self.expected = os.path.join(DATA_DIR, "empiric_expected.csv")
+        self.excel_path = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
+        self.expected = os.path.join(self.data_dir, "empiric", "empiric_expected.csv")
         self.empiric = empiric.Empiric(
-            src=self.path,
+            src=self.excel_path,
             wt_sequence="TTTTCTTATTGT",
             score_column="col_A",
             input_type=constants.score_type,
             one_based=False,
         )
-        self.bin.append(self.empiric.output_file)
 
     def test_saves_to_dst(self):
         self.empiric.convert()
@@ -492,7 +485,7 @@ class TestEmpiricConvert(ProgramTestCase):
 
     def test_integration(self):
         self.empiric = empiric.Empiric(
-            src=self.path,
+            src=self.excel_path,
             wt_sequence="TCTTATTGT",
             score_column="col_A",
             input_type=constants.score_type,
@@ -503,3 +496,7 @@ class TestEmpiricConvert(ProgramTestCase):
             pd.read_csv(self.empiric.output_file, delimiter=","),
             pd.read_csv(self.expected, delimiter=","),
         )
+
+
+if __name__ == "__main__":
+    unittest.main()

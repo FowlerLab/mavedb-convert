@@ -12,11 +12,11 @@ numeric where NaN values must be encoded using 'NaN', 'Na', 'None', 'N/A',
 All outputs are in 1-based coordinates.
 
 Usage:
-  mavedb-convert enrich2 <src> [--dst=D] [--wtseq=W] [--offset=O] [--hgvs-column=A] [--input-type=T] [--skip-header=H] [--skip-footer=H] [--non-coding]
-  mavedb-convert enrich <src> [--dst=D] [--wtseq=W] [--offset=O]  [--score-column=C] [--input-type=T] [--sheet-name=S] [--skip-header=H] [--skip-footer=H]
-  mavedb-convert empiric <src> [--dst=D] [--wtseq=W] [--offset=O] [--zero-based] [--score-column=C] [--input-type=T] [--sheet-name=S] [--skip-header=H] [--skip-footer=H]
-  mavedb-convert -h | --help
-  mavedb-convert --version
+  mavedbconvert enrich2 <src> [--dst=D] [--wtseq=W] [--offset=O] [--hgvs-column=A] [--input-type=T] [--skip-header=H] [--skip-footer=H] [--non-coding]
+  mavedbconvert enrich <src> [--dst=D] [--wtseq=W] [--offset=O]  [--score-column=C] [--input-type=T] [--sheet-name=S] [--skip-header=H] [--skip-footer=H]
+  mavedbconvert empiric <src> [--dst=D] [--wtseq=W] [--offset=O] [--zero-based] [--score-column=C] [--input-type=T] [--sheet-name=S] [--skip-header=H] [--skip-footer=H]
+  mavedbconvert -h | --help
+  mavedbconvert --version
   
 
 Options:
