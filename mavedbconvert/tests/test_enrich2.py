@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 from pandas.testing import assert_index_equal, assert_frame_equal
 from fqfa.constants.translation.table import CODON_TABLE
+from fqfa.constants.iupac.protein import AA_CODES
 
 from mavedbconvert import validators, enrich2, constants, exceptions
 
@@ -1090,7 +1091,7 @@ class TestEnrich2MixedHGVSParsing(ProgramTestCase):
         super().setUp()
         self.path = os.path.join(self.data_dir, "enrich2", "dummy.h5")
         self.wt = "ACT"
-        self.wt_aa = constants.AA_CODES[CODON_TABLE[self.wt]]
+        self.wt_aa = AA_CODES[CODON_TABLE[self.wt]]
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence=self.wt)
         self.bin.append(self.path.replace(".h5", ""))
 

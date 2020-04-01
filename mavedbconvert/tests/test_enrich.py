@@ -4,6 +4,7 @@ import unittest
 import pandas as pd
 import numpy as np
 from pandas.testing import assert_frame_equal
+from fqfa.constants.iupac.protein import AA_CODES
 
 from mavedbconvert import enrich, constants, utilities
 
@@ -71,13 +72,13 @@ class TestEnrichParseRow(ProgramTestCase):
         self.enrich.one_based = False
         aa1_pos = (0 - int(self.enrich.one_based)) + 1
         aa2_pos = (1 - int(self.enrich.one_based)) + 1
-        wt_aa1 = constants.AA_CODES[protein_seq[aa1_pos - 1]]
-        wt_aa2 = constants.AA_CODES[protein_seq[aa2_pos - 1]]
+        wt_aa1 = AA_CODES[protein_seq[aa1_pos - 1]]
+        wt_aa2 = AA_CODES[protein_seq[aa2_pos - 1]]
         expected = "p.[{}]".format(
             ";".join(
                 [
-                    wt_aa1 + str(aa1_pos) + constants.AA_CODES["L"],
-                    wt_aa2 + str(aa2_pos) + constants.AA_CODES["Y"],
+                    wt_aa1 + str(aa1_pos) + AA_CODES["L"],
+                    wt_aa2 + str(aa2_pos) + AA_CODES["Y"],
                 ]
             )
         )
@@ -89,13 +90,13 @@ class TestEnrichParseRow(ProgramTestCase):
         self.enrich.one_based = True
         aa1_pos = (1 - int(self.enrich.one_based)) + 1
         aa2_pos = (2 - int(self.enrich.one_based)) + 1
-        wt_aa1 = constants.AA_CODES[protein_seq[aa1_pos - 1]]
-        wt_aa2 = constants.AA_CODES[protein_seq[aa2_pos - 1]]
+        wt_aa1 = AA_CODES[protein_seq[aa1_pos - 1]]
+        wt_aa2 = AA_CODES[protein_seq[aa2_pos - 1]]
         expected = "p.[{}]".format(
             ";".join(
                 [
-                    wt_aa1 + str(aa1_pos) + constants.AA_CODES["L"],
-                    wt_aa2 + str(aa2_pos) + constants.AA_CODES["Y"],
+                    wt_aa1 + str(aa1_pos) + AA_CODES["L"],
+                    wt_aa2 + str(aa2_pos) + AA_CODES["Y"],
                 ]
             )
         )
