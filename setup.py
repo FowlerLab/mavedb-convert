@@ -37,6 +37,7 @@ setuptools.setup(
         "scipy",
         "joblib",
         "xlsxwriter",
+        "fqfa",
     ],
     entry_points={"console_scripts": ["mavedbconvert=mavedbconvert.main:main"]},
     test_suite="tests",

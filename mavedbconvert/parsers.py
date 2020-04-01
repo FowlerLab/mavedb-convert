@@ -1,7 +1,8 @@
 import os
 import logging
+from fqfa.fasta.fasta import parse_fasta_records
 
-from . import LOGGER, constants, exceptions, fasta
+from . import LOGGER, constants, exceptions
 
 
 logger = logging.getLogger(LOGGER)
@@ -88,7 +89,8 @@ def parse_program(program):
 
 def parse_wt_sequence(wtseq, program, non_coding=False):
     if os.path.isfile(os.path.normpath(os.path.expanduser(wtseq))):
-        wtseq = fasta.parse_fasta(os.path.normpath(os.path.expanduser(wtseq)))
+        with open(os.path.normpath(os.path.expanduser(wtseq))) as fh:
+            _, wtseq = next(parse_fasta_records(fh))
 
     if not constants.dna_re.fullmatch(wtseq):
         raise exceptions.InvalidWildTypeSequence(
