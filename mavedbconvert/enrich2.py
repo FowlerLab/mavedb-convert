@@ -241,7 +241,10 @@ def get_count_dataframe_by_condition(
             return None
         filtered = store["/main/{}/scores".format(element)].index
 
-    df = store[count_key].loc[filtered, idx[cnd, :, :]]
+    # TODO: revisit tests to see if preserving the all-NA rows makes sense
+    store_df = store[count_key]
+    store_df = store_df.reindex(filtered)
+    df = store_df.loc[filtered, idx[cnd, :, :]]
     df.columns = flatten_column_names(df.columns, (1, 2))
     return df
 
@@ -275,7 +278,7 @@ class Enrich2(base.BaseProgram):
             skip_header_rows=skip_header_rows,
             skip_footer_rows=skip_footer_rows,
             sheet_name=sheet_name,
-            score_column="score",
+            score_column=score_column,
             hgvs_column=hgvs_column,
             input_type=input_type,
         )
