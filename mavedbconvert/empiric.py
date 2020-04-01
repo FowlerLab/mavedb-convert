@@ -1,8 +1,8 @@
 import logging
 from tqdm import tqdm
-
 import pandas as pd
 import numpy as np
+from fqfa.constants.translation.table import CODON_TABLE
 
 from . import base, utilities, constants, filters, validators, LOGGER
 
@@ -256,14 +256,14 @@ class Empiric(base.BaseProgram):
             )
 
         wt_codon = self.codons[codon_pos].upper()
-        wt_aa = constants.CODON_TABLE[wt_codon].upper()
+        wt_aa = CODON_TABLE[wt_codon].upper()
         if infer_nt:
             mut_codon = str(row[self.codon_column]).strip().upper()
             if utilities.is_null(mut_codon) or not mut_codon:
                 raise ValueError(
                     "Missing codon value in row '{}'.".format(row["row_num"])
                 )
-            if constants.CODON_TABLE[mut_codon] != mut_aa:
+            if CODON_TABLE[mut_codon] != mut_aa:
                 raise ValueError(
                     "Codon '{}' does not match the amino acid '{}' "
                     "specified in the 'Amino Acid' column in row {}.".format(

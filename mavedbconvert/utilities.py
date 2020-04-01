@@ -5,6 +5,7 @@ from hgvsp import rna, dna, protein, single_variant_re, multi_variant_re
 
 import numpy as np
 import pandas as pd
+from fqfa.constants.translation.table import CODON_TABLE
 
 from . import constants, exceptions
 
@@ -44,7 +45,7 @@ def translate_dna(wt_sequence, offset=0):
     protein_seq = ""
     for codon in slicer(coding_region, 3):
         # Let if fail loudly for now
-        protein_seq += constants.CODON_TABLE[codon.upper()]
+        protein_seq += CODON_TABLE[codon.upper()]
     return protein_seq
 
 
