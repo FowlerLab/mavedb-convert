@@ -14,7 +14,7 @@ Install the package using pip:
     pip3 install .
 
 ## Troubleshooting
-If you are a OSX user, you may experience header related issues when installing pysam. The current workaround 
+If you are a macOS user, you may experience header related issues when installing pysam. The current workaround 
 is to install pysam v0.13 manually before installing the requirements:
 
     pip3 install pysam==0.13
