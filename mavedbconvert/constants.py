@@ -1,11 +1,5 @@
 import re
 
-from hgvsp import dna
-
-from hgvs.dataproviders import uta
-from hgvs.parser import Parser
-
-
 supported_programs = ("enrich", "enrich2", "empiric")
 extra_na = (
     "None",
@@ -24,22 +18,6 @@ extra_na = (
 null_value_re = re.compile(r"\s+|nan|na|none|undefined|n/a|null")
 surrounding_brackets_re = re.compile(r"\((.*)\)")
 dna_re = re.compile(r"[ATCGatcg]+", flags=re.IGNORECASE)
-
-# HGVS
-dummy_ref = "NM_000000000.0"
-hgvs_parser = Parser()
-hdp = None
-
-
-def get_hdp(*args, **kwargs):
-    """Keep a single HDP network connection instance."""
-    global hdp
-    if hdp is None:
-        if "pooling" not in kwargs:
-            kwargs["pooling"] = True
-        hdp = uta.connect(*args, **kwargs)
-    return hdp
-
 
 # HGVSP constants
 hgvsp_nt_pos = "position"
