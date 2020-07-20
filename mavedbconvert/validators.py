@@ -57,11 +57,7 @@ class HGVSPatternsBackend(ValidationBackend):
 
 
 def validate_variants(
-    variants,
-    validation_backend=None,
-    n_jobs=1,
-    verbose=0,
-    backend="multiprocessing",
+    variants, validation_backend=None, n_jobs=1, verbose=0, backend="multiprocessing"
 ):
     """
     Validate each variant's HGVS_ syntax.
