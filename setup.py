@@ -25,9 +25,9 @@ setuptools.setup(
     ],
     python_requires=">=3.6",
     install_requires=[
-        "tables>=3.2.0",
-        "pandas>=0.18.0",
-        "xlrd >= 0.9.0",
+        "tables",
+        "pandas",
+        "xlrd",
         "tqdm",
         "docopt",
         "hgvsp @ git+https://github.com/FowlerLab/hgvs-patterns",
