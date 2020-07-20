@@ -2,9 +2,6 @@ import logging
 
 import hgvsp
 
-from hgvs.sequencevariant import SequenceVariant
-from hgvs.exceptions import HGVSParseError
-
 import numpy as np
 import pandas as pd
 from numpy.testing import assert_array_equal
@@ -59,53 +56,8 @@ class HGVSPatternsBackend(ValidationBackend):
         return variant
 
 
-class HGVSBiocommonsBackend(ValidationBackend):
-    """
-    Backend using the grammar based validation in `hgvs`. Can be slow but is
-    more robust.
-    """
-
-    def __init__(self, transcript=None):
-        self.transcript = transcript or constants.dummy_ref
-
-    def validate(self, variant):
-        """
-        Splits a variant if it is multi-variant to validate each individual
-        variant since `hgvs` does not support multi syntax. Validates each
-        HGVS variant against a set grammar.
-
-        Parameters
-        ----------
-        variant : str
-            HGVS formatted variant string.
-
-        Returns
-        -------
-        list[`SequenceVariant`]
-            List of sequence variants. Singular list if variant was not
-            in multi-variant syntax.
-        """
-        if variant in constants.special_variants:
-            return variant
-        try:
-            seqvars = []
-            for v in utilities.split_variant(variant):
-                seqvar = constants.hgvs_parser.parse_hgvs_variant(
-                    "{}:{}".format(self.transcript, v)
-                )
-                seqvar.validate()
-                seqvars.append(seqvar)
-            return seqvars if len(seqvars) > 1 else seqvars[0]
-        except HGVSParseError as e:
-            raise exceptions.HGVSValidationError(
-                "'{}' is not valid HGVS syntax "
-                "for the following reason: {}".format(variant, e)
-            )
-
-
 def validate_variants(
     variants,
-    transcript=None,
     validation_backend=None,
     n_jobs=1,
     verbose=0,
@@ -118,8 +70,6 @@ def validate_variants(
     ----------
     variants : list[str]
         Variant HGVS_ representations.
-    transcript : str, optional.
-        Transcript the variants reference.
     validation_backend : ValidationBackend
         A parsing backend implementing `validate`.
     n_jobs : int, optional
@@ -135,10 +85,7 @@ def validate_variants(
         Formatted and validated variants.
     """
     if validation_backend is None:
-        if transcript is None:
-            validation_backend = HGVSPatternsBackend()
-        else:
-            validation_backend = HGVSBiocommonsBackend(transcript)
+        validation_backend = HGVSPatternsBackend()
     return Parallel(n_jobs=n_jobs, verbose=verbose, backend=backend)(
         delayed(validation_backend.validate)(variant) for variant in variants
     )

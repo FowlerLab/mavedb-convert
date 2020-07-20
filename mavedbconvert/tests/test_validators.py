@@ -2,8 +2,6 @@ import unittest
 
 import pandas as pd
 
-from hgvs.sequencevariant import SequenceVariant
-
 from mavedbconvert import validators, constants, exceptions
 
 
@@ -25,56 +23,7 @@ class TestHGVSPatternsBackend(unittest.TestCase):
         self.assertIsInstance(self.backend.validate("c.1A>G"), str)
 
 
-class TestHGVSBiocommonsBackend(unittest.TestCase):
-    def setUp(self):
-        self.backend = validators.HGVSBiocommonsBackend("NM_000000001.1")
-
-    def test_validate_hgvs_returns_seqvar_on_success(self):
-        result = self.backend.validate("c.100A>G")
-        self.assertEqual(
-            result,
-            constants.hgvs_parser.parse_hgvs_variant(
-                "{}:c.100A>G".format(self.backend.transcript)
-            ),
-        )
-
-    def test_returns_list_for_multi(self):
-        result = self.backend.validate("c.[1A>G;2A>G]")
-        self.assertListEqual(
-            result,
-            [
-                constants.hgvs_parser.parse_hgvs_variant(
-                    "{}:c.1A>G".format(self.backend.transcript)
-                ),
-                constants.hgvs_parser.parse_hgvs_variant(
-                    "{}:c.2A>G".format(self.backend.transcript)
-                ),
-            ],
-        )
-
-    def test_validate_hgvs_raise_HGVSValidationError(self):
-        with self.assertRaises(exceptions.HGVSValidationError):
-            self.backend.validate("p.1102A>G")
-        with self.assertRaises(exceptions.HGVSValidationError):
-            self.backend.validate("x.102A>G")
-
-    def test_validate_passes_on_special(self):
-        self.backend.validate(constants.enrich2_wildtype)
-        self.backend.validate(constants.enrich2_synonymous)
-
-    def test_validate_hgvs_uses_dummy_ref_if_transcript_not_passed(self):
-        self.assertEqual(
-            validators.HGVSBiocommonsBackend().transcript, constants.dummy_ref
-        )
-
-
 class TestValidateHGVS(unittest.TestCase):
-    def test_uses_biocommons_backend_if_transcript_provided(self):
-        result = validators.validate_variants(
-            ["c.[1A>G;2A>G]"], n_jobs=2, verbose=0, transcript=constants.dummy_ref
-        )
-        self.assertIsInstance(result[0][0], SequenceVariant)
-
     def test_uses_patterns_backend_as_default(self):
         result = validators.validate_variants(["c.[1A>G;2A>G]"], n_jobs=2, verbose=0)
         self.assertIsInstance(result[0], str)

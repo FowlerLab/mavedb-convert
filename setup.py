@@ -31,7 +31,6 @@ setuptools.setup(
         "tqdm",
         "docopt",
         "hgvsp @ git+https://github.com/VariantEffect/hgvs-patterns",
-        "hgvs",
         "requests",
         "numpy",
         "scipy",
