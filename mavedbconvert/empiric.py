@@ -1,8 +1,9 @@
 import logging
 from tqdm import tqdm
-
 import pandas as pd
 import numpy as np
+from fqfa.constants.translation.table import CODON_TABLE
+from fqfa.constants.iupac.protein import AA_CODES
 
 from . import base, utilities, constants, filters, validators, LOGGER
 
@@ -73,14 +74,17 @@ def infer_pro_substitution(wt_aa, mut_aa, codon_pos):
     `str`
         The HGVS-formatted subsitution event.
     """
-    wt_aa = constants.AA_CODES[wt_aa.upper()]
-    mut_aa = constants.AA_CODES[mut_aa.upper()]
 
     # Normalize ? to X and ??? to Xaa
     if wt_aa in ("?", "???"):
         wt_aa = "Xaa"
+    else:
+        wt_aa = AA_CODES[wt_aa.upper()]
+
     if mut_aa in ("?", "???"):
         mut_aa = "Xaa"
+    else:
+        mut_aa = AA_CODES[mut_aa.upper()]
 
     if wt_aa.lower() == mut_aa.lower():
         return utilities.hgvs_pro_from_event_list(
@@ -256,14 +260,14 @@ class Empiric(base.BaseProgram):
             )
 
         wt_codon = self.codons[codon_pos].upper()
-        wt_aa = constants.CODON_TABLE[wt_codon].upper()
+        wt_aa = CODON_TABLE[wt_codon].upper()
         if infer_nt:
             mut_codon = str(row[self.codon_column]).strip().upper()
             if utilities.is_null(mut_codon) or not mut_codon:
                 raise ValueError(
                     "Missing codon value in row '{}'.".format(row["row_num"])
                 )
-            if constants.CODON_TABLE[mut_codon] != mut_aa:
+            if CODON_TABLE[mut_codon] != mut_aa:
                 raise ValueError(
                     "Codon '{}' does not match the amino acid '{}' "
                     "specified in the 'Amino Acid' column in row {}.".format(

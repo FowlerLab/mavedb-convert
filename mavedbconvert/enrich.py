@@ -3,6 +3,7 @@ from tqdm import tqdm
 
 import pandas as pd
 import numpy as np
+from fqfa.constants.iupac.protein import AA_CODES
 
 
 from . import LOGGER, constants, base, utilities, filters, validators
@@ -171,8 +172,11 @@ class Enrich(base.BaseProgram):
                     )
                 )
 
-            wt_aa = constants.AA_CODES[self.protein_sequence[aa_position - 1].upper()]
-            mut_aa = constants.AA_CODES[aa.upper()]
+            wt_aa = AA_CODES[self.protein_sequence[aa_position - 1].upper()]
+            if aa == "?":
+                mut_aa = "???"
+            else:
+                mut_aa = AA_CODES[aa.upper()]
             if wt_aa == mut_aa:
                 events.append("{wt}{pos}=".format(wt=wt_aa, pos=aa_position))
             else:

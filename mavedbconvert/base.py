@@ -4,6 +4,7 @@ import logging
 import numpy as np
 
 from hgvsp import is_multi
+from fqfa.constants.iupac.protein import AA_CODES
 
 from . import LOGGER, utilities, constants
 
@@ -295,7 +296,7 @@ class BaseProgram(object):
                 )
             )
 
-        wt_aa = constants.AA_CODES[self.protein_sequence[zero_based_pos]]
+        wt_aa = AA_CODES[self.protein_sequence[zero_based_pos]]
         if variant.ref != wt_aa:
             raise ValueError(
                 "Reference AA '{aa}' at 1-based position {pos} in the "

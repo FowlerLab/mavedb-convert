@@ -7,6 +7,8 @@ from operator import itemgetter
 import hgvsp
 from hgvsp import constants as hgvsp_constants
 from tqdm import tqdm
+from fqfa.constants.translation.table import CODON_TABLE
+from fqfa.constants.iupac.protein import AA_CODES
 
 import pandas as pd
 import numpy as np
@@ -699,8 +701,8 @@ class Enrich2(base.BaseProgram):
                 + mut_codon[(within_frame_pos - 1) + 1 :]
             )
 
-        wt_aa = constants.AA_CODES[constants.CODON_TABLE[wt_codon.upper()]]
-        mut_aa = constants.AA_CODES[constants.CODON_TABLE[mut_codon.upper()]]
+        wt_aa = AA_CODES[CODON_TABLE[wt_codon.upper()]]
+        mut_aa = AA_CODES[CODON_TABLE[mut_codon.upper()]]
         if wt_aa != mut_aa:
             raise ValueError(
                 "Error inferring corrected synonymous syntax. "
