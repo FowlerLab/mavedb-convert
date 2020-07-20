@@ -30,7 +30,7 @@ setuptools.setup(
         "xlrd",
         "tqdm",
         "docopt",
-        "hgvsp @ git+https://github.com/FowlerLab/hgvs-patterns",
+        "hgvsp @ git+https://github.com/VariantEffect/hgvs-patterns",
         "hgvs",
         "requests",
         "numpy",
