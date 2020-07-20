@@ -1,7 +1,5 @@
 import re
 
-from hgvsp import dna
-
 supported_programs = ("enrich", "enrich2", "empiric")
 extra_na = (
     "None",
