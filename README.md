@@ -12,14 +12,3 @@ We recommend creating a [virtual environment](https://docs.python.org/3/library/
 Install the package using pip:
 
     pip3 install .
-
-## Troubleshooting
-If you are a macOS user, you may experience header related issues when installing pysam. The current workaround 
-is to install pysam v0.13 manually before installing the requirements:
-
-    pip3 install pysam==0.13
-
-This is the latest version known to compile without errors.
-
-Although pysam is not required for mavedbconvert directly, it is installed by some of our dependencies.
-Until it is removed or made optional by those libraries, mavedbconvert will unfortunately not be installable on Windows.
