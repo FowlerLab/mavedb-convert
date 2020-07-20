@@ -1,4 +1,5 @@
 import logging
+from abc import ABCMeta, abstractmethod
 
 import hgvsp
 
@@ -16,14 +17,15 @@ from . import constants, utilities, exceptions, LOGGER
 logger = logging.getLogger(LOGGER)
 
 
-class ValidationBackend(object):
+class ValidationBackend(metaclass=ABCMeta):
     """
     Validation backend which provides the interface `validate` for validating
     HGVS_ variants.
     """
 
+    @abstractmethod
     def validate(self, variant):
-        raise NotImplementedError()
+        pass  # pragma : no cover
 
 
 class HGVSPatternsBackend(ValidationBackend):
