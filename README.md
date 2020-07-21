@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.com/VariantEffect/mavedbconvert.svg?branch=master)](https://travis-ci.com/VariantEffect/mavedbconvert)
-[![Coverage Status](https://coveralls.io/repos/github/VariantEffect/mavedbconvert/badge.svg?branch=master)](https://coveralls.io/github/VariantEffect/mavedbconvert?branch=master)
+[![Build Status](https://travis-ci.com/VariantEffect/mavedbconvert.svg?branch=main)](https://travis-ci.com/VariantEffect/mavedbconvert)
+[![Coverage Status](https://coveralls.io/repos/github/VariantEffect/mavedbconvert/badge.svg?branch=main)](https://coveralls.io/github/VariantEffect/mavedbconvert?branch=main)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # mavedbconvert
