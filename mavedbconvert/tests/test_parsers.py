@@ -1,4 +1,5 @@
 import os
+import tempfile
 import unittest
 from unittest import mock
 
@@ -88,6 +89,15 @@ class TestParseSrc(unittest.TestCase):
 
 
 class TestParseDst(ProgramTestCase):
+    def setUp(self):
+        super().setUp()
+        self._temp_dir = tempfile.TemporaryDirectory()
+        self.path = self._temp_dir.name
+
+    def tearDown(self):
+        super().tearDown()
+        self._temp_dir.cleanup()
+
     @mock.patch(
         "mavedbconvert.parsers.parse_string", return_value=os.path.join(TEST_DATA_DIR)
     )
@@ -112,6 +122,19 @@ class TestParseDst(ProgramTestCase):
         parsers.parse_dst(path)
         self.assertTrue(os.path.isdir(path))
         self.bin.append(path)
+
+    @mock.patch("mavedbconvert.parsers.os.path.isdir")
+    def test_ok_dst_error_permission_isdir(self, mock_isdir):
+        mock_isdir.side_effect = PermissionError
+        with self.assertRaises(PermissionError):
+            parsers.parse_dst(self.path)
+
+    @mock.patch("mavedbconvert.parsers.os.makedirs")
+    def test_ok_dst_error_permission_makedirs(self, mock_makedirs):
+        mock_makedirs.side_effect = PermissionError
+        path = os.path.join(os.path.join(self.path, "error"))
+        with self.assertRaises(PermissionError):
+            parsers.parse_dst(path)
 
 
 class TestParseProgram(unittest.TestCase):
