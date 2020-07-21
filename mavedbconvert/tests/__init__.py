@@ -11,7 +11,6 @@ __all__ = [
     "test_empiric",
     "test_enrich",
     "test_enrich2",
-    "test_fasta",
     "test_utilities",
     "test_filters",
     "test_validators",
