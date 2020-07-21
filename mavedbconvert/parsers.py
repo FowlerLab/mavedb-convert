@@ -59,12 +59,6 @@ def parse_dst(dst):
             if not os.path.isdir(path):
                 os.makedirs(path, exist_ok=True)
             os.access(path, mode=os.W_OK)
-        except FileNotFoundError as e:
-            logger.error(
-                "Could not create directory {}. "
-                "Please ensure it is a valid path.".format(path)
-            )
-            raise e
         except PermissionError as e:
             logger.error("Permission denied when creating {}.".format(path))
             raise e
