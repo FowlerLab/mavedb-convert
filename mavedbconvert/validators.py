@@ -25,7 +25,7 @@ class ValidationBackend(metaclass=ABCMeta):
 
     @abstractmethod
     def validate(self, variant):
-        pass  # pragma : no cover
+        pass  # pragma: no cover
 
 
 class HGVSPatternsBackend(ValidationBackend):

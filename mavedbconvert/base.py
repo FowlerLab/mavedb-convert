@@ -187,15 +187,15 @@ class BaseProgram(metaclass=ABCMeta):
 
     @abstractmethod
     def load_input_file(self):
-        pass  # pragma : no cover
+        pass  # pragma: no cover
 
     @abstractmethod
     def parse_input(self, df):
-        pass  # pragma : no cover
+        pass  # pragma: no cover
 
     @abstractmethod
     def parse_row(self, row):
-        pass  # pragma : no cover
+        pass  # pragma: no cover
 
     def validate_against_wt_sequence(self, variant):
         """
