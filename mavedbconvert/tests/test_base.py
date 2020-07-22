@@ -66,13 +66,6 @@ class TestPaths(ProgramTestCase):
         self.src_with_spaces = os.path.join(self.data_dir, "enrich", "enrich   .tsv")
         self.h5_src = os.path.join(self.data_dir, "enrich2", "dummy.h5")
 
-    def tearDown(self):
-        for path in self.bin:
-            if os.path.exists(path) and os.path.isfile(path):
-                os.remove(path)
-            elif os.path.exists(path) and os.path.isdir(path):
-                os.removedirs(path)
-
     def test_sets_directory_as_input_directory_if_dst_is_none(self):
         p = BaseTest(src=self.src, dst=None, wt_sequence="AAA")
         self.assertEqual(p.dst, os.path.join(self.data_dir, "enrich"))
@@ -88,13 +81,11 @@ class TestPaths(ProgramTestCase):
     def test_dir_with_input_fname_appended_when_h5_and_dst_is_none(self):
         p = BaseTest(src=self.h5_src, dst=None, wt_sequence="AAA")
         self.assertEqual(p.dst, os.path.join(self.data_dir, "enrich2", "dummy"))
-        self.bin.append(os.path.join(self.data_dir, "enrich2", "dummy"))
 
     def test_creates_directory_tree_if_it_doesnt_exist(self):
         output = os.path.join(self.data_dir, "enrich2", "outer_dir", "inner_dir")
         BaseTest(src=self.h5_src, dst=output, wt_sequence="AAA")
         self.assertTrue(os.path.isdir(output))
-        self.bin.append(output)
 
     @patch("os.access")
     def test_checks_read_permission(self, patch):
@@ -143,13 +134,6 @@ class TestWtSequence(ProgramTestCase):
         self.src = os.path.join(self.data_dir, "enrich", "enrich.tsv")
         self.src_with_spaces = os.path.join(self.data_dir, "enrich", "enrich   .tsv")
         self.h5_src = os.path.join(self.data_dir, "enrich2", "dummy.h5")
-
-    def tearDown(self):
-        for path in self.bin:
-            if os.path.exists(path) and os.path.isfile(path):
-                os.remove(path)
-            elif os.path.exists(path) and os.path.isdir(path):
-                os.removedirs(path)
 
     def test_value_error_coding_offset_not_multiple_of_three(self):
         with self.assertRaises(ValueError):

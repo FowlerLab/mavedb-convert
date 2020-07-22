@@ -196,12 +196,6 @@ class TestEnrichLoadInput(ProgramTestCase):
         self.no_seq_id = os.path.join(self.data_dir, "enrich", "enrich_no_seqid.tsv")
         self.tmp_path = os.path.join(self.data_dir, "enrich", "tmp.xlsx")
 
-        self.bin = [
-            os.path.join(self.data_dir, "enrich", "mavedb_enrich1.csv"),
-            os.path.join(self.data_dir, "enrich", "mavedb_enrich1_1based.csv"),
-            os.path.join(self.data_dir, "enrich", self.path_csv),
-        ]
-
     def test_error_seq_id_not_in_columns(self):
         p = enrich.Enrich(
             src=self.no_seq_id,
@@ -291,11 +285,6 @@ class TestEnrichIntegration(ProgramTestCase):
             self.data_dir, "enrich", "enrich_expected_offset.csv"
         )
 
-        self.bin = [
-            os.path.join(self.data_dir, "enrich", "mavedb_enrich.csv"),
-            os.path.join(self.data_dir, "enrich", "mavedb_enrich_1based.csv"),
-        ]
-
     def test_saves_to_input_dst_by_default(self):
         p = enrich.Enrich(
             src=self.path,
@@ -305,7 +294,7 @@ class TestEnrichIntegration(ProgramTestCase):
             input_type=constants.score_type,
         )
         p.convert()
-        self.assertTrue(os.path.isfile(self.bin[0]))
+        self.assertTrue(os.path.isfile(os.path.join(self.data_dir, "enrich", "mavedb_enrich.csv")))
 
     def test_output_with_offset(self):
         p = enrich.Enrich(
@@ -317,7 +306,7 @@ class TestEnrichIntegration(ProgramTestCase):
             input_type=constants.score_type,
         )
         p.convert()
-        result = pd.read_csv(self.bin[0])
+        result = pd.read_csv(os.path.join(self.data_dir, "enrich", "mavedb_enrich.csv"))
         expected = pd.read_csv(self.expected_offset)
         assert_frame_equal(expected, result)
 
@@ -330,7 +319,7 @@ class TestEnrichIntegration(ProgramTestCase):
             input_type=constants.score_type,
         )
         p.convert()
-        result = pd.read_csv(self.bin[1])
+        result = pd.read_csv(os.path.join(self.data_dir, "enrich", "mavedb_enrich_1based.csv"))
         expected = pd.read_csv(self.expected)
         assert_frame_equal(expected, result)
 

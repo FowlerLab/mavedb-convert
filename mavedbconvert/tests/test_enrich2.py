@@ -280,7 +280,6 @@ class TestEnrich2ConvertH5Filepath(ProgramTestCase):
         super().setUp()
         self.path = os.path.join(self.data_dir, "enrich2", "enrich2.h5")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="AAA")
-        self.bin.append(self.path.replace(".h5", ""))
 
     def test_replaces_underscore_with_spaces(self):
         res = self.enrich2.convert_h5_filepath("base", "syn vars", "scores", "c1")
@@ -297,7 +296,6 @@ class TestEnrich2ConvertH5Df(ProgramTestCase):
         super().setUp()
         self.path = os.path.join(self.data_dir, "enrich2", "enrich2.h5")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="AAA")
-        self.bin.append(os.path.join(self.data_dir, "enrich2", "enrich2"))
 
     def test_doesnt_open_invalid_rows_file_if_there_are_no_invalid_rows(self):
         self.path = os.path.join(self.data_dir, "enrich2", "enrich2.tsv")
@@ -348,7 +346,6 @@ class TestEnrich2ConvertH5Df(ProgramTestCase):
         )
 
         self.assertTrue(os.path.isfile(invalid_rows_path))
-        self.bin.append(invalid_rows_path)
 
     def test_invalid_rows_file_contains_error_description(self):
         self.path = os.path.join(self.data_dir, "enrich2", "enrich2.tsv")
@@ -369,7 +366,6 @@ class TestEnrich2ConvertH5Df(ProgramTestCase):
         self.assertEqual(len(invalid), 1)
         self.assertEqual(invalid.index[0], "c.1T>G (p.Lys1Val)")
         self.assertIn("error_description", invalid.columns)
-        self.bin.append(invalid_rows_path)
 
 
 class TestEnrich2ParseInput(ProgramTestCase):
@@ -459,8 +455,6 @@ class TestEnrich2ParseInput(ProgramTestCase):
             ),
         ]
 
-        self.bin.extend(self.files)
-        self.bin.append(self.path)
         self.store.close()
         self.store = pd.HDFStore(self.path, mode="r")
 
@@ -568,7 +562,6 @@ class TestEnrich2ParseInput(ProgramTestCase):
         p.parse_input(p.load_input_file())
         for call_args in patch.call_args_list:
             self.assertIn(output, call_args[0][0])
-        self.bin.append(output)
 
     @patch.object(pd.DataFrame, "to_csv", return_value=None)
     def test_saves_to_file_location_if_no_dst_supplied(self, patch):
@@ -905,7 +898,6 @@ class TestEnrich2ParseRow(ProgramTestCase):
         super().setUp()
         self.path = os.path.join(self.data_dir, "enrich2", "dummy.h5")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="ACT")
-        self.bin.append(self.path.replace(".h5", ""))
 
     def test_valueerr_cannot_deduce_type(self):
         with self.assertRaises(exceptions.InvalidVariantType):
@@ -977,7 +969,6 @@ class TestProteinHGVSParsing(ProgramTestCase):
         super().setUp()
         self.path = os.path.join(self.data_dir, "enrich2", "dummy.h5")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="AAA")
-        self.bin.append(self.path.replace(".h5", ""))
 
     def test_combines_into_multi_variant_syntax(self):
         result = self.enrich2.parse_protein_variant("p.L5G, p.L6G")
@@ -1037,7 +1028,6 @@ class TestNucleotideHGVSParing(ProgramTestCase):
         super().setUp()
         self.path = os.path.join(self.data_dir, "enrich2", "dummy.h5")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="AAA")
-        self.bin.append(self.path.replace(".h5", ""))
 
     def test_parses_non_coding_nt_variants_into_multi_variant(self):
         nt = self.enrich2.parse_nucleotide_variant(
@@ -1093,7 +1083,6 @@ class TestEnrich2MixedHGVSParsing(ProgramTestCase):
         self.wt = "ACT"
         self.wt_aa = AA_CODES[CODON_TABLE[self.wt]]
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence=self.wt)
-        self.bin.append(self.path.replace(".h5", ""))
 
     def test_parses_nt_variants_into_multi_variant(self):
         nt, _ = self.enrich2.parse_mixed_variant(
@@ -1185,7 +1174,6 @@ class TestInferSilentAASub(ProgramTestCase):
         super().setUp()
         self.path = os.path.join(self.data_dir, "enrich2", "dummy.h5")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="AAA", offset=0)
-        self.bin.append(self.path.replace(".h5", ""))
 
     def test_valueerror_not_a_sub_event(self):
         with self.assertRaises(exceptions.InvalidVariantType):

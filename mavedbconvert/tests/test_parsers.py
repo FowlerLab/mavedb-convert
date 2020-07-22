@@ -6,9 +6,6 @@ from mavedbconvert import parsers, exceptions, constants
 
 from mavedbconvert.tests import ProgramTestCase
 
-# TODO: convert these tests to use temp directories
-TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
-
 
 class TestParseBoolean(unittest.TestCase):
     def test_true_if_str_of_true(self):
@@ -45,17 +42,9 @@ class TestParseString(unittest.TestCase):
         self.assertEqual(parsers.parse_string(" aaa "), "aaa")
 
 
-class TestParseSrc(unittest.TestCase):
-    @mock.patch(
-        "mavedbconvert.parsers.parse_string",
-        return_value=os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv"),
-    )
-    def test_calls_parse_string(self, patch):
-        parsers.parse_src(os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv"))
-        patch.assert_called()
-
+class TestParseSrc(ProgramTestCase):
     def test_ok_file_exists(self):
-        path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
+        path = os.path.join(self.data_dir, "enrich2", "enrich2.tsv")
         self.assertEqual(path, parsers.parse_src(path))
 
     def test_error_no_value(self):
@@ -64,39 +53,32 @@ class TestParseSrc(unittest.TestCase):
                 parsers.parse_src(v)
 
     def test_error_file_not_found(self):
-        path = os.path.join(TEST_DATA_DIR, "enrich2", "missing_file.tsv")
+        path = os.path.join(self.data_dir, "enrich2", "missing_file.tsv")
         with self.assertRaises(FileNotFoundError):
             parsers.parse_src(path)
 
     def test_error_file_is_a_dir(self):
         with self.assertRaises(IsADirectoryError):
-            parsers.parse_src(os.path.join(TEST_DATA_DIR))
+            parsers.parse_src(os.path.join(self.data_dir))
 
     @mock.patch("mavedbconvert.parsers.open")
     def test_error_permission(self, mock_open):
-        path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
+        path = os.path.join(self.data_dir, "enrich2", "enrich2.tsv")
         mock_open.side_effect = PermissionError
         with self.assertRaises(PermissionError):
             parsers.parse_src(path)
 
     @mock.patch("mavedbconvert.parsers.open")
     def test_error_io(self, mock_open):
-        path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
+        path = os.path.join(self.data_dir, "enrich2", "enrich2.tsv")
         mock_open.side_effect = IOError
         with self.assertRaises(IOError):
             parsers.parse_src(path)
 
 
 class TestParseDst(ProgramTestCase):
-    @mock.patch(
-        "mavedbconvert.parsers.parse_string", return_value=os.path.join(TEST_DATA_DIR)
-    )
-    def test_calls_parse_string(self, patch):
-        parsers.parse_dst(os.path.join(TEST_DATA_DIR))
-        patch.assert_called()
-
     def test_ok_dst_exists(self):
-        path = os.path.join(os.path.join(TEST_DATA_DIR))
+        path = os.path.join(os.path.join(self.data_dir))
         self.assertEqual(path, parsers.parse_dst(path))
 
     def test_returns_none_no_value(self):
@@ -104,14 +86,13 @@ class TestParseDst(ProgramTestCase):
             self.assertIsNone(parsers.parse_dst(v))
 
     def test_dst_path_is_normalised(self):
-        path = TEST_DATA_DIR + "//fasta"
-        self.assertEqual(parsers.parse_dst(path), os.path.join(TEST_DATA_DIR, "fasta"))
+        path = self.data_dir + "//fasta"
+        self.assertEqual(parsers.parse_dst(path), os.path.join(self.data_dir, "fasta"))
 
     def test_makes_dst_directory_tree(self):
-        path = os.path.join(TEST_DATA_DIR, "subdir")
+        path = os.path.join(self.data_dir, "subdir")
         parsers.parse_dst(path)
         self.assertTrue(os.path.isdir(path))
-        self.bin.append(path)
 
     @mock.patch("mavedbconvert.parsers.os.path.isdir")
     def test_ok_dst_error_permission_isdir(self, mock_isdir):
@@ -151,9 +132,9 @@ class TestParseProgram(unittest.TestCase):
             parsers.parse_program(program)
 
 
-class TestParseWildTypeSequence(unittest.TestCase):
+class TestParseWildTypeSequence(ProgramTestCase):
     def test_can_read_from_fasta(self):
-        path = os.path.join(TEST_DATA_DIR, "fasta", "lower.fa")
+        path = os.path.join(self.data_dir, "fasta", "lower.fa")
         wtseq = parsers.parse_wt_sequence(path, coding=False)
         expected = (
             "ACAGTTGGATATAGTAGTTTGTACGAGTTGCTTGTGGCTT"
@@ -261,17 +242,16 @@ class TestParseDocopt(unittest.TestCase):
         sheet_name=None,
         non_coding=False,
     ):
-
         if program is None:
             program = "enrich2"
         if src is None:
-            src = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
+            src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "enrich2", "enrich2.tsv")
         return {
             "enrich": True if program == "enrich" else False,
             "enrich2": True if program == "enrich2" else False,
             "empiric": True if program == "empiric" else False,
-            "<src>": os.path.join(TEST_DATA_DIR, program, src),
-            "--dst": os.path.join(TEST_DATA_DIR, program, dst) if dst else dst,
+            "<src>": os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", program, src),
+            "--dst": os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", program, dst) if dst else None,
             "--score-column": score_column,
             "--hgvs-column": hgvs_column,
             "--skip-header": skip_header,
@@ -285,7 +265,7 @@ class TestParseDocopt(unittest.TestCase):
         }
 
     def test_returns_correct_program(self):
-        for p in ("enrich", "enrich2", "empiric"):
+        for p in constants.supported_programs:
             args = self.mock_args(program=p)
             self.assertEqual(parsers.parse_docopt(args)[0], p)
 

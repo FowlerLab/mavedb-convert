@@ -23,7 +23,6 @@ __all__ = [
 
 
 # TODO: think up a better name for this class
-# TODO: remove the old self.bin stuff
 class ProgramTestCase(unittest.TestCase):
     def setUp(self):
         self._data_dir = tempfile.TemporaryDirectory()  # store the object
@@ -34,7 +33,6 @@ class ProgramTestCase(unittest.TestCase):
             src=os.path.join(os.path.dirname(os.path.abspath(__file__)), "data"),
             dst=self.data_dir,
         )
-        self.bin = []
 
     def mock_multi_sheet_excel_file(self, path, data):
         writer = pd.ExcelWriter(path, engine="xlsxwriter")
@@ -42,12 +40,6 @@ class ProgramTestCase(unittest.TestCase):
             df = pd.DataFrame(di)
             df.to_excel(writer, sheet_name="Sheet{}".format(i), index=False)
         writer.save()
-        self.bin.append(path)
 
     def tearDown(self):
         self._data_dir.cleanup()
-        for path in self.bin:
-            if os.path.exists(path) and os.path.isfile(path):
-                os.remove(path)
-            elif os.path.exists(path) and os.path.isdir(path):
-                os.removedirs(path)
