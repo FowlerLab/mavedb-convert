@@ -259,8 +259,8 @@ class Enrich(base.BaseProgram):
                 mave_columns[:2] + [constants.mavedb_score_column] + mave_columns[2:]
             )
         mavedb_df = pd.DataFrame(data=data, columns=mave_columns)
-        filters.drop_na_rows(mavedb_df, inplace=True)
-        filters.drop_na_columns(mavedb_df, inplace=True)
+        filters.drop_na_rows(mavedb_df)
+        filters.drop_na_columns(mavedb_df)
 
         logger.info("Running MaveDB compliance validation.")
         validators.validate_mavedb_compliance(mavedb_df, df_type=self.input_type)

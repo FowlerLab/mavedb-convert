@@ -8,13 +8,10 @@ from . import LOGGER, constants, utilities
 logger = logging.getLogger(LOGGER)
 
 
-def drop_na_columns(df, inplace=False):
+def drop_na_columns(df):
     """
     Drop columns where all entries are null. Operation is performed in place.
     """
-    if not inplace:
-        df = utilities.copy_dataframe(df)
-
     has_nt_col = constants.nt_variant_col in df.columns
     has_pro_col = constants.pro_variant_col in df.columns
 
@@ -46,14 +43,11 @@ def drop_na_columns(df, inplace=False):
     return df
 
 
-def drop_na_rows(df, inplace=False):
+def drop_na_rows(df):
     """
     Drop rows where all non-HGVS entries are null. Operation is performed in
     place.
     """
-    if not inplace:
-        df = utilities.copy_dataframe(df)
-
     null_rows = df.loc[:, utilities.non_hgvs_columns(df.columns)].isnull().all(axis=1)
     if sum(null_rows) > 0:
         logger.warning(

@@ -129,8 +129,8 @@ def drop_null(scores_df, counts_df=None):
             sort=False,
         )
         assert len(joint_df) == len(counts_df)
-        filters.drop_na_columns(joint_df, inplace=True)
-        filters.drop_na_rows(joint_df, inplace=True)
+        filters.drop_na_columns(joint_df)
+        filters.drop_na_rows(joint_df)
 
         score_columns = list(utilities.hgvs_columns(joint_df.columns)) + list(
             utilities.non_hgvs_columns(scores_df.columns)
@@ -146,8 +146,8 @@ def drop_null(scores_df, counts_df=None):
 
         assert_index_equal(scores_df.index, counts_df.index)
     else:
-        filters.drop_na_columns(scores_df, inplace=True)
-        filters.drop_na_rows(scores_df, inplace=True)
+        filters.drop_na_columns(scores_df)
+        filters.drop_na_rows(scores_df)
 
     return scores_df, counts_df
 
