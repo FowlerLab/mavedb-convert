@@ -245,13 +245,24 @@ class TestParseDocopt(unittest.TestCase):
         if program is None:
             program = "enrich2"
         if src is None:
-            src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "enrich2", "enrich2.tsv")
+            src = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "data",
+                "enrich2",
+                "enrich2.tsv",
+            )
         return {
             "enrich": True if program == "enrich" else False,
             "enrich2": True if program == "enrich2" else False,
             "empiric": True if program == "empiric" else False,
-            "<src>": os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", program, src),
-            "--dst": os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", program, dst) if dst else None,
+            "<src>": os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "data", program, src
+            ),
+            "--dst": os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "data", program, dst
+            )
+            if dst
+            else None,
             "--score-column": score_column,
             "--hgvs-column": hgvs_column,
             "--skip-header": skip_header,

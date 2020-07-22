@@ -294,7 +294,9 @@ class TestEnrichIntegration(ProgramTestCase):
             input_type=constants.score_type,
         )
         p.convert()
-        self.assertTrue(os.path.isfile(os.path.join(self.data_dir, "enrich", "mavedb_enrich.csv")))
+        self.assertTrue(
+            os.path.isfile(os.path.join(self.data_dir, "enrich", "mavedb_enrich.csv"))
+        )
 
     def test_output_with_offset(self):
         p = enrich.Enrich(
@@ -319,7 +321,9 @@ class TestEnrichIntegration(ProgramTestCase):
             input_type=constants.score_type,
         )
         p.convert()
-        result = pd.read_csv(os.path.join(self.data_dir, "enrich", "mavedb_enrich_1based.csv"))
+        result = pd.read_csv(
+            os.path.join(self.data_dir, "enrich", "mavedb_enrich_1based.csv")
+        )
         expected = pd.read_csv(self.expected)
         assert_frame_equal(expected, result)
 

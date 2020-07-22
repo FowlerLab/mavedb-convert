@@ -151,12 +151,10 @@ def parse_docopt(docopt_args):
 
     # Parse WT and Offset fields
     parsed_kwargs["wt_sequence"] = parse_wt_sequence(
-        docopt_args.get("--wtseq", None),
-        coding=parsed_kwargs["is_coding"],
+        docopt_args.get("--wtseq", None), coding=parsed_kwargs["is_coding"]
     )
     parsed_kwargs["offset"] = parse_offset(
-        docopt_args.get("--offset", 0),
-        coding=parsed_kwargs["is_coding"],
+        docopt_args.get("--offset", 0), coding=parsed_kwargs["is_coding"]
     )
 
     # Parse Input related fields
