@@ -1,7 +1,7 @@
 import os
 import shutil
-from unittest import TestCase
-from tempfile import TemporaryDirectory
+import unittest
+import tempfile
 
 import pandas as pd
 
@@ -24,9 +24,9 @@ __all__ = [
 
 # TODO: think up a better name for this class
 # TODO: remove the old self.bin stuff
-class ProgramTestCase(TestCase):
+class ProgramTestCase(unittest.TestCase):
     def setUp(self):
-        self._data_dir = TemporaryDirectory()  # store the object
+        self._data_dir = tempfile.TemporaryDirectory()  # store the object
         self.data_dir = os.path.join(
             self._data_dir.name, "data"
         )  # store the directory path
