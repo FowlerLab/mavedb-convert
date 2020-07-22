@@ -1,13 +1,10 @@
 import os
 import unittest
-from unittest.mock import patch
+from unittest import mock
 
 from mavedbconvert import parsers, exceptions, constants
 
-from mavedbconvert.tests import ProgramTestCase
-
-# TODO: convert these tests to use temp directories
-TEST_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+from tests import ProgramTestCase
 
 
 class TestParseBoolean(unittest.TestCase):
@@ -45,17 +42,9 @@ class TestParseString(unittest.TestCase):
         self.assertEqual(parsers.parse_string(" aaa "), "aaa")
 
 
-class TestParseSrc(unittest.TestCase):
-    @patch(
-        "mavedbconvert.parsers.parse_string",
-        return_value=os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv"),
-    )
-    def test_calls_parse_string(self, patch):
-        parsers.parse_src(os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv"))
-        patch.assert_called()
-
+class TestParseSrc(ProgramTestCase):
     def test_ok_file_exists(self):
-        path = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
+        path = os.path.join(self.data_dir, "enrich2", "enrich2.tsv")
         self.assertEqual(path, parsers.parse_src(path))
 
     def test_error_no_value(self):
@@ -64,25 +53,32 @@ class TestParseSrc(unittest.TestCase):
                 parsers.parse_src(v)
 
     def test_error_file_not_found(self):
-        path = os.path.join(TEST_DATA_DIR, "enrich2", "missing_file.tsv")
+        path = os.path.join(self.data_dir, "enrich2", "missing_file.tsv")
         with self.assertRaises(FileNotFoundError):
             parsers.parse_src(path)
 
     def test_error_file_is_a_dir(self):
         with self.assertRaises(IsADirectoryError):
-            parsers.parse_src(os.path.join(TEST_DATA_DIR))
+            parsers.parse_src(os.path.join(self.data_dir))
+
+    @mock.patch("mavedbconvert.parsers.open")
+    def test_error_permission(self, mock_open):
+        path = os.path.join(self.data_dir, "enrich2", "enrich2.tsv")
+        mock_open.side_effect = PermissionError
+        with self.assertRaises(PermissionError):
+            parsers.parse_src(path)
+
+    @mock.patch("mavedbconvert.parsers.open")
+    def test_error_io(self, mock_open):
+        path = os.path.join(self.data_dir, "enrich2", "enrich2.tsv")
+        mock_open.side_effect = IOError
+        with self.assertRaises(IOError):
+            parsers.parse_src(path)
 
 
 class TestParseDst(ProgramTestCase):
-    @patch(
-        "mavedbconvert.parsers.parse_string", return_value=os.path.join(TEST_DATA_DIR)
-    )
-    def test_calls_parse_string(self, patch):
-        parsers.parse_dst(os.path.join(TEST_DATA_DIR))
-        patch.assert_called()
-
     def test_ok_dst_exists(self):
-        path = os.path.join(os.path.join(TEST_DATA_DIR))
+        path = os.path.join(os.path.join(self.data_dir))
         self.assertEqual(path, parsers.parse_dst(path))
 
     def test_returns_none_no_value(self):
@@ -90,14 +86,26 @@ class TestParseDst(ProgramTestCase):
             self.assertIsNone(parsers.parse_dst(v))
 
     def test_dst_path_is_normalised(self):
-        path = TEST_DATA_DIR + "//fasta"
-        self.assertEqual(parsers.parse_dst(path), os.path.join(TEST_DATA_DIR, "fasta"))
+        path = self.data_dir + "//fasta"
+        self.assertEqual(parsers.parse_dst(path), os.path.join(self.data_dir, "fasta"))
 
     def test_makes_dst_directory_tree(self):
-        path = os.path.join(TEST_DATA_DIR, "subdir")
+        path = os.path.join(self.data_dir, "subdir")
         parsers.parse_dst(path)
         self.assertTrue(os.path.isdir(path))
-        self.bin.append(path)
+
+    @mock.patch("mavedbconvert.parsers.os.path.isdir")
+    def test_ok_dst_error_permission_isdir(self, mock_isdir):
+        mock_isdir.side_effect = PermissionError
+        with self.assertRaises(PermissionError):
+            parsers.parse_dst(self.data_dir)
+
+    @mock.patch("mavedbconvert.parsers.os.makedirs")
+    def test_ok_dst_error_permission_makedirs(self, mock_makedirs):
+        mock_makedirs.side_effect = PermissionError
+        path = os.path.join(os.path.join(self.data_dir, "error"))
+        with self.assertRaises(PermissionError):
+            parsers.parse_dst(path)
 
 
 class TestParseProgram(unittest.TestCase):
@@ -124,10 +132,10 @@ class TestParseProgram(unittest.TestCase):
             parsers.parse_program(program)
 
 
-class TestParseWildTypeSequence(unittest.TestCase):
+class TestParseWildTypeSequence(ProgramTestCase):
     def test_can_read_from_fasta(self):
-        path = os.path.join(TEST_DATA_DIR, "fasta", "lower.fa")
-        wtseq = parsers.parse_wt_sequence(path, program="enrich2", non_coding=True)
+        path = os.path.join(self.data_dir, "fasta", "lower.fa")
+        wtseq = parsers.parse_wt_sequence(path, coding=False)
         expected = (
             "ACAGTTGGATATAGTAGTTTGTACGAGTTGCTTGTGGCTT"
             "CGCCAGCGCATACCAGCATAGTAAAGGCAACGGCCTCTGA"
@@ -138,31 +146,21 @@ class TestParseWildTypeSequence(unittest.TestCase):
 
     def test_error_invalid_chars(self):
         with self.assertRaises(exceptions.InvalidWildTypeSequence):
-            parsers.parse_wt_sequence("ATXG", program="enrich2", non_coding=True)
+            parsers.parse_wt_sequence("ATXG", coding=False)
 
-    def test_error_not_divisible_by_three_enrich_empiric(self):
+    def test_error_not_divisible_by_three(self):
         with self.assertRaises(exceptions.SequenceFrameError):
-            parsers.parse_wt_sequence("ATGG", program="enrich")
-        with self.assertRaises(exceptions.SequenceFrameError):
-            parsers.parse_wt_sequence("ATGG", program="empiric")
+            parsers.parse_wt_sequence("ATGG", coding=True)
 
-    def test_error_not_divisible_by_three_enrich2_coding(self):
-        with self.assertRaises(exceptions.SequenceFrameError):
-            parsers.parse_wt_sequence("ATGG", program="enrich2")
+    def test_ok_not_divisible_by_three_noncoding(self):
+        parsers.parse_wt_sequence("ATGG", coding=False)
 
-    def test_ok_not_divisible_by_three_enrich2_noncoding(self):
-        parsers.parse_wt_sequence("ATGG", program="enrich2", non_coding=True)
-
-    def test_ok_divisible_by_three_enrich2_coding(self):
-        parsers.parse_wt_sequence("ATGATC", program="enrich2")
-
-    def test_ok_divisible_by_three_enrich_empiric(self):
-        parsers.parse_wt_sequence("ATGATC", program="enrich")
-        parsers.parse_wt_sequence("ATGATC", program="empiric")
+    def test_ok_divisible_by_three_coding(self):
+        parsers.parse_wt_sequence("ATGATC", coding=True)
 
 
 class TestParseInputType(unittest.TestCase):
-    @patch("mavedbconvert.parsers.parse_string", return_value="counts")
+    @mock.patch("mavedbconvert.parsers.parse_string", return_value="counts")
     def test_calls_parse_string(self, patch):
         parsers.parse_input_type(constants.count_type)
         patch.assert_called()
@@ -177,7 +175,7 @@ class TestParseInputType(unittest.TestCase):
 
 
 class TestParseScoreColumn(unittest.TestCase):
-    @patch("mavedbconvert.parsers.parse_string", return_value="score")
+    @mock.patch("mavedbconvert.parsers.parse_string", return_value="score")
     def test_calls_parse_string(self, patch):
         parsers.parse_score_column("score", constants.score_type, program="enrich")
         patch.assert_called()
@@ -211,31 +209,20 @@ class TestParseScoreColumn(unittest.TestCase):
 
 
 class TestParseOffset(unittest.TestCase):
-    @patch("mavedbconvert.parsers.parse_numeric", return_value=0)
+    @mock.patch("mavedbconvert.parsers.parse_numeric", return_value=0)
     def test_calls_parse_numeric(self, patch):
-        parsers.parse_offset(0, program="enrich")
+        parsers.parse_offset(0)
         patch.assert_called()
 
-    def test_error_enrich2_is_coding_and_not_mult_of_three(self):
+    def test_error_coding_and_not_mult_of_three(self):
         with self.assertRaises(ValueError):
-            parsers.parse_offset(1, "enrich2", non_coding=False)
+            parsers.parse_offset(1, coding=True)
 
-    def test_ok_enrich2_is_coding_and_mult_of_three(self):
-        self.assertEqual(-6, parsers.parse_offset("-6", "enrich2", non_coding=False))
+    def test_ok_coding_and_mult_of_three(self):
+        self.assertEqual(-6, parsers.parse_offset("-6", coding=True))
 
-    def test_ok_enrich2_non_coding_and_not_mult_of_three(self):
-        self.assertEqual(-7, parsers.parse_offset("-7", "enrich2", non_coding=True))
-
-    def test_error_enrich_empiric_offset_not_mult_of_three(self):
-        with self.assertRaises(ValueError):
-            parsers.parse_offset(1, "enrich", non_coding=False)
-
-        with self.assertRaises(ValueError):
-            parsers.parse_offset(1, "empiric", non_coding=False)
-
-    def test_ok_enrich_empiric_offset_mult_of_three(self):
-        self.assertEqual(-6, parsers.parse_offset("-6", "enrich"))
-        self.assertEqual(-6, parsers.parse_offset("-6", "empiric"))
+    def test_ok_non_coding_and_not_mult_of_three(self):
+        self.assertEqual(-7, parsers.parse_offset("-7", coding=False))
 
 
 class TestParseDocopt(unittest.TestCase):
@@ -255,17 +242,27 @@ class TestParseDocopt(unittest.TestCase):
         sheet_name=None,
         non_coding=False,
     ):
-
         if program is None:
             program = "enrich2"
         if src is None:
-            src = os.path.join(TEST_DATA_DIR, "enrich2", "enrich2.tsv")
+            src = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "data",
+                "enrich2",
+                "enrich2.tsv",
+            )
         return {
             "enrich": True if program == "enrich" else False,
             "enrich2": True if program == "enrich2" else False,
             "empiric": True if program == "empiric" else False,
-            "<src>": os.path.join(TEST_DATA_DIR, program, src),
-            "--dst": os.path.join(TEST_DATA_DIR, program, dst) if dst else dst,
+            "<src>": os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "data", program, src
+            ),
+            "--dst": os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "data", program, dst
+            )
+            if dst
+            else None,
             "--score-column": score_column,
             "--hgvs-column": hgvs_column,
             "--skip-header": skip_header,
@@ -279,7 +276,7 @@ class TestParseDocopt(unittest.TestCase):
         }
 
     def test_returns_correct_program(self):
-        for p in ("enrich", "enrich2", "empiric"):
+        for p in constants.supported_programs:
             args = self.mock_args(program=p)
             self.assertEqual(parsers.parse_docopt(args)[0], p)
 

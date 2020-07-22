@@ -20,9 +20,8 @@ __all__ = [
 ]
 
 HOMEDIR = os.path.normpath(os.path.expanduser("~/.mavedb_convert/"))
-tempfile.tempdir = HOMEDIR
 if not os.path.isdir(HOMEDIR):
-    os.mkdir(HOMEDIR)
+    os.mkdir(HOMEDIR)   # pragma: no cover
 
 LOGGER = "mavedbconvert"
 
@@ -58,13 +57,3 @@ logging.config.dictConfig(
         },
     }
 )
-
-
-def disable_logging():
-    logging.disable(logging.INFO)
-    logging.disable(logging.WARN)
-    logging.disable(logging.WARNING)
-    logging.disable(logging.ERROR)
-    logging.disable(logging.CRITICAL)
-    logging.disable(logging.DEBUG)
-    logging.disable(logging.FATAL)

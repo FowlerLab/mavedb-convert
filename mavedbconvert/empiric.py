@@ -139,6 +139,9 @@ class Empiric(base.BaseProgram):
         if not abs(offset) % 3 == 0:
             raise ValueError("EMPIRIC offset must be a multiple of 3.")
 
+        if not is_coding:
+            raise ValueError("Enrich does not support non-coding datasets.")
+
         self.codon_column = None
         self.aa_column = None
         self.position_column = None
@@ -334,8 +337,8 @@ class Empiric(base.BaseProgram):
                 mave_columns[:2] + [constants.mavedb_score_column] + mave_columns[2:]
             )
         mavedb_df = pd.DataFrame(data=data, columns=mave_columns)
-        filters.drop_na_rows(mavedb_df, inplace=True)
-        filters.drop_na_columns(mavedb_df, inplace=True)
+        filters.drop_na_rows(mavedb_df)
+        filters.drop_na_columns(mavedb_df)
 
         logger.info("Running MaveDB compliance validation.")
         validators.validate_mavedb_compliance(mavedb_df, df_type=self.input_type)

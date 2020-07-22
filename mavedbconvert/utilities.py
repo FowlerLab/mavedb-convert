@@ -252,10 +252,7 @@ class ProteinSubstitutionEvent(object):
 
         # Normalize to three letter codes
         if self.ref and len(self.ref) == 1:
-            if self.ref == "?":
-                self.ref = "???"
-            else:
-                self.ref = AA_CODES[self.ref]
+            self.ref = AA_CODES[self.ref]
         if self.alt and len(self.alt) == 1:
             if self.alt == "?":
                 self.alt = "???"

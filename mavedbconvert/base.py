@@ -2,9 +2,11 @@ import os
 import re
 import logging
 import numpy as np
+from abc import ABCMeta, abstractmethod
 
 from hgvsp import is_multi
 from fqfa.constants.iupac.protein import AA_CODES
+from fqfa.validator.validator import dna_bases_validator
 
 from . import LOGGER, utilities, constants
 
@@ -15,7 +17,7 @@ logger = logging.getLogger(LOGGER)
 __all__ = ["BaseProgram"]
 
 
-class BaseProgram(object):
+class BaseProgram(metaclass=ABCMeta):
     """
     Convert an input file to MaveDB_ compliant counts or scores files.
 
@@ -140,7 +142,7 @@ class BaseProgram(object):
     def wt_sequence(self, seq):
         seq = str(seq).upper()
         # Initialize sequence information.
-        if not constants.dna_re.fullmatch(seq):
+        if dna_bases_validator(seq) is None:
             raise ValueError("{} is not a valid DNA sequence.".format(seq))
         if self.is_coding:
             self.protein_sequence = utilities.translate_dna(seq, offset=0)
@@ -184,14 +186,17 @@ class BaseProgram(object):
         logger.info("Writing to {}".format(self.output_file))
         mave_df.to_csv(self.output_file, sep=",", index=None, na_rep=np.NaN)
 
+    @abstractmethod
     def load_input_file(self):
-        raise NotImplementedError()
+        pass  # pragma: no cover
 
+    @abstractmethod
     def parse_input(self, df):
-        raise NotImplementedError()
+        pass  # pragma: no cover
 
+    @abstractmethod
     def parse_row(self, row):
-        raise NotImplementedError()
+        pass  # pragma: no cover
 
     def validate_against_wt_sequence(self, variant):
         """
