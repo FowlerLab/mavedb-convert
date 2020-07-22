@@ -82,7 +82,7 @@ def parse_program(program):
     return program
 
 
-def parse_wt_sequence(wtseq, program, non_coding=False):
+def parse_wt_sequence(wtseq, coding=True):
     if os.path.isfile(os.path.normpath(os.path.expanduser(wtseq))):
         with open(os.path.normpath(os.path.expanduser(wtseq))) as fh:
             _, wtseq = next(parse_fasta_records(fh))
@@ -92,18 +92,11 @@ def parse_wt_sequence(wtseq, program, non_coding=False):
             "Wild-type sequence contains invalid characters."
         )
 
-    if program in ("enrich", "empiric"):
-        if len(wtseq) % 3 != 0:
-            raise exceptions.SequenceFrameError(
-                "Enrich/EMPIRIC wild-type sequence must be a multiple of "
-                "three. Found length {}.".format(len(wtseq))
-            )
-    elif program == "enrich2" and not non_coding:
-        if len(wtseq) % 3 != 0:
-            raise exceptions.SequenceFrameError(
-                "Enrich2 wild-type sequence for a coding dataset "
-                "must be a multiple of three. Found length {}.".format(len(wtseq))
-            )
+    if coding and len(wtseq) % 3 != 0:
+        raise exceptions.SequenceFrameError(
+            f"Enrich2 wild-type sequence for a coding dataset "
+            "must be a multiple of three. Found length {len(wtseq)}."
+        )
 
     return wtseq.upper()
 
@@ -132,16 +125,12 @@ def parse_score_column(value, input_type, program):
     return value
 
 
-def parse_offset(offset, program, non_coding=False):
+def parse_offset(offset, coding=True):
     offset = parse_numeric(offset, name="offset", dtype=int)
     mult_of_three = abs(offset) % 3 == 0
-    if program == "enrich2":
-        if not non_coding and not mult_of_three:
-            raise ValueError(
-                "Enrich2 offset for a coding dataset must be a " "multiple of three."
-            )
-    elif not mult_of_three:
-        raise ValueError("EMPIRIC/Enrich offset must be a multiple of three.")
+    if coding and not mult_of_three:
+        raise ValueError("Offset for a coding dataset must be a multiple of three.")
+
     return offset
 
 
@@ -163,13 +152,11 @@ def parse_docopt(docopt_args):
     # Parse WT and Offset fields
     parsed_kwargs["wt_sequence"] = parse_wt_sequence(
         docopt_args.get("--wtseq", None),
-        program=program,
-        non_coding=not parsed_kwargs["is_coding"],
+        coding=parsed_kwargs["is_coding"],
     )
     parsed_kwargs["offset"] = parse_offset(
         docopt_args.get("--offset", 0),
-        program=program,
-        non_coding=not parsed_kwargs["is_coding"],
+        coding=parsed_kwargs["is_coding"],
     )
 
     # Parse Input related fields

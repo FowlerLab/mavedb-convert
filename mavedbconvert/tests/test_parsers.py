@@ -155,7 +155,7 @@ class TestParseProgram(unittest.TestCase):
 class TestParseWildTypeSequence(unittest.TestCase):
     def test_can_read_from_fasta(self):
         path = os.path.join(TEST_DATA_DIR, "fasta", "lower.fa")
-        wtseq = parsers.parse_wt_sequence(path, program="enrich2", non_coding=True)
+        wtseq = parsers.parse_wt_sequence(path, coding=False)
         expected = (
             "ACAGTTGGATATAGTAGTTTGTACGAGTTGCTTGTGGCTT"
             "CGCCAGCGCATACCAGCATAGTAAAGGCAACGGCCTCTGA"
@@ -166,27 +166,17 @@ class TestParseWildTypeSequence(unittest.TestCase):
 
     def test_error_invalid_chars(self):
         with self.assertRaises(exceptions.InvalidWildTypeSequence):
-            parsers.parse_wt_sequence("ATXG", program="enrich2", non_coding=True)
+            parsers.parse_wt_sequence("ATXG", coding=False)
 
-    def test_error_not_divisible_by_three_enrich_empiric(self):
+    def test_error_not_divisible_by_three(self):
         with self.assertRaises(exceptions.SequenceFrameError):
-            parsers.parse_wt_sequence("ATGG", program="enrich")
-        with self.assertRaises(exceptions.SequenceFrameError):
-            parsers.parse_wt_sequence("ATGG", program="empiric")
+            parsers.parse_wt_sequence("ATGG", coding=True)
 
-    def test_error_not_divisible_by_three_enrich2_coding(self):
-        with self.assertRaises(exceptions.SequenceFrameError):
-            parsers.parse_wt_sequence("ATGG", program="enrich2")
+    def test_ok_not_divisible_by_three_noncoding(self):
+        parsers.parse_wt_sequence("ATGG", coding=False)
 
-    def test_ok_not_divisible_by_three_enrich2_noncoding(self):
-        parsers.parse_wt_sequence("ATGG", program="enrich2", non_coding=True)
-
-    def test_ok_divisible_by_three_enrich2_coding(self):
-        parsers.parse_wt_sequence("ATGATC", program="enrich2")
-
-    def test_ok_divisible_by_three_enrich_empiric(self):
-        parsers.parse_wt_sequence("ATGATC", program="enrich")
-        parsers.parse_wt_sequence("ATGATC", program="empiric")
+    def test_ok_divisible_by_three_coding(self):
+        parsers.parse_wt_sequence("ATGATC", coding=True)
 
 
 class TestParseInputType(unittest.TestCase):
@@ -241,29 +231,18 @@ class TestParseScoreColumn(unittest.TestCase):
 class TestParseOffset(unittest.TestCase):
     @mock.patch("mavedbconvert.parsers.parse_numeric", return_value=0)
     def test_calls_parse_numeric(self, patch):
-        parsers.parse_offset(0, program="enrich")
+        parsers.parse_offset(0)
         patch.assert_called()
 
-    def test_error_enrich2_is_coding_and_not_mult_of_three(self):
+    def test_error_coding_and_not_mult_of_three(self):
         with self.assertRaises(ValueError):
-            parsers.parse_offset(1, "enrich2", non_coding=False)
+            parsers.parse_offset(1, coding=True)
 
-    def test_ok_enrich2_is_coding_and_mult_of_three(self):
-        self.assertEqual(-6, parsers.parse_offset("-6", "enrich2", non_coding=False))
+    def test_ok_coding_and_mult_of_three(self):
+        self.assertEqual(-6, parsers.parse_offset("-6", coding=True))
 
-    def test_ok_enrich2_non_coding_and_not_mult_of_three(self):
-        self.assertEqual(-7, parsers.parse_offset("-7", "enrich2", non_coding=True))
-
-    def test_error_enrich_empiric_offset_not_mult_of_three(self):
-        with self.assertRaises(ValueError):
-            parsers.parse_offset(1, "enrich", non_coding=False)
-
-        with self.assertRaises(ValueError):
-            parsers.parse_offset(1, "empiric", non_coding=False)
-
-    def test_ok_enrich_empiric_offset_mult_of_three(self):
-        self.assertEqual(-6, parsers.parse_offset("-6", "enrich"))
-        self.assertEqual(-6, parsers.parse_offset("-6", "empiric"))
+    def test_ok_non_coding_and_not_mult_of_three(self):
+        self.assertEqual(-7, parsers.parse_offset("-7", coding=False))
 
 
 class TestParseDocopt(unittest.TestCase):
