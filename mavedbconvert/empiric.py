@@ -139,6 +139,9 @@ class Empiric(base.BaseProgram):
         if not abs(offset) % 3 == 0:
             raise ValueError("EMPIRIC offset must be a multiple of 3.")
 
+        if not is_coding:
+            raise ValueError("Enrich does not support non-coding datasets.")
+
         self.codon_column = None
         self.aa_column = None
         self.position_column = None

@@ -50,6 +50,9 @@ class Enrich(base.BaseProgram):
         if not abs(offset) % 3 == 0:
             raise ValueError("Enrich offset must be a multiple of 3.")
 
+        if not is_coding:
+            raise ValueError("Enrich does not support non-coding datasets.")
+
         if not self.score_column and self.input_type == constants.score_type:
             raise ValueError(
                 "A score column must be specified if "
