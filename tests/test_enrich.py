@@ -8,7 +8,7 @@ from fqfa.constants.iupac.protein import AA_CODES
 
 from mavedbconvert import enrich, constants, utilities
 
-from mavedbconvert.tests import ProgramTestCase
+from tests import ProgramTestCase
 
 
 WT = (

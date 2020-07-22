@@ -4,7 +4,7 @@ from unittest import mock
 
 from mavedbconvert import parsers, exceptions, constants
 
-from mavedbconvert.tests import ProgramTestCase
+from tests import ProgramTestCase
 
 
 class TestParseBoolean(unittest.TestCase):

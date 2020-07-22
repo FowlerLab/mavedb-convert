@@ -14,7 +14,7 @@ from fqfa.constants.iupac.protein import AA_CODES
 
 from mavedbconvert import validators, enrich2, constants, exceptions
 
-from mavedbconvert.tests import ProgramTestCase
+from tests import ProgramTestCase
 
 
 # Utility tests

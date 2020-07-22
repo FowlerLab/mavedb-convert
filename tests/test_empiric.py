@@ -7,7 +7,7 @@ from pandas.testing import assert_frame_equal, assert_series_equal
 
 from mavedbconvert import empiric, constants
 
-from mavedbconvert.tests import ProgramTestCase
+from tests import ProgramTestCase
 
 
 class TestEmpiricInit(ProgramTestCase):

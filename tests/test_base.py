@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from mavedbconvert import base, exceptions
 
-from mavedbconvert.tests import ProgramTestCase
+from tests import ProgramTestCase
 
 
 class BaseTest(base.BaseProgram):
