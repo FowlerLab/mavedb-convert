@@ -17,7 +17,6 @@ extra_na = (
 )
 null_value_re = re.compile(r"\s+|nan|na|none|undefined|n/a|null")
 surrounding_brackets_re = re.compile(r"\((.*)\)")
-dna_re = re.compile(r"[ATCGatcg]+", flags=re.IGNORECASE)
 
 # HGVSP constants
 hgvsp_nt_pos = "position"

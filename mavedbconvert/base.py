@@ -6,6 +6,7 @@ from abc import ABCMeta, abstractmethod
 
 from hgvsp import is_multi
 from fqfa.constants.iupac.protein import AA_CODES
+from fqfa.validator.validator import dna_bases_validator
 
 from . import LOGGER, utilities, constants
 
@@ -141,7 +142,7 @@ class BaseProgram(metaclass=ABCMeta):
     def wt_sequence(self, seq):
         seq = str(seq).upper()
         # Initialize sequence information.
-        if not constants.dna_re.fullmatch(seq):
+        if dna_bases_validator(seq) is None:
             raise ValueError("{} is not a valid DNA sequence.".format(seq))
         if self.is_coding:
             self.protein_sequence = utilities.translate_dna(seq, offset=0)

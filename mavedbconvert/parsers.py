@@ -1,6 +1,7 @@
 import os
 import logging
 from fqfa.fasta.fasta import parse_fasta_records
+from fqfa.validator.validator import dna_bases_validator
 
 from . import LOGGER, constants, exceptions
 
@@ -86,9 +87,9 @@ def parse_wt_sequence(wtseq, program, non_coding=False):
         with open(os.path.normpath(os.path.expanduser(wtseq))) as fh:
             _, wtseq = next(parse_fasta_records(fh))
 
-    if not constants.dna_re.fullmatch(wtseq):
+    if not dna_bases_validator(wtseq.upper()):
         raise exceptions.InvalidWildTypeSequence(
-            "Sequence {} is not a valid DNA sequence.".format(wtseq)
+            "Wild-type sequence contains invalid characters."
         )
 
     if program in ("enrich", "empiric"):
