@@ -52,25 +52,25 @@ class TestDfValidators(unittest.TestCase):
 class TestHGVSValidators(unittest.TestCase):
     def test_validate_hgvs_nt_not_redef_raise_error_if_redefined(self):
         df = pd.DataFrame({constants.nt_variant_col: ["a", "b"]})
-        validators.validate_hgvs_nt_uniqueness(df)  # Should pass
+        validators.validate_hgvs_uniqueness(df, constants.nt_variant_col)  # Should pass
         with self.assertRaises(ValueError):
             df = pd.DataFrame({constants.nt_variant_col: ["a", "b", "a"]})
-            validators.validate_hgvs_nt_uniqueness(df)
+            validators.validate_hgvs_uniqueness(df, constants.nt_variant_col)
 
     def test_validate_hgvs_nt_not_redef_ignores_none(self):
-        df = pd.DataFrame({constants.nt_variant_col: ["a", "b", None]})
-        validators.validate_hgvs_nt_uniqueness(df)  # Should pass
+        df = pd.DataFrame({constants.nt_variant_col: ["a", "b", None, None]})
+        validators.validate_hgvs_uniqueness(df, constants.nt_variant_col)  # Should pass
 
     def test_validate_hgvs_pro_not_redef_raise_error_if_redefined(self):
         df = pd.DataFrame({constants.pro_variant_col: ["a", "b"]})
-        validators.validate_hgvs_pro_uniqueness(df)  # Should pass
+        validators.validate_hgvs_uniqueness(df, constants.pro_variant_col)  # Should pass
         with self.assertRaises(ValueError):
             df = pd.DataFrame({constants.pro_variant_col: ["a", "b", "a"]})
-            validators.validate_hgvs_pro_uniqueness(df)
+            validators.validate_hgvs_uniqueness(df, constants.pro_variant_col)
 
     def test_validate_hgvs_pro_not_redef_ignores_none(self):
-        df = pd.DataFrame({constants.pro_variant_col: ["a", "b", None]})
-        validators.validate_hgvs_pro_uniqueness(df)  # Should pass
+        df = pd.DataFrame({constants.pro_variant_col: ["a", "b", None, None]})
+        validators.validate_hgvs_uniqueness(df, constants.pro_variant_col)  # Should pass
 
 
 class TestMaveDBCompliance(unittest.TestCase):
@@ -94,7 +94,7 @@ class TestMaveDBCompliance(unittest.TestCase):
         with self.assertRaises(ValueError):
             validators.validate_mavedb_compliance(df, df_type=None)
 
-    def test_simple_pass_cases(self):
+    def test_pass_coding_(self):
         df = pd.DataFrame(
             {
                 constants.nt_variant_col: ["c.100A>G", "c.101A>G"],
@@ -105,7 +105,7 @@ class TestMaveDBCompliance(unittest.TestCase):
 
         df = pd.DataFrame(
             {
-                constants.nt_variant_col: ["c.100A>G", "c.101A>G"],
+                constants.nt_variant_col: ["n.100A>G", "n.101A>G"],
                 constants.pro_variant_col: [None, None],
             }
         )

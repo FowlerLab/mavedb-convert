@@ -1,5 +1,7 @@
 import re
 
+MAX_ERROR_VARIANTS = 5
+
 supported_programs = ("enrich", "enrich2", "empiric")
 extra_na = (
     "None",
