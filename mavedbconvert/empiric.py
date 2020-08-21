@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from fqfa.constants.translation.table import CODON_TABLE
 from fqfa.constants.iupac.protein import AA_CODES
+from xlrd.biffh import XLRDError
 
 from . import base, utilities, constants, filters, validators, LOGGER
 
@@ -75,12 +76,9 @@ def infer_pro_substitution(wt_aa, mut_aa, codon_pos):
         The HGVS-formatted subsitution event.
     """
 
-    # Normalize ? to X and ??? to Xaa
-    if wt_aa in ("?", "???"):
-        wt_aa = "Xaa"
-    else:
-        wt_aa = AA_CODES[wt_aa.upper()]
+    wt_aa = AA_CODES[wt_aa.upper()]
 
+    # Normalize ? to X and ??? to Xaa
     if mut_aa in ("?", "???"):
         mut_aa = "Xaa"
     else:
@@ -165,14 +163,18 @@ class Empiric(base.BaseProgram):
             logger.info("Skipping last {} row(s).".format(self.skip_footer_rows + 1))
 
         if self.extension in (".xlsx", ".xls"):
-            od = pd.read_excel(
-                self.src,
-                na_values=constants.extra_na,
-                skiprows=self.skip_header_rows,
-                skipfooter=self.skip_footer_rows,
-                sheet_name=self.sheet_name,
-            )
-            if not self.sheet_name:
+            try:
+                od = pd.read_excel(
+                    self.src,
+                    na_values=constants.extra_na,
+                    sheet_name=self.sheet_name,
+                    skiprows=self.skip_header_rows,
+                    skipfooter=self.skip_footer_rows,
+                )
+            except XLRDError:
+                raise ValueError(f"invalid Excel sheet name '{self.sheet_name}'")
+
+            if self.sheet_name is None:
                 self.sheet_name = list(od.keys())[0]
                 if len(od) > 1:
                     logger.warning(
@@ -182,7 +184,9 @@ class Empiric(base.BaseProgram):
                             ", ".join(list(od.keys())), self.sheet_name
                         )
                     )
-            df = od[self.sheet_name]
+                df = od[self.sheet_name]
+            else:
+                df = od
         else:
             sep = "\t"
             if self.ext.lower() == ".csv":

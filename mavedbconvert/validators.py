@@ -116,36 +116,40 @@ def validate_columns_are_numeric(df):
                 )
 
 
-def validate_hgvs_nt_uniqueness(df):
-    """Validate that hgvs columns only define a variant once."""
-    df = df[~df[constants.nt_variant_col].isnull()]
-    dups = df.loc[:, constants.nt_variant_col].duplicated(keep=False)
-    if np.any(dups):
-        dup_list = [
-            "{} ({})".format(x, y)
-            for x, y in zip(df.loc[dups, constants.nt_variant_col], dups.index[dups])
-        ]
-        raise ValueError(
-            "duplicate HGVS nucleotide strings found: {}".format(
-                ", ".join(sorted(dup_list))
-            )
-        )
+def validate_hgvs_uniqueness(df: pd.DataFrame, cname: str) -> None:
+    """Validate that the HGVS column entries are unique.
 
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The data frame to validate.
+    cname : str
+        The column name for the HGVS strings.
 
-def validate_hgvs_pro_uniqueness(df):
-    """Validate that hgvs columns only define a variant once."""
-    df = df[~df[constants.pro_variant_col].isnull()]
-    dups = df.loc[:, constants.pro_variant_col].duplicated(keep=False)
-    if np.any(dups):
-        dup_list = [
-            "{} ({})".format(x, y)
-            for x, y in zip(df.loc[dups, constants.pro_variant_col], dups.index[dups])
-        ]
-        raise ValueError(
-            "Duplicate HGVS protein strings found: {}".format(
-                ", ".join(sorted(dup_list))
-            )
-        )
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    KeyError
+        If cname is not a column name in df.
+    ValueError
+        If there are non-unique values in cname (not including None).
+
+    """
+    try:
+        values = df[cname]
+    except KeyError:
+        raise KeyError(f"invalid column name '{cname}'")
+    else:
+        dup_counts = values.value_counts()
+        dups = dup_counts[dup_counts > 1].index
+        if len(dups) > 0:
+            dup_error_string = ", ".join(dups[:constants.MAX_ERROR_VARIANTS])
+            if len(dups) > constants.MAX_ERROR_VARIANTS:
+                dup_error_string += ", ..."
+            raise ValueError(f"found {len(dups)} duplicate HGVS strings in '{cname}': {dup_error_string}")
 
 
 def validate_datasets_define_same_variants(scores_df, counts_df):
@@ -254,17 +258,15 @@ def validate_mavedb_compliance(df, df_type):
             )
         )
 
-    if primary_col == constants.nt_variant_col:
-        validate_hgvs_nt_uniqueness(df)
-    elif primary_col == constants.pro_variant_col:
-        try:
-            validate_hgvs_pro_uniqueness(df)
-        except ValueError as e:
-            logger.warning(
-                "'{}' column contains duplicated entries: {}".format(
-                    constants.pro_variant_col, e
-                )
-            )
+    try:
+        validate_hgvs_uniqueness(df, primary_col)
+    except ValueError as e:
+        # allow duplicates for protein primary
+        # convert error to warning
+        if primary_col == constants.pro_variant_col:
+            logger.warning(e)
+        else:
+            raise e
 
     validate_columns_are_numeric(df)
     if df_type == constants.score_type:

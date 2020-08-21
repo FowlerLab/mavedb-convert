@@ -22,12 +22,16 @@ class TestEnrichInit(ProgramTestCase):
         super().setUp()
         self.path = os.path.join(self.data_dir, "enrich", "enrich2.tsv")
 
-    def test_error_offset_not_mult_of_three(self):
+    def test_offset_inframe(self):
+        enrich.Enrich(src=self.path, wt_sequence="ATC", offset=3)
+
+    def test_error_offset_not_inframe(self):
         with self.assertRaises(ValueError):
             enrich.Enrich(src=self.path, wt_sequence="ATC", offset=1)
 
-    def test_ok_is_mult_of_three(self):
-        enrich.Enrich(src=self.path, wt_sequence="ATC", offset=3)
+    def test_error_noncoding(self):
+        with self.assertRaises(ValueError):
+            enrich.Enrich(src=self.path, wt_sequence="ATC", is_coding=False)
 
 
 class TestEnrichParseRow(ProgramTestCase):
@@ -55,11 +59,21 @@ class TestEnrichParseRow(ProgramTestCase):
 
     def test_error_no_events(self):
         with self.assertRaises(ValueError):
+            self.enrich.parse_row("")
+        with self.assertRaises(ValueError):
             self.enrich.parse_row("-")
 
     def test_error_malformed_seqid(self):
         with self.assertRaises(ValueError):
             self.enrich.parse_row("NA-NA")
+        with self.assertRaises(ValueError):
+            self.enrich.parse_row("0-")
+        with self.assertRaises(ValueError):
+            self.enrich.parse_row("-D")
+
+    def test_invalid_amino_acid(self):
+        with self.assertRaises(KeyError):
+            self.enrich.parse_row("0-B")
 
     def test_no_changes_uses_equal_event(self):
         self.assertEqual(self.enrich.parse_row("0-D"), "p.Asp1=")
@@ -186,6 +200,7 @@ class TestEnrichLoadInput(ProgramTestCase):
     def setUp(self):
         super().setUp()
         self.path = os.path.join(self.data_dir, "enrich", "enrich.tsv")
+        self.path_header_footer = os.path.join(self.data_dir, "enrich", "enrich_header_footer.tsv")
         self.path_1based = os.path.join(self.data_dir, "enrich", "enrich_1based.tsv")
         self.path_csv = os.path.join(self.data_dir, "enrich", "enrich1.csv")
         self.expected = os.path.join(self.data_dir, "enrich", "enrich_expected.csv")
@@ -193,6 +208,7 @@ class TestEnrichLoadInput(ProgramTestCase):
             self.data_dir, "enrich", "enrich_expected_offset.csv"
         )
         self.excel_path = os.path.join(self.data_dir, "enrich", "enrich.xlsx")
+        self.excel_multisheet_path = os.path.join(self.data_dir, "enrich", "enrich_multisheet.xlsx")
         self.no_seq_id = os.path.join(self.data_dir, "enrich", "enrich_no_seqid.tsv")
         self.tmp_path = os.path.join(self.data_dir, "enrich", "tmp.xlsx")
 
@@ -206,22 +222,6 @@ class TestEnrichLoadInput(ProgramTestCase):
         with self.assertRaises(ValueError):
             p.load_input_file()
 
-    def test_loads_first_sheet_by_default(self):
-        data = [
-            {"seqID": ["1,2,3-G,L-Y"], "score": [1.2]},
-            {"seqID": ["1,2,5-G,L-Y"], "score": [1.4]},
-        ]
-        self.mock_multi_sheet_excel_file(self.tmp_path, data)
-        p = enrich.Enrich(
-            src=self.tmp_path,
-            wt_sequence=WT,
-            score_column="score",
-            input_type=constants.score_type,
-        )
-        df = p.load_input_file()
-        expected = pd.DataFrame(data[0])
-        assert_frame_equal(df, expected)
-
     def test_loads_xlxs(self):
         p = enrich.Enrich(
             src=self.excel_path,
@@ -233,12 +233,59 @@ class TestEnrichLoadInput(ProgramTestCase):
         expected = pd.read_excel(self.excel_path, na_values=constants.extra_na)
         assert_frame_equal(result, expected)
 
+    def test_loads_first_sheet_by_default(self):
+        p = enrich.Enrich(
+            src=self.excel_multisheet_path,
+            wt_sequence=WT,
+            score_column="log2_ratio",
+            input_type=constants.score_type,
+        )
+        result = p.load_input_file()
+        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na)
+        assert_frame_equal(result, expected)
+
+    def test_loads_correct_sheet(self):
+        p = enrich.Enrich(
+            src=self.excel_multisheet_path,
+            wt_sequence=WT,
+            score_column="log2_ratio",
+            input_type=constants.score_type,
+            sheet_name="Sheet3",
+        )
+        result = p.load_input_file()
+        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na, sheet_name="Sheet3")
+        assert_frame_equal(result, expected)
+
+    def test_error_missing_sheet(self):
+        p = enrich.Enrich(
+            src=self.excel_multisheet_path,
+            wt_sequence=WT,
+            score_column="log2_ratio",
+            input_type=constants.score_type,
+            sheet_name="BadSheet",
+        )
+        with self.assertRaises(ValueError):
+            p.load_input_file()
+
     def test_loads_table(self):
         p = enrich.Enrich(
             src=self.path,
             wt_sequence=WT,
             score_column="log2_ratio",
             input_type=constants.score_type,
+        )
+        result = p.load_input_file()
+        expected = pd.read_csv(self.path, delimiter="\t", na_values=constants.extra_na)
+        assert_frame_equal(result, expected)
+
+    def test_loads_with_skipped_rows(self):
+        p = enrich.Enrich(
+            src=self.path_header_footer,
+            wt_sequence=WT,
+            score_column="log2_ratio",
+            input_type=constants.score_type,
+            skip_footer_rows=1,
+            skip_header_rows=2,
         )
         result = p.load_input_file()
         expected = pd.read_csv(self.path, delimiter="\t", na_values=constants.extra_na)

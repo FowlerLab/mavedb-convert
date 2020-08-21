@@ -28,7 +28,12 @@ class TestValidateHGVS(unittest.TestCase):
         result = validators.validate_variants(["c.[1A>G;2A>G]"], n_jobs=2, verbose=0)
         self.assertIsInstance(result[0], str)
 
+    def test_can_specify_backend(self):
+        backend = validators.HGVSPatternsBackend()
+        result = validators.validate_variants(["c.[1A>G;2A>G]"], n_jobs=2, verbose=0, validation_backend=backend)
+        self.assertIsInstance(result[0], str)
 
+        
 class TestDfValidators(unittest.TestCase):
     def test_validate_column_raise_keyerror_column_not_exist(self):
         df = pd.DataFrame({"a": [1]})
@@ -50,27 +55,28 @@ class TestDfValidators(unittest.TestCase):
 
 
 class TestHGVSValidators(unittest.TestCase):
-    def test_validate_hgvs_nt_not_redef_raise_error_if_redefined(self):
+    def test_validate_hgvs_uniqueness(self):
         df = pd.DataFrame({constants.nt_variant_col: ["a", "b"]})
-        validators.validate_hgvs_nt_uniqueness(df)  # Should pass
+        validators.validate_hgvs_uniqueness(df, constants.nt_variant_col)  # Should pass
+
+        df = pd.DataFrame({constants.nt_variant_col: ["a", "b", "a"]})
         with self.assertRaises(ValueError):
-            df = pd.DataFrame({constants.nt_variant_col: ["a", "b", "a"]})
-            validators.validate_hgvs_nt_uniqueness(df)
+            validators.validate_hgvs_uniqueness(df, constants.nt_variant_col)
 
-    def test_validate_hgvs_nt_not_redef_ignores_none(self):
-        df = pd.DataFrame({constants.nt_variant_col: ["a", "b", None]})
-        validators.validate_hgvs_nt_uniqueness(df)  # Should pass
+        # test multi-variant formatting
+        df = pd.DataFrame({constants.nt_variant_col: list("abcdefg" * 2)})
+        with self.assertRaises(ValueError) as cm:
+            validators.validate_hgvs_uniqueness(df, constants.nt_variant_col)
+        self.assertTrue(str(cm.exception).endswith(", ..."))
 
-    def test_validate_hgvs_pro_not_redef_raise_error_if_redefined(self):
-        df = pd.DataFrame({constants.pro_variant_col: ["a", "b"]})
-        validators.validate_hgvs_pro_uniqueness(df)  # Should pass
-        with self.assertRaises(ValueError):
-            df = pd.DataFrame({constants.pro_variant_col: ["a", "b", "a"]})
-            validators.validate_hgvs_pro_uniqueness(df)
+    def test_validate_hgvs_uniqueness_bad_column(self):
+        df = pd.DataFrame({constants.nt_variant_col: ["a", "b", "a"]})
+        with self.assertRaises(KeyError):
+            validators.validate_hgvs_uniqueness(df, constants.pro_variant_col)
 
-    def test_validate_hgvs_pro_not_redef_ignores_none(self):
-        df = pd.DataFrame({constants.pro_variant_col: ["a", "b", None]})
-        validators.validate_hgvs_pro_uniqueness(df)  # Should pass
+    def test_validate_hgvs_uniqueness_ignores_none(self):
+        df = pd.DataFrame({constants.nt_variant_col: ["a", "b", None, None]})
+        validators.validate_hgvs_uniqueness(df, constants.nt_variant_col)  # Should pass
 
 
 class TestMaveDBCompliance(unittest.TestCase):
@@ -94,7 +100,7 @@ class TestMaveDBCompliance(unittest.TestCase):
         with self.assertRaises(ValueError):
             validators.validate_mavedb_compliance(df, df_type=None)
 
-    def test_simple_pass_cases(self):
+    def test_pass_coding_(self):
         df = pd.DataFrame(
             {
                 constants.nt_variant_col: ["c.100A>G", "c.101A>G"],
@@ -105,7 +111,7 @@ class TestMaveDBCompliance(unittest.TestCase):
 
         df = pd.DataFrame(
             {
-                constants.nt_variant_col: ["c.100A>G", "c.101A>G"],
+                constants.nt_variant_col: ["n.100A>G", "n.101A>G"],
                 constants.pro_variant_col: [None, None],
             }
         )
@@ -173,6 +179,11 @@ class TestValidateSameVariants(unittest.TestCase):
         with self.assertRaises(AssertionError):
             validators.validate_datasets_define_same_variants(scores, counts)
 
+        scores = pd.DataFrame({constants.nt_variant_col: ["n.1A>G"]})
+        counts = pd.DataFrame({constants.nt_variant_col: ["n.2A>G"]})
+        with self.assertRaises(AssertionError):
+            validators.validate_datasets_define_same_variants(scores, counts)
+
     def test_ve_counts_defines_different_pro_variants(self):
         scores = pd.DataFrame(
             {
@@ -189,6 +200,11 @@ class TestValidateSameVariants(unittest.TestCase):
         with self.assertRaises(AssertionError):
             validators.validate_datasets_define_same_variants(scores, counts)
 
+        scores = pd.DataFrame({constants.pro_variant_col: ["p.Leu5Glu"]})
+        counts = pd.DataFrame({constants.pro_variant_col: ["p.Leu75Glu"]})
+        with self.assertRaises(AssertionError):
+            validators.validate_datasets_define_same_variants(scores, counts)
+
     def test_passes_when_same_variants_defined(self):
         scores = pd.DataFrame(
             {
@@ -202,6 +218,14 @@ class TestValidateSameVariants(unittest.TestCase):
                 constants.pro_variant_col: ["p.Leu5Glu"],
             }
         )
+        validators.validate_datasets_define_same_variants(scores, counts)
+
+        scores = pd.DataFrame({constants.nt_variant_col: ["n.1A>G"]})
+        counts = pd.DataFrame({constants.nt_variant_col: ["n.1A>G"]})
+        validators.validate_datasets_define_same_variants(scores, counts)
+
+        scores = pd.DataFrame({constants.pro_variant_col: ["p.Leu5Glu"]})
+        counts = pd.DataFrame({constants.pro_variant_col: ["p.Leu5Glu"]})
         validators.validate_datasets_define_same_variants(scores, counts)
 
     def test_error_dfs_define_different_hgvs_columns(self):

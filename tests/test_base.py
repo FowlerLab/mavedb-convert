@@ -239,21 +239,14 @@ class TestBaseProgramValidateAgainstProteinSeq(ProgramTestCase):
         self.base.validate_against_protein_sequence("p.=")
 
     def test_passes_when_reference_aa_matches(self):
-        self.base.one_based = True
         self.base.validate_against_protein_sequence("p.Met1Lys")
 
     def test_error_when_reference_base_doesnt_match_wt(self):
         with self.assertRaises(ValueError):
-            self.base.one_based = False
-            self.base.validate_against_protein_sequence("p.Met1Lys")
-
-        with self.assertRaises(ValueError):
-            self.base.one_based = True
             self.base.validate_against_protein_sequence("p.Met2Lys")
 
-    def test_error_negative_position(self):
+    def test_error_invalid_position(self):
         with self.assertRaises(ValueError):
-            self.base.one_based = True
             self.base.validate_against_protein_sequence("p.Met0Lys")
 
     def test_validates_multi(self):
@@ -261,18 +254,15 @@ class TestBaseProgramValidateAgainstProteinSeq(ProgramTestCase):
         with self.assertRaises(ValueError):
             self.base.validate_against_protein_sequence("p.[Met1Lys;Met2=]")
 
+    def test_error_invalid_position_multi(self):
+        with self.assertRaises(ValueError):
+            self.base.validate_against_protein_sequence("p.[Met0Lys;Lys2=]")
+
     def test_index_error_index_extends_beyond_indexable_pro_seq(self):
-        # PASS
-        self.base.one_based = True
         self.base.validate_against_protein_sequence("p.Lys2Met")
 
         with self.assertRaises(IndexError):
-            self.base.one_based = True
             self.base.validate_against_protein_sequence("p.Met3Lys")
-
-        with self.assertRaises(IndexError):
-            self.base.one_based = False
-            self.base.validate_against_protein_sequence("p.Met2Lys")
 
 
 if __name__ == "__main__":

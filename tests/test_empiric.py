@@ -13,14 +13,18 @@ from tests import ProgramTestCase
 class TestEmpiricInit(ProgramTestCase):
     def setUp(self):
         super().setUp()
-        self.path = os.path.join(self.data_dir, "enrich2", "enrich2.tsv")
+        self.path = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
 
-    def test_error_offset_not_mult_of_three(self):
+    def test_offset_inframe(self):
+        empiric.Empiric(src=self.path, wt_sequence="ATC", offset=3)
+
+    def test_error_offset_not_inframe(self):
         with self.assertRaises(ValueError):
             empiric.Empiric(src=self.path, wt_sequence="ATC", offset=1)
 
-    def test_ok_is_mult_of_three(self):
-        empiric.Empiric(src=self.path, wt_sequence="ATC", offset=3)
+    def test_error_noncoding(self):
+        with self.assertRaises(ValueError):
+            empiric.Empiric(src=self.path, wt_sequence="ATC", is_coding=False)
 
 
 class TestInferProEvent(unittest.TestCase):
@@ -212,7 +216,7 @@ class TestEmpiricValidateColumns(ProgramTestCase):
         self.assertEqual(self.empiric.aa_column, "amino acid")
 
 
-class TestEmpiricParseInput(ProgramTestCase):
+class TestEmpiricParseScoresInput(ProgramTestCase):
     def setUp(self):
         super().setUp()
         self.input = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
@@ -303,6 +307,7 @@ class TestEmpiricParseInput(ProgramTestCase):
         result = self.empiric.parse_input(df)
         self.assertEqual(list(result.columns).index(constants.nt_variant_col), 0)
         self.assertEqual(list(result.columns).index(constants.pro_variant_col), 1)
+        self.assertEqual(list(result.columns).index(constants.mavedb_score_column), 2)
 
     def test_removes_null_columns(self):
         df = pd.DataFrame(
@@ -349,13 +354,43 @@ class TestEmpiricParseInput(ProgramTestCase):
         )
 
 
+class TestEmpiricParseCountsInput(ProgramTestCase):
+    def setUp(self):
+        super().setUp()
+        self.input = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
+        self.empiric = empiric.Empiric(
+            src=self.input,
+            wt_sequence="AAA",
+            one_based=False,
+            input_type="counts",
+            score_column="A",
+        )
+
+    def test_orders_columns(self):
+        df = pd.DataFrame(
+            {
+                "Position": [0],
+                "Amino Acid": ["N"],
+                "Codon": ["AAT"],
+                "A": [1.2],
+                "B": [2.4],
+            }
+        )
+        result = self.empiric.parse_input(df)
+        self.assertEqual(list(result.columns).index(constants.nt_variant_col), 0)
+        self.assertEqual(list(result.columns).index(constants.pro_variant_col), 1)
+        self.assertEqual(list(result.columns).index('A'), 2)
+        self.assertEqual(list(result.columns).index('B'), 3)
+
+
 class TestEmpiricLoadInput(ProgramTestCase):
     def setUp(self):
         super().setUp()
         self.excel_path = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
+        self.excel_header_footer_path = os.path.join(self.data_dir, "empiric", "empiric_header_footer.xlsx")
         self.csv_path = os.path.join(self.data_dir, "empiric", "tmp.csv")
         self.tsv_path = os.path.join(self.data_dir, "empiric", "tmp.tsv")
-        self.multisheet_excel_path = os.path.join(self.data_dir, "empiric", "tmp.xlsx")
+        self.excel_multisheet_path = os.path.join(self.data_dir, "empiric", "empiric_multisheet.xlsx")
 
     def test_extra_na_load_as_nan(self):
         for value in constants.extra_na:
@@ -374,20 +409,40 @@ class TestEmpiricLoadInput(ProgramTestCase):
             assert_series_equal(result["A"], expected)
 
     def test_loads_first_sheet_by_default(self):
-        data = [
-            {"Position": [0], "Amino Acid": ["K"], "score": [1.2]},
-            {"Position": [1], "Amino Acid": ["G"], "score": [1.4]},
-        ]
-        self.mock_multi_sheet_excel_file(self.multisheet_excel_path, data)
         p = empiric.Empiric(
-            src=self.multisheet_excel_path,
+            src=self.excel_multisheet_path,
             wt_sequence="TTTTCTTATTGT",
             score_column="score",
             input_type=constants.score_type,
         )
-        df = p.load_input_file()
-        expected = pd.DataFrame(data[0])
-        assert_frame_equal(df, expected)
+        result = p.load_input_file()
+        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na)
+        assert_frame_equal(result, expected)
+
+    def test_loads_correct_sheet(self):
+        p = empiric.Empiric(
+            src=self.excel_multisheet_path,
+            wt_sequence="TTTTCTTATTGT",
+            score_column="col_A",
+            input_type=constants.score_type,
+            one_based=False,
+            sheet_name="Sheet3",
+        )
+        result = p.load_input_file()
+        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na, sheet_name="Sheet3")
+        assert_frame_equal(result, expected)
+
+    def test_error_missing_sheet(self):
+        p = empiric.Empiric(
+            src=self.excel_multisheet_path,
+            wt_sequence="TTTTCTTATTGT",
+            score_column="col_A",
+            input_type=constants.score_type,
+            one_based=False,
+            sheet_name="BadSheet",
+        )
+        with self.assertRaises(ValueError):
+            p.load_input_file()
 
     def test_handles_csv(self):
         df = pd.read_excel(self.excel_path)
@@ -400,6 +455,20 @@ class TestEmpiricLoadInput(ProgramTestCase):
             one_based=False,
         )
         result = e.load_input_file()
+        assert_frame_equal(result, df)
+
+    def test_loads_with_skipped_rows(self):
+        p = empiric.Empiric(
+            src=self.excel_header_footer_path,
+            wt_sequence="TTTTCTTATTGT",
+            score_column="col_A",
+            input_type=constants.score_type,
+            one_based=False,
+            skip_header_rows=2,
+            skip_footer_rows=2,
+        )
+        result = p.load_input_file()
+        df = pd.read_excel(self.excel_path)
         assert_frame_equal(result, df)
 
     def test_handles_tsv(self):

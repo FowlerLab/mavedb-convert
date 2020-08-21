@@ -273,7 +273,7 @@ class TestHGVSProFromEventList(unittest.TestCase):
         result = utilities.hgvs_pro_from_event_list([" L4V "])
         self.assertEqual(result, "p.L4V")
 
-    def test_combines_muilt_events(self):
+    def test_combines_multi_events(self):
         result = utilities.hgvs_pro_from_event_list(["L4V", "G5*"])
         self.assertEqual(result, "p.[L4V;G5*]")
 

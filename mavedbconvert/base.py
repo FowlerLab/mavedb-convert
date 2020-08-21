@@ -166,10 +166,6 @@ class BaseProgram(metaclass=ABCMeta):
         return self.input_type == constants.score_type
 
     @property
-    def input_is_counts_based(self):
-        return self.input_type == constants.count_type
-
-    @property
     def output_directory(self):
         return os.path.normpath(os.path.expanduser(self.dst))
 
@@ -278,22 +274,13 @@ class BaseProgram(metaclass=ABCMeta):
             return
 
         variant = utilities.ProteinSubstitutionEvent(variant)
-        zero_based_pos = variant.position - int(self.one_based)
-        if zero_based_pos < 0:
-            raise IndexError(
-                (
-                    "Encountered a negative position in {} with one_based "
-                    "set as {}. Positions might not be one-based."
-                ).format(variant, self.one_based)
-            )
 
-        if zero_based_pos >= len(self.protein_sequence):
+        if variant.position > len(self.protein_sequence):
             raise IndexError(
-                "Position {} (index {}) in {} "
+                "Position {} in {} "
                 "extends beyond the maximum index {} in the translated "
                 "wild-type sequence {} with length {}.".format(
-                    zero_based_pos + int(self.one_based),
-                    zero_based_pos,
+                    variant.position,
                     variant,
                     len(self.protein_sequence) - 1,
                     self.protein_sequence,
@@ -301,13 +288,13 @@ class BaseProgram(metaclass=ABCMeta):
                 )
             )
 
-        wt_aa = AA_CODES[self.protein_sequence[zero_based_pos]]
+        wt_aa = AA_CODES[self.protein_sequence[variant.position - 1]]
         if variant.ref != wt_aa:
             raise ValueError(
                 "Reference AA '{aa}' at 1-based position {pos} in the "
                 "translated protein sequence {seq} does not match the "
                 "reference AA '{ref}' suggested in variant '{variant}'.".format(
-                    pos=zero_based_pos + 1,
+                    pos=variant.position,
                     aa=wt_aa,
                     variant=variant,
                     ref=variant.ref,
