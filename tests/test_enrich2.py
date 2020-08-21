@@ -575,7 +575,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
 
     @patch("mavedbconvert.enrich2.get_replicate_score_dataframes")
     def test_iterates_over_all_available_tables(self, patch):
-        self.enrich2.parse_input(self.enrich2.load_input_file())
+        self.enrich2.convert()
         self.assertIn(constants.synonymous_table, patch.call_args_list[0][0])
         self.assertIn(constants.variants_table, patch.call_args_list[1][0])
 
@@ -584,11 +584,11 @@ class TestEnrich2ParseInput(ProgramTestCase):
         side_effect=lambda scores_df, counts_df: (scores_df, counts_df),
     )
     def test_calls_drop_null(self, patch):
-        self.enrich2.parse_input(self.enrich2.load_input_file())
+        self.enrich2.convert()
         patch.assert_called()
 
     def test_scores_index_order_retained_in_hgvs_columns(self):
-        self.enrich2.parse_input(self.enrich2.load_input_file())
+        self.enrich2.convert()
 
         *_, expected_nt, expected_pro = self.mock_variants_frames()
         nt_pro_tuples = self.parse_rows(
@@ -605,7 +605,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
         self.assertListEqual(expected_pro, [t[1] for t in nt_pro_tuples])
 
     def test_counts_index_order_retained_in_hgvs_columns(self):
-        self.enrich2.parse_input(self.enrich2.load_input_file())
+        self.enrich2.convert()
 
         *_, expected_nt, expected_pro = self.mock_variants_frames()
         nt_pro_tuples = self.parse_rows(
@@ -622,7 +622,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
         self.assertListEqual(expected_pro, [t[1] for t in nt_pro_tuples])
 
     def test_outputs_expected_synonymous_counts_for_each_condition(self):
-        self.enrich2.parse_input(self.enrich2.load_input_file())
+        self.enrich2.convert()
         *_, _, expected_pro = self.mock_synonymous_frames()
 
         # C1
@@ -644,7 +644,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
         assert_frame_equal(result, expected)
 
     def test_outputs_expected_synonymous_scores_for_each_condition(self):
-        self.enrich2.parse_input(self.enrich2.load_input_file())
+        self.enrich2.convert()
         *_, _, expected_pro = self.mock_synonymous_frames()
         table_scores = "/main/synonymous/scores/"
         table_shared = "/main/synonymous/scores_shared/"
@@ -706,7 +706,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
         assert_frame_equal(result, expected)
 
     def test_outputs_expected_variants_counts_for_each_condition(self):
-        self.enrich2.parse_input(self.enrich2.load_input_file())
+        self.enrich2.convert()
         *_, expected_nt, expected_pro = self.mock_variants_frames()
 
         # C1
@@ -738,7 +738,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
         assert_frame_equal(result, expected)
 
     def test_outputs_expected_variants_scores_for_each_condition(self):
-        self.enrich2.parse_input(self.enrich2.load_input_file())
+        self.enrich2.convert()
         *_, expected_nt, expected_pro = self.mock_variants_frames()
         table_scores = "/main/variants/scores/"
         table_shared = "/main/variants/scores_shared/"
@@ -817,7 +817,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
         self.store["/main/variants/scores_shared/"] = shared
         self.store["/main/variants/counts/"] = counts
         self.store.close()
-        self.enrich2.parse_input(self.enrich2.load_input_file())
+        self.enrich2.convert()
 
         df_counts = pd.read_csv(self.files[4])  # c1
         df_scores = pd.read_csv(self.files[6])  # c1
@@ -840,7 +840,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
         self.store["/main/variants/scores_shared/"] = shared
         self.store["/main/variants/counts/"] = counts
         self.store.close()
-        self.enrich2.parse_input(self.enrich2.load_input_file())
+        self.enrich2.convert()
 
         df_counts = pd.read_csv(self.files[4])  # c1
         df_scores = pd.read_csv(self.files[6])  # c1
