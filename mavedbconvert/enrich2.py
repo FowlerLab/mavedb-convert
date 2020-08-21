@@ -374,9 +374,11 @@ class Enrich2(base.BaseProgram):
         elif is_pro_only:
             return None, self.parse_protein_variant(variant)
         else:
+            # it should not be possible to get here since the variant must be valid
+            # and therefore fit one of the other categories
             raise ValueError(
                 "Could not infer type of HGVS string from '{}'.".format(variant)
-            )
+            )   # pragma: no cover
 
     def parse_tsv_input(self, df):
         """
@@ -525,6 +527,7 @@ class Enrich2(base.BaseProgram):
         if not nt_protein_tups:
             raise ValueError("Could not parse any variants. Aborting.")
 
+        # TODO: refactor this bit
         df = df.loc[valid_rows, :]
         data = {
             constants.nt_variant_col: [tup[0] for tup in nt_protein_tups],
@@ -535,9 +538,9 @@ class Enrich2(base.BaseProgram):
             column_type = df.dtypes[column]
             column_values = df[column].values
 
-            if column in constants.variant_columns:
-                astype = str
-            elif np.issubdtype(column_type, np.floating):
+            #if column in constants.variant_columns:    # this never fires
+            #    astype = str
+            if np.issubdtype(column_type, np.floating):
                 astype = np.float
             elif np.issubdtype(column_type, np.signedinteger):
                 astype = np.int
@@ -561,10 +564,7 @@ class Enrich2(base.BaseProgram):
         """
         variant = utilities.format_variant(variant)
         if variant in constants.special_variants:
-            if element == constants.synonymous_table:
-                return None, variant
-            else:
-                return variant, variant
+            return variant, variant
         else:
             mixed_variants = [p.strip().split(" ") for p in variant.split(",")]
             mixed_variants = [
@@ -718,21 +718,23 @@ class Enrich2(base.BaseProgram):
             variant = utilities.format_variant(variant)
             variants = [h.strip() for h in variant.split(",")]
 
+        # strip parens from protein variants
         for i, variant in enumerate(variants):
             if constants.surrounding_brackets_re.fullmatch(variant):
                 variant = variant[1:-1]
             variants[i] = utilities.format_variant(variant)
 
-        if variants[0] in constants.special_variants:
-            return variants[0]
+        for v in variants:
+            if v in constants.special_variants:
+                if len(variants) == 1:
+                    return v
+                else:
+                    raise ValueError("special variant strings may not be combined with HGVS-like variants")
 
-        for variant in variants:
-            if variant in constants.special_variants:
-                continue
-            if not hgvsp.protein.single_variant_re.fullmatch(variant):
+            if not hgvsp.protein.single_variant_re.fullmatch(v):
                 raise ValueError(
                     "'{variant}' contains invalid protein HGVS syntax.".format(
-                        variant=variant
+                        variant=v
                     )
                 )
         variants = [v[2:] for v in variants]
@@ -749,12 +751,12 @@ class Enrich2(base.BaseProgram):
             variant = utilities.format_variant(variant)
             variants = [v.strip() for v in variant.split(",")]
 
-        if variants[0] in constants.special_variants:
-            return variants[0]
-
         for v in variants:
             if v in constants.special_variants:
-                continue
+                if len(variants) == 1:
+                    return v
+                else:
+                    raise ValueError("special variant strings may not be combined with HGVS-like variants")
             if not hgvsp.dna.single_variant_re.fullmatch(v):
                 raise ValueError(
                     "'{variant}' contains invalid DNA/RNA HGVS syntax.".format(

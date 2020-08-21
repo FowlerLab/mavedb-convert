@@ -899,20 +899,51 @@ class TestEnrich2ParseRow(ProgramTestCase):
         self.path = os.path.join(self.data_dir, "enrich2", "dummy.h5")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="ACT")
 
-    def test_valueerr_cannot_deduce_type(self):
+    def test_invalid_variant(self):
         with self.assertRaises(exceptions.InvalidVariantType):
             self.enrich2.parse_row(("c.1_2del", None))
+        with self.assertRaises(exceptions.InvalidVariantType):
+            self.enrich2.parse_row(("b.1A>G", None))
 
-    def test_delegates_to_dna(self):
+    def test_special_nt_variants_are_singletons(self):
+        with self.assertRaises(ValueError):
+            self.enrich2.parse_nucleotide_variant("_wt, n.2C>G")
+        with self.assertRaises(ValueError):
+            self.enrich2.parse_nucleotide_variant("n.2C>G, _wt")
+
+    def test_special_pro_variants_are_singletons(self):
+        with self.assertRaises(ValueError):
+            self.enrich2.parse_protein_variant("_sy, p.Thr1Gly")
+        with self.assertRaises(ValueError):
+            self.enrich2.parse_protein_variant("p.Thr1Gly, _sy")
+
+    def test_infers_dna(self):
+        # test tuples
         for prefix in hgvsp.constants.dna_prefix:
-            variant = "{0}.1A>G,{0}.2C>G".format(prefix)
+            variant = "{0}.1A>G, {0}.2C>G".format(prefix)
             expected = "{0}.[1A>G;2C>G]".format(prefix), None
             self.assertEqual(expected, self.enrich2.parse_row((variant, None)))
 
-    def test_delegates_to_protein(self):
-        variant = "{0}.Thr1=,{0}.Thr1Gly".format(hgvsp.constants.protein_prefix)
+        # test strings
+        for prefix in hgvsp.constants.dna_prefix:
+            variant = "{0}.1A>G, {0}.2C>G".format(prefix)
+            expected = "{0}.[1A>G;2C>G]".format(prefix), None
+            self.assertEqual(expected, self.enrich2.parse_row(variant))
+
+    def test_invalid_multiprefix(self):
+        with self.assertRaises(ValueError):
+            self.enrich2.parse_row("c.1A>G, n.2C>G")
+
+    def test_infers_protein(self):
+        # test tuples
+        variant = "{0}.Thr1=, {0}.Thr1Gly".format(hgvsp.constants.protein_prefix)
         expected = (None, "{0}.[Thr1=;Thr1Gly]".format(hgvsp.constants.protein_prefix))
         self.assertEqual(expected, self.enrich2.parse_row((variant, None)))
+
+        # test strings
+        variant = "{0}.Thr1=, {0}.Thr1Gly".format(hgvsp.constants.protein_prefix)
+        expected = (None, "{0}.[Thr1=;Thr1Gly]".format(hgvsp.constants.protein_prefix))
+        self.assertEqual(expected, self.enrich2.parse_row(variant))
 
     def test_nt_variant_is_none_special_variant_is_from_synonymous_table(self):
         self.assertEqual(
