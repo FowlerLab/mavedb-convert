@@ -381,16 +381,16 @@ def hgvs_pro_from_event_list(events):
         mave_hgvs = "p.{}".format(format_variant(events[0]))
     else:
         mave_hgvs = "p.[{}]".format(";".join(events))
-    if mave_hgvs not in constants.special_variants:
-        match = protein.single_variant_re.fullmatch(
-            mave_hgvs
-        ) or protein.multi_variant_re.fullmatch(mave_hgvs)
-        if not match:
-            raise exceptions.HGVSMatchError(
-                "Could not validate parsed variant '{variant}'.".format(
-                    variant=mave_hgvs
-                )
+
+    match = protein.single_variant_re.fullmatch(
+        mave_hgvs
+    ) or protein.multi_variant_re.fullmatch(mave_hgvs)
+    if not match:
+        raise exceptions.HGVSMatchError(
+            "Could not validate parsed variant '{variant}'.".format(
+                variant=mave_hgvs
             )
+        )
     return mave_hgvs
 
 
@@ -402,14 +402,15 @@ def hgvs_nt_from_event_list(events, prefix):
         mave_hgvs = "{}.[{}]".format(
             prefix, ";".join([format_variant(e) for e in events])
         )
-    if mave_hgvs not in constants.special_variants:
-        match = single_variant_re.fullmatch(mave_hgvs) or multi_variant_re.fullmatch(
-            mave_hgvs
+
+    match = single_variant_re.fullmatch(mave_hgvs) or multi_variant_re.fullmatch(
+        mave_hgvs
+    )
+    if not match:
+        raise exceptions.HGVSMatchError(
+            "Could not validate parsed variant '{hgvs}'.".format(hgvs=mave_hgvs)
         )
-        if not match:
-            raise exceptions.HGVSMatchError(
-                "Could not validate parsed variant '{hgvs}'.".format(hgvs=mave_hgvs)
-            )
+
     return mave_hgvs
 
 
