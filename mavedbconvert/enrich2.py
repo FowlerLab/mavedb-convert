@@ -3,6 +3,7 @@ import os
 from itertools import groupby
 import logging
 from operator import itemgetter
+import sys
 
 import hgvsp
 from hgvsp import constants as hgvsp_constants
@@ -412,6 +413,8 @@ class Enrich2(base.BaseProgram):
             elements.append(synonymous_table)
         if has_var:
             elements.append(variants_table)
+        else:
+            raise ValueError("unable to find variants data in HDF5")
 
         for element in elements:
             rep_condition_dfs = get_replicate_score_dataframes(store, element)
@@ -423,15 +426,13 @@ class Enrich2(base.BaseProgram):
                 mave_scores_df = self.convert_h5_df(
                     df=score_df, element=element, df_type=constants.score_type, cnd=cnd
                 )
-                mave_counts_df = None
-                if count_df is not None:
-                    assert_index_equal(score_df.index, count_df.index)
-                    mave_counts_df = self.convert_h5_df(
-                        df=count_df,
-                        element=element,
-                        df_type=constants.count_type,
-                        cnd=cnd,
-                    )
+                assert_index_equal(score_df.index, count_df.index)
+                mave_counts_df = self.convert_h5_df(
+                    df=count_df,
+                    element=element,
+                    df_type=constants.count_type,
+                    cnd=cnd,
+                )
 
                 # This step checks both df define the same variants
                 mave_scores_df, mave_counts_df = drop_null(
@@ -453,16 +454,15 @@ class Enrich2(base.BaseProgram):
                     score_filepath, sep=",", index=None, na_rep=np.NaN
                 )
 
-                if mave_counts_df is not None:
-                    count_filepath = self.convert_h5_filepath(
-                        basename=self.src_filename,
-                        element=element,
-                        df_type=constants.count_type,
-                        cnd=cnd,
-                    )
-                    mave_counts_df.to_csv(
-                        count_filepath, sep=",", index=None, na_rep=np.NaN
-                    )
+                count_filepath = self.convert_h5_filepath(
+                    basename=self.src_filename,
+                    element=element,
+                    df_type=constants.count_type,
+                    cnd=cnd,
+                )
+                mave_counts_df.to_csv(
+                    count_filepath, sep=",", index=None, na_rep=np.NaN
+                )
         store.close()
 
     def convert_h5_filepath(self, basename, element, df_type, cnd):
@@ -516,6 +516,7 @@ class Enrich2(base.BaseProgram):
                 )
                 fname = "{}_invalid_rows.csv".format(fname.split(".")[0])
             else:
+                # TODO: this filename should also be formatted in an informative way
                 fname = "{}_invalid_rows.csv".format(self.src_filename)
 
             fpath = os.path.join(self.output_directory, fname)

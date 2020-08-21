@@ -8,7 +8,7 @@ import hgvsp.constants
 
 import numpy as np
 import pandas as pd
-from pandas.testing import assert_index_equal, assert_frame_equal
+from pandas.testing import assert_index_equal, assert_frame_equal, assert_series_equal
 from fqfa.constants.translation.table import CODON_TABLE
 from fqfa.constants.iupac.protein import AA_CODES
 
@@ -505,3 +505,131 @@ class TestEnrich2ParseInput(ProgramTestCase):
         self.assertNotIn("p.Ala1=", df_counts[constants.pro_variant_col])
         self.assertNotIn("p.Ala1=", df_scores[constants.pro_variant_col])
 
+class TestEnrich2ParseInputNoVariants(ProgramTestCase):
+    def setUp(self):
+        super().setUp()
+        self.wt = "GCTGAT"
+        self.path = os.path.join(self.data_dir, "enrich2", "test_store.h5")
+        self.store = pd.HDFStore(self.path, "w")
+        self.enrich2 = enrich2.Enrich2(
+            self.path, wt_sequence=self.wt, offset=0, one_based=True
+        )
+
+        scores, shared, counts, *_ = self.mock_synonymous_frames()
+        self.store["/main/synonymous/scores/"] = scores
+        self.store["/main/synonymous/scores_shared/"] = shared
+        self.store["/main/synonymous/counts/"] = counts
+
+        self.files = [
+            os.path.normpath(
+                os.path.join(
+                    self.data_dir,
+                    "enrich2",
+                    "test_store",
+                    "mavedb_test_store_synonymous_counts_c1.csv",
+                )
+            ),
+            os.path.normpath(
+                os.path.join(
+                    self.data_dir,
+                    "enrich2",
+                    "test_store",
+                    "mavedb_test_store_synonymous_counts_c2.csv",
+                )
+            ),
+            os.path.normpath(
+                os.path.join(
+                    self.data_dir,
+                    "enrich2",
+                    "test_store",
+                    "mavedb_test_store_synonymous_scores_c1.csv",
+                )
+            ),
+            os.path.normpath(
+                os.path.join(
+                    self.data_dir,
+                    "enrich2",
+                    "test_store",
+                    "mavedb_test_store_synonymous_scores_c2.csv",
+                )
+            ),
+        ]
+
+        self.store.close()
+        self.store = pd.HDFStore(self.path, mode="r")
+
+
+    def mock_synonymous_frames(self, scores_hgvs=None, counts_hgvs=None):
+        counts_index = pd.MultiIndex.from_product(
+            [["c1", "c2"], ["rep1", "rep2"], ["t0", "t1"]],
+            names=["condition", "selection", "timepoint"],
+        )
+        scores_shared_index = pd.MultiIndex.from_product(
+            [["c1", "c2"], ["rep1", "rep2"], ["SE", "score"]],
+            names=["condition", "selection", "value"],
+        )
+        scores_index = pd.MultiIndex.from_product(
+            [["c1", "c2"], ["SE", "epsilon", "score"]], names=["condition", "value"]
+        )
+
+        if scores_hgvs is None:
+            scores_hgvs = ["p.Ala1Val, p.Ala1=", "p.Asp2Gly, p.Asp2Glu"]
+        if counts_hgvs is None:
+            counts_hgvs = ["p.Ala1Val, p.Ala1=", "p.Asp2Gly, p.Asp2Glu"]
+
+        expected = self.parse_rows(scores_hgvs)
+        expected_nt = [t[0] for t in expected]
+        expected_pro = [t[1] for t in expected]
+
+        scores = pd.DataFrame(
+            np.random.randn(len(scores_hgvs), len(scores_index)),
+            index=scores_hgvs,
+            columns=scores_index,
+        )
+        shared = pd.DataFrame(
+            np.random.randn(len(scores_hgvs), len(scores_shared_index)),
+            index=scores_hgvs,
+            columns=scores_shared_index,
+        )
+        counts = pd.DataFrame(
+            np.random.randint(
+                low=0, high=100, size=(len(scores_hgvs), len(counts_index))
+            ),
+            index=counts_hgvs,
+            columns=counts_index,
+        )
+        return scores, shared, counts, expected_nt, expected_pro
+
+    def tearDown(self):
+        self.store.close()
+        super().tearDown()
+        if os.path.isdir(self.enrich2.output_directory):
+            os.removedirs(self.enrich2.output_directory)
+
+    def parse_rows(self, variants, element=None):
+        return [self.enrich2.parse_row((v, element)) for v in list(variants)]
+
+    def test_fails_when_no_variants(self):
+        output = os.path.join(self.data_dir, "enrich2", "new")
+        p = enrich2.Enrich2(src=self.store, dst=output, wt_sequence=self.wt, offset=0)
+        with self.assertRaises(ValueError) as cm:
+            p.parse_input(p.load_input_file())
+        self.assertEqual(str(cm.exception), "unable to find variants data in HDF5")
+
+
+class TestEnrich2ParseTsvInput(ProgramTestCase):
+    def setUp(self):
+        super().setUp()
+        self.wt = "GCTGAT"
+        self.path = os.path.join(self.data_dir, "enrich2", "enrich2.tsv")
+        self.enrich2 = enrich2.Enrich2(
+            self.path, wt_sequence=self.wt, offset=0, one_based=True,
+            hgvs_column="sequence", is_coding=False
+        )
+
+    # TODO: this is a totally inadequate set of tests
+    # should be incorporated into a refactored more general set of tests
+    def test_parses_variants(self):
+        result = self.enrich2.convert()
+        expected = pd.read_csv(self.path, sep="\t")
+        self.assertListEqual(list(result["hgvs_nt"]), list(expected["sequence"]))
