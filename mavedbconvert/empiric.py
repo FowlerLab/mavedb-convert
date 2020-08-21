@@ -75,12 +75,9 @@ def infer_pro_substitution(wt_aa, mut_aa, codon_pos):
         The HGVS-formatted subsitution event.
     """
 
-    # Normalize ? to X and ??? to Xaa
-    if wt_aa in ("?", "???"):
-        wt_aa = "Xaa"
-    else:
-        wt_aa = AA_CODES[wt_aa.upper()]
+    wt_aa = AA_CODES[wt_aa.upper()]
 
+    # Normalize ? to X and ??? to Xaa
     if mut_aa in ("?", "???"):
         mut_aa = "Xaa"
     else:
