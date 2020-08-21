@@ -22,12 +22,16 @@ class TestEnrichInit(ProgramTestCase):
         super().setUp()
         self.path = os.path.join(self.data_dir, "enrich", "enrich2.tsv")
 
-    def test_error_offset_not_mult_of_three(self):
+    def test_offset_inframe(self):
+        enrich.Enrich(src=self.path, wt_sequence="ATC", offset=3)
+
+    def test_error_offset_not_inframe(self):
         with self.assertRaises(ValueError):
             enrich.Enrich(src=self.path, wt_sequence="ATC", offset=1)
 
-    def test_ok_is_mult_of_three(self):
-        enrich.Enrich(src=self.path, wt_sequence="ATC", offset=3)
+    def test_error_noncoding(self):
+        with self.assertRaises(ValueError):
+            enrich.Enrich(src=self.path, wt_sequence="ATC", is_coding=False)
 
 
 class TestEnrichParseRow(ProgramTestCase):

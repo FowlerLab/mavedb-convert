@@ -166,10 +166,6 @@ class BaseProgram(metaclass=ABCMeta):
         return self.input_type == constants.score_type
 
     @property
-    def input_is_counts_based(self):
-        return self.input_type == constants.count_type
-
-    @property
     def output_directory(self):
         return os.path.normpath(os.path.expanduser(self.dst))
 

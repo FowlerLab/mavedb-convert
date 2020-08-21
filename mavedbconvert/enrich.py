@@ -53,12 +53,6 @@ class Enrich(base.BaseProgram):
         if not is_coding:
             raise ValueError("Enrich does not support non-coding datasets.")
 
-        if not self.score_column and self.input_type == constants.score_type:
-            raise ValueError(
-                "A score column must be specified if "
-                "the input file is a scores file."
-            )
-
     def load_input_file(self):
         """
         Loads the input file specified at initialization into a dataframe.

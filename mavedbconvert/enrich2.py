@@ -73,12 +73,6 @@ def apply_offset(variant, offset, enrich2=None):
                 pro_offset = (1, -1)[offset < 0] * (abs(offset) // 3)
                 pro.position -= pro_offset
 
-            if pro.position < 1:
-                raise ValueError(
-                    "Position after offset {} "
-                    "applied to {} is negative.".format(pro_offset, nt.variant)
-                )
-
             if enrich2:
                 enrich2.validate_against_protein_sequence(pro.format)
             pro = pro.format
