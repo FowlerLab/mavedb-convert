@@ -68,7 +68,6 @@ def apply_offset(variant, offset, enrich2=None):
             pro = utilities.ProteinSubstitutionEvent(pro)
             if nt_instance is not None:
                 pro.position = nt_instance.codon_position()
-                pro_offset = None
             else:
                 pro_offset = (1, -1)[offset < 0] * (abs(offset) // 3)
                 pro.position -= pro_offset
@@ -574,8 +573,10 @@ class Enrich2(base.BaseProgram):
             ]
             # Group variants by their codon position. This will shuffle
             # variant ordering compared to the input string.
-            key = lambda x: utilities.NucleotideSubstitutionEvent(x[0]).codon_position()
-            codon_groups = groupby(sorted(mixed_variants, key=key), key=key)
+
+            def key_func(x):
+                return utilities.NucleotideSubstitutionEvent(x[0]).codon_position()
+            codon_groups = groupby(sorted(mixed_variants, key=key_func), key=key_func)
 
             # Store a nucleotide variants index in the original string
             # to preserve order in the output variant.
@@ -692,7 +693,7 @@ class Enrich2(base.BaseProgram):
             mut_codon = (
                 mut_codon[: (within_frame_pos - 1)]
                 + v.alt
-                + mut_codon[(within_frame_pos - 1) + 1 :]
+                + mut_codon[(within_frame_pos - 1) + 1:]
             )
 
         wt_aa = AA_CODES[CODON_TABLE[wt_codon.upper()]]
