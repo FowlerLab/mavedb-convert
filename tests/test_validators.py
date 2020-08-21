@@ -50,27 +50,28 @@ class TestDfValidators(unittest.TestCase):
 
 
 class TestHGVSValidators(unittest.TestCase):
-    def test_validate_hgvs_nt_not_redef_raise_error_if_redefined(self):
+    def test_validate_hgvs_uniqueness(self):
         df = pd.DataFrame({constants.nt_variant_col: ["a", "b"]})
         validators.validate_hgvs_uniqueness(df, constants.nt_variant_col)  # Should pass
+
+        df = pd.DataFrame({constants.nt_variant_col: ["a", "b", "a"]})
         with self.assertRaises(ValueError):
-            df = pd.DataFrame({constants.nt_variant_col: ["a", "b", "a"]})
             validators.validate_hgvs_uniqueness(df, constants.nt_variant_col)
 
-    def test_validate_hgvs_nt_not_redef_ignores_none(self):
-        df = pd.DataFrame({constants.nt_variant_col: ["a", "b", None, None]})
-        validators.validate_hgvs_uniqueness(df, constants.nt_variant_col)  # Should pass
+        # test multi-variant formatting
+        df = pd.DataFrame({constants.nt_variant_col: list("abcdefg" * 2)})
+        with self.assertRaises(ValueError) as cm:
+            validators.validate_hgvs_uniqueness(df, constants.nt_variant_col)
+        self.assertTrue(str(cm.exception).endswith(", ..."))
 
-    def test_validate_hgvs_pro_not_redef_raise_error_if_redefined(self):
-        df = pd.DataFrame({constants.pro_variant_col: ["a", "b"]})
-        validators.validate_hgvs_uniqueness(df, constants.pro_variant_col)  # Should pass
-        with self.assertRaises(ValueError):
-            df = pd.DataFrame({constants.pro_variant_col: ["a", "b", "a"]})
+    def test_validate_hgvs_uniqueness_bad_column(self):
+        df = pd.DataFrame({constants.nt_variant_col: ["a", "b", "a"]})
+        with self.assertRaises(KeyError):
             validators.validate_hgvs_uniqueness(df, constants.pro_variant_col)
 
-    def test_validate_hgvs_pro_not_redef_ignores_none(self):
-        df = pd.DataFrame({constants.pro_variant_col: ["a", "b", None, None]})
-        validators.validate_hgvs_uniqueness(df, constants.pro_variant_col)  # Should pass
+    def test_validate_hgvs_uniqueness_ignores_none(self):
+        df = pd.DataFrame({constants.nt_variant_col: ["a", "b", None, None]})
+        validators.validate_hgvs_uniqueness(df, constants.nt_variant_col)  # Should pass
 
 
 class TestMaveDBCompliance(unittest.TestCase):
