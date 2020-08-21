@@ -4,7 +4,7 @@ from tqdm import tqdm
 import pandas as pd
 import numpy as np
 from fqfa.constants.iupac.protein import AA_CODES
-
+from xlrd.biffh import XLRDError
 
 from . import LOGGER, constants, base, utilities, filters, validators
 
@@ -67,14 +67,18 @@ class Enrich(base.BaseProgram):
             logger.info("Skipping last {} row(s).".format(self.skip_footer_rows + 1))
 
         if self.extension in (".xlsx", ".xls"):
-            od = pd.read_excel(
-                self.src,
-                na_values=constants.extra_na,
-                sheet_name=self.sheet_name,
-                skiprows=self.skip_header_rows,
-                skipfooter=self.skip_footer_rows,
-            )
-            if not self.sheet_name:
+            try:
+                od = pd.read_excel(
+                    self.src,
+                    na_values=constants.extra_na,
+                    sheet_name=self.sheet_name,
+                    skiprows=self.skip_header_rows,
+                    skipfooter=self.skip_footer_rows,
+                )
+            except XLRDError:
+                raise ValueError(f"invalid Excel sheet name '{self.sheet_name}'")
+
+            if self.sheet_name is None:
                 self.sheet_name = list(od.keys())[0]
                 if len(od) > 1:
                     logger.warning(
@@ -84,7 +88,9 @@ class Enrich(base.BaseProgram):
                             ", ".join(list(od.keys())), self.sheet_name
                         )
                     )
-            df = od[self.sheet_name]
+                df = od[self.sheet_name]
+            else:
+                df = od
         else:
             sep = "\t"
             if self.ext.lower() == ".csv":
@@ -123,6 +129,8 @@ class Enrich(base.BaseProgram):
             raise ValueError("'{}' is a malformed SeqID.".format(seq_id))
 
         positions, aa_codes = seq_id.split("-")
+        if len(positions) == 0 or len(aa_codes) == 0:
+            raise ValueError("'{}' is a malformed SeqID.".format(seq_id))
         positions = positions.split(",")
         aa_codes = aa_codes.split(",")
         events = []
@@ -173,7 +181,10 @@ class Enrich(base.BaseProgram):
             if aa == "?":
                 mut_aa = "???"
             else:
-                mut_aa = AA_CODES[aa.upper()]
+                try:
+                    mut_aa = AA_CODES[aa.upper()]
+                except KeyError as e:
+                    raise KeyError(f"Invalid amino acid {e} in '{seq_id}'")
             if wt_aa == mut_aa:
                 events.append("{wt}{pos}=".format(wt=wt_aa, pos=aa_position))
             else:
@@ -181,10 +192,6 @@ class Enrich(base.BaseProgram):
                     "{wt}{pos}{mut}".format(wt=wt_aa, pos=aa_position, mut=mut_aa)
                 )
 
-        if len(events) == 0:
-            raise ValueError(
-                "Could not parse any variant strings from {}".format(seq_id)
-            )
         return utilities.hgvs_pro_from_event_list(events)
 
     def parse_input(self, df):
@@ -248,10 +255,9 @@ class Enrich(base.BaseProgram):
             data[column] = list(utilities.format_column(column_values, astype))
 
         # Sort column order so 'score' comes right after hgvs columns.
-        if self.input_is_scores_based:
-            mave_columns = (
-                mave_columns[:2] + [constants.mavedb_score_column] + mave_columns[2:]
-            )
+        mave_columns = (
+            mave_columns[:2] + [constants.mavedb_score_column] + mave_columns[2:]
+        )
         mavedb_df = pd.DataFrame(data=data, columns=mave_columns)
         filters.drop_na_rows(mavedb_df)
         filters.drop_na_columns(mavedb_df)

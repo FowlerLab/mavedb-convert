@@ -1,0 +1,6 @@
+# a comment
+and a badly formed line to skip
+seqID	log2_ratio	nscor_log2_ratio
+0,1,2,3-L,Y,T,I	8.9976047	nan
+4,5,6-L,L,Q	8.966824274	9.153734357
+# here's another line
