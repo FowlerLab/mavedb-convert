@@ -284,7 +284,10 @@ class Enrich2(base.BaseProgram):
     def convert(self):
         logger.info("Processing file {}".format(self.src))
         if self.input_is_h5:
-            return self.parse_input(self.load_input_file())
+            input_file = self.load_input_file()
+            result = self.parse_input(input_file)
+            input_file.close()
+            return result
         else:
             return self.parse_tsv_input(self.load_input_file())
 
