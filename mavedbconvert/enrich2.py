@@ -359,12 +359,8 @@ class Enrich2(base.BaseProgram):
         variant = apply_offset(variant, self.offset, enrich2=self)
 
         is_mixed = any([len(v.strip().split(" ")) == 2 for v in variant.split(",")])
-        is_nt_only = all(
-            [v.strip()[0] in "cngmo" for v in variant.split(",")]
-        )
-        is_pro_only = all(
-            [v.strip()[0] == "p" for v in variant.split(",")]
-        )
+        is_nt_only = all([v.strip()[0] in "cngmo" for v in variant.split(",")])
+        is_pro_only = all([v.strip()[0] == "p" for v in variant.split(",")])
 
         if is_mixed:
             return self.parse_mixed_variant(variant, element)
@@ -377,7 +373,7 @@ class Enrich2(base.BaseProgram):
             # and therefore fit one of the other categories
             raise ValueError(
                 "Could not infer type of HGVS string from '{}'.".format(variant)
-            )   # pragma: no cover
+            )  # pragma: no cover
 
     def parse_tsv_input(self, df):
         """
@@ -426,10 +422,7 @@ class Enrich2(base.BaseProgram):
                 )
                 assert_index_equal(score_df.index, count_df.index)
                 mave_counts_df = self.convert_h5_df(
-                    df=count_df,
-                    element=element,
-                    df_type=constants.count_type,
-                    cnd=cnd,
+                    df=count_df, element=element, df_type=constants.count_type, cnd=cnd
                 )
 
                 # This step checks both df define the same variants
@@ -537,7 +530,7 @@ class Enrich2(base.BaseProgram):
             column_type = df.dtypes[column]
             column_values = df[column].values
 
-            #if column in constants.variant_columns:    # this never fires
+            # if column in constants.variant_columns:    # this never fires
             #    astype = str
             if np.issubdtype(column_type, np.floating):
                 astype = np.float
@@ -575,6 +568,7 @@ class Enrich2(base.BaseProgram):
 
             def key_func(x):
                 return utilities.NucleotideSubstitutionEvent(x[0]).codon_position()
+
             codon_groups = groupby(sorted(mixed_variants, key=key_func), key=key_func)
 
             # Store a nucleotide variants index in the original string
@@ -692,7 +686,7 @@ class Enrich2(base.BaseProgram):
             mut_codon = (
                 mut_codon[: (within_frame_pos - 1)]
                 + v.alt
-                + mut_codon[(within_frame_pos - 1) + 1:]
+                + mut_codon[(within_frame_pos - 1) + 1 :]
             )
 
         wt_aa = AA_CODES[CODON_TABLE[wt_codon.upper()]]
@@ -728,7 +722,9 @@ class Enrich2(base.BaseProgram):
                 if len(variants) == 1:
                     return v
                 else:
-                    raise ValueError("special variant strings may not be combined with HGVS-like variants")
+                    raise ValueError(
+                        "special variant strings may not be combined with HGVS-like variants"
+                    )
 
             if not hgvsp.protein.single_variant_re.fullmatch(v):
                 raise ValueError(
@@ -755,7 +751,9 @@ class Enrich2(base.BaseProgram):
                 if len(variants) == 1:
                     return v
                 else:
-                    raise ValueError("special variant strings may not be combined with HGVS-like variants")
+                    raise ValueError(
+                        "special variant strings may not be combined with HGVS-like variants"
+                    )
             if not hgvsp.dna.single_variant_re.fullmatch(v):
                 raise ValueError(
                     "'{variant}' contains invalid DNA/RNA HGVS syntax.".format(

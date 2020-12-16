@@ -379,18 +379,22 @@ class TestEmpiricParseCountsInput(ProgramTestCase):
         result = self.empiric.parse_input(df)
         self.assertEqual(list(result.columns).index(constants.nt_variant_col), 0)
         self.assertEqual(list(result.columns).index(constants.pro_variant_col), 1)
-        self.assertEqual(list(result.columns).index('A'), 2)
-        self.assertEqual(list(result.columns).index('B'), 3)
+        self.assertEqual(list(result.columns).index("A"), 2)
+        self.assertEqual(list(result.columns).index("B"), 3)
 
 
 class TestEmpiricLoadInput(ProgramTestCase):
     def setUp(self):
         super().setUp()
         self.excel_path = os.path.join(self.data_dir, "empiric", "empiric.xlsx")
-        self.excel_header_footer_path = os.path.join(self.data_dir, "empiric", "empiric_header_footer.xlsx")
+        self.excel_header_footer_path = os.path.join(
+            self.data_dir, "empiric", "empiric_header_footer.xlsx"
+        )
         self.csv_path = os.path.join(self.data_dir, "empiric", "tmp.csv")
         self.tsv_path = os.path.join(self.data_dir, "empiric", "tmp.tsv")
-        self.excel_multisheet_path = os.path.join(self.data_dir, "empiric", "empiric_multisheet.xlsx")
+        self.excel_multisheet_path = os.path.join(
+            self.data_dir, "empiric", "empiric_multisheet.xlsx"
+        )
 
     def test_extra_na_load_as_nan(self):
         for value in constants.extra_na:
@@ -416,7 +420,9 @@ class TestEmpiricLoadInput(ProgramTestCase):
             input_type=constants.score_type,
         )
         result = p.load_input_file()
-        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na, engine="openpyxl")
+        expected = pd.read_excel(
+            self.excel_multisheet_path, na_values=constants.extra_na, engine="openpyxl"
+        )
         assert_frame_equal(result, expected)
 
     def test_loads_correct_sheet(self):
@@ -429,7 +435,12 @@ class TestEmpiricLoadInput(ProgramTestCase):
             sheet_name="Sheet3",
         )
         result = p.load_input_file()
-        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na, sheet_name="Sheet3", engine="openpyxl")
+        expected = pd.read_excel(
+            self.excel_multisheet_path,
+            na_values=constants.extra_na,
+            sheet_name="Sheet3",
+            engine="openpyxl",
+        )
         assert_frame_equal(result, expected)
 
     def test_error_missing_sheet(self):

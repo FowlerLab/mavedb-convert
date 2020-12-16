@@ -17,7 +17,7 @@ __all__ = [
 
 HOMEDIR = os.path.normpath(os.path.expanduser("~/.mavedb_convert/"))
 if not os.path.isdir(HOMEDIR):
-    os.mkdir(HOMEDIR)   # pragma: no cover
+    os.mkdir(HOMEDIR)  # pragma: no cover
 
 LOGGER = "mavedbconvert"
 

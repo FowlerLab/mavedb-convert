@@ -499,6 +499,7 @@ class TestEnrich2ParseInput(ProgramTestCase):
         self.assertNotIn("p.Ala1=", df_counts[constants.pro_variant_col])
         self.assertNotIn("p.Ala1=", df_scores[constants.pro_variant_col])
 
+
 class TestEnrich2ParseInputNoVariants(ProgramTestCase):
     def setUp(self):
         super().setUp()
@@ -551,7 +552,6 @@ class TestEnrich2ParseInputNoVariants(ProgramTestCase):
 
         self.store.close()
         self.store = pd.HDFStore(self.path, mode="r")
-
 
     def mock_synonymous_frames(self, scores_hgvs=None, counts_hgvs=None):
         counts_index = pd.MultiIndex.from_product(
@@ -617,8 +617,12 @@ class TestEnrich2ParseTsvInput(ProgramTestCase):
         self.wt = "GCTGAT"
         self.path = os.path.join(self.data_dir, "enrich2", "enrich2.tsv")
         self.enrich2 = enrich2.Enrich2(
-            self.path, wt_sequence=self.wt, offset=0, one_based=True,
-            hgvs_column="sequence", is_coding=False
+            self.path,
+            wt_sequence=self.wt,
+            offset=0,
+            one_based=True,
+            hgvs_column="sequence",
+            is_coding=False,
         )
 
     # TODO: this is a totally inadequate set of tests

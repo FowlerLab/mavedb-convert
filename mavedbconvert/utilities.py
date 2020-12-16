@@ -387,9 +387,7 @@ def hgvs_pro_from_event_list(events):
     ) or protein.multi_variant_re.fullmatch(mave_hgvs)
     if not match:
         raise exceptions.HGVSMatchError(
-            "Could not validate parsed variant '{variant}'.".format(
-                variant=mave_hgvs
-            )
+            "Could not validate parsed variant '{variant}'.".format(variant=mave_hgvs)
         )
     return mave_hgvs
 

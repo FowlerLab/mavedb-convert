@@ -30,10 +30,12 @@ class TestValidateHGVS(unittest.TestCase):
 
     def test_can_specify_backend(self):
         backend = validators.HGVSPatternsBackend()
-        result = validators.validate_variants(["c.[1A>G;2A>G]"], n_jobs=2, verbose=0, validation_backend=backend)
+        result = validators.validate_variants(
+            ["c.[1A>G;2A>G]"], n_jobs=2, verbose=0, validation_backend=backend
+        )
         self.assertIsInstance(result[0], str)
 
-        
+
 class TestDfValidators(unittest.TestCase):
     def test_validate_column_raise_keyerror_column_not_exist(self):
         df = pd.DataFrame({"a": [1]})

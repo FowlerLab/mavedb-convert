@@ -146,10 +146,12 @@ def validate_hgvs_uniqueness(df: pd.DataFrame, cname: str) -> None:
         dup_counts = values.value_counts()
         dups = dup_counts[dup_counts > 1].index
         if len(dups) > 0:
-            dup_error_string = ", ".join(dups[:constants.MAX_ERROR_VARIANTS])
+            dup_error_string = ", ".join(dups[: constants.MAX_ERROR_VARIANTS])
             if len(dups) > constants.MAX_ERROR_VARIANTS:
                 dup_error_string += ", ..."
-            raise ValueError(f"found {len(dups)} duplicate HGVS strings in '{cname}': {dup_error_string}")
+            raise ValueError(
+                f"found {len(dups)} duplicate HGVS strings in '{cname}': {dup_error_string}"
+            )
 
 
 def validate_datasets_define_same_variants(scores_df, counts_df):

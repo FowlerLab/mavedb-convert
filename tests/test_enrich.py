@@ -200,7 +200,9 @@ class TestEnrichLoadInput(ProgramTestCase):
     def setUp(self):
         super().setUp()
         self.path = os.path.join(self.data_dir, "enrich", "enrich.tsv")
-        self.path_header_footer = os.path.join(self.data_dir, "enrich", "enrich_header_footer.tsv")
+        self.path_header_footer = os.path.join(
+            self.data_dir, "enrich", "enrich_header_footer.tsv"
+        )
         self.path_1based = os.path.join(self.data_dir, "enrich", "enrich_1based.tsv")
         self.path_csv = os.path.join(self.data_dir, "enrich", "enrich1.csv")
         self.expected = os.path.join(self.data_dir, "enrich", "enrich_expected.csv")
@@ -208,7 +210,9 @@ class TestEnrichLoadInput(ProgramTestCase):
             self.data_dir, "enrich", "enrich_expected_offset.csv"
         )
         self.excel_path = os.path.join(self.data_dir, "enrich", "enrich.xlsx")
-        self.excel_multisheet_path = os.path.join(self.data_dir, "enrich", "enrich_multisheet.xlsx")
+        self.excel_multisheet_path = os.path.join(
+            self.data_dir, "enrich", "enrich_multisheet.xlsx"
+        )
         self.no_seq_id = os.path.join(self.data_dir, "enrich", "enrich_no_seqid.tsv")
         self.tmp_path = os.path.join(self.data_dir, "enrich", "tmp.xlsx")
 
@@ -230,7 +234,9 @@ class TestEnrichLoadInput(ProgramTestCase):
             input_type=constants.score_type,
         )
         result = p.load_input_file()
-        expected = pd.read_excel(self.excel_path, na_values=constants.extra_na, engine="openpyxl")
+        expected = pd.read_excel(
+            self.excel_path, na_values=constants.extra_na, engine="openpyxl"
+        )
         assert_frame_equal(result, expected)
 
     def test_loads_first_sheet_by_default(self):
@@ -241,7 +247,9 @@ class TestEnrichLoadInput(ProgramTestCase):
             input_type=constants.score_type,
         )
         result = p.load_input_file()
-        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na, engine="openpyxl")
+        expected = pd.read_excel(
+            self.excel_multisheet_path, na_values=constants.extra_na, engine="openpyxl"
+        )
         assert_frame_equal(result, expected)
 
     def test_loads_correct_sheet(self):
@@ -253,7 +261,12 @@ class TestEnrichLoadInput(ProgramTestCase):
             sheet_name="Sheet3",
         )
         result = p.load_input_file()
-        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na, sheet_name="Sheet3", engine="openpyxl")
+        expected = pd.read_excel(
+            self.excel_multisheet_path,
+            na_values=constants.extra_na,
+            sheet_name="Sheet3",
+            engine="openpyxl",
+        )
         assert_frame_equal(result, expected)
 
     def test_error_missing_sheet(self):

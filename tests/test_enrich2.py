@@ -351,11 +351,15 @@ class TestEnrich2ConvertH5Df(ProgramTestCase):
         df = pd.DataFrame(data={"score": [1], "B": ["a"]}, index=["c.1T>G (p.Lys1Val)"])
         with self.assertRaises(ValueError):
             self.enrich2.convert_h5_df(
-                df=df, element=constants.variants_table, df_type=constants.score_type, cnd="c1"
+                df=df,
+                element=constants.variants_table,
+                df_type=constants.score_type,
+                cnd="c1",
             )
 
         invalid_rows_path = os.path.join(
-            os.path.dirname(self.path), "mavedb_enrich2_variants_counts_c1_invalid_rows.csv"
+            os.path.dirname(self.path),
+            "mavedb_enrich2_variants_counts_c1_invalid_rows.csv",
         )
 
         self.assertTrue(os.path.isfile(invalid_rows_path))
