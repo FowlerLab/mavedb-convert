@@ -1,7 +1,26 @@
 import setuptools
+import sys
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
+
+requirements = [
+    "tables",
+    "pandas",
+    "openpyxl",
+    "tqdm",
+    "docopt",
+    "hgvsp @ git+https://github.com/VariantEffect/hgvs-patterns",
+    "requests",
+    "numpy",
+    "scipy",
+    "joblib",
+    "xlsxwriter",
+    "fqfa>=1.1.0",
+]
+# fqfa requires backported dataclasses in Python 3.6
+if sys.version_info.major == 3 and sys.version_info.minor == 6:
+    requirements.append("dataclasses")
 
 setuptools.setup(
     name="mavedbconvert",
@@ -24,20 +43,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
-    install_requires=[
-        "tables",
-        "pandas",
-        "openpyxl",
-        "tqdm",
-        "docopt",
-        "hgvsp @ git+https://github.com/VariantEffect/hgvs-patterns",
-        "requests",
-        "numpy",
-        "scipy",
-        "joblib",
-        "xlsxwriter",
-        "fqfa>=1.1.0",
-    ],
+    install_requires=requirements,
     entry_points={"console_scripts": ["mavedbconvert=mavedbconvert.main:main"]},
     test_suite="tests",
 )
