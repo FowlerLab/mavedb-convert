@@ -1,17 +1,12 @@
 import os
-import unittest
 from unittest.mock import patch
 from itertools import product
 
-import hgvsp
-
 import numpy as np
 import pandas as pd
-from pandas.testing import assert_index_equal, assert_frame_equal, assert_series_equal
-from fqfa.constants.translation.table import CODON_TABLE
-from fqfa.constants.iupac.protein import AA_CODES
+from pandas.testing import assert_frame_equal
 
-from mavedbconvert import validators, enrich2, constants, exceptions
+from mavedbconvert import validators, enrich2, constants
 
 from tests import ProgramTestCase
 

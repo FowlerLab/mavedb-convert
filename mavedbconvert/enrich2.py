@@ -3,7 +3,6 @@ import os
 from itertools import groupby
 import logging
 from operator import itemgetter
-import sys
 
 import hgvsp
 from tqdm import tqdm

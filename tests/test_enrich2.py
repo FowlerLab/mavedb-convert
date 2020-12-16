@@ -1,7 +1,6 @@
 import os
 import unittest
 from unittest.mock import patch
-from itertools import product
 
 import hgvsp
 
@@ -11,7 +10,7 @@ from pandas.testing import assert_index_equal
 from fqfa.constants.translation.table import CODON_TABLE
 from fqfa.constants.iupac.protein import AA_CODES
 
-from mavedbconvert import validators, enrich2, constants, exceptions
+from mavedbconvert import enrich2, constants, exceptions
 
 from tests import ProgramTestCase
 
