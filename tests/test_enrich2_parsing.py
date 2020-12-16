@@ -101,6 +101,9 @@ class TestEnrich2ParseInput(ProgramTestCase):
         self.store.close()
         self.store = pd.HDFStore(self.path, mode="r")
 
+    def tearDown(self):
+        self.store.close()
+
     def mock_variants_frames(self, scores_hgvs=None, counts_hgvs=None):
         counts_index = pd.MultiIndex.from_product(
             [["c1", "c2"], ["rep1", "rep2"], ["t0", "t1"]],
