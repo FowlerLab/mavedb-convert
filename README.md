@@ -5,6 +5,13 @@
 # mavedbconvert
 A command line tool for converting Multiplex Assay of Variant Effect datasets into a MaveDB-ready format.
 
+## Important note
+This tool may generate input files that are invalid under the forthcoming MAVE-HGVS format,
+and therefore will not be suitable for upload to MaveDB.
+
+In particular, variants should be in sorted order and variant strings containing ambiguous symbols such as 
+"?" "N" or "Xaa" will not be accepted.
+
 # Installation
 Download the mavedbconvert source and navigate to that directory.
 We recommend creating a [virtual environment](https://docs.python.org/3/library/venv.html) before proceeding with the installation.
