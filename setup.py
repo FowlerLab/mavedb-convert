@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mavedbconvert",
-    version="0.1.0-beta",
+    version="0.1.1-beta",
     author="Alan F Rubin, Daniel Esposito",
     author_email="alan.rubin@wehi.edu.au",
     description=(
