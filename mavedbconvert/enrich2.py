@@ -6,7 +6,6 @@ from operator import itemgetter
 import sys
 
 import hgvsp
-from hgvsp import constants as hgvsp_constants
 from tqdm import tqdm
 from fqfa.constants.translation.table import CODON_TABLE
 from fqfa.constants.iupac.protein import AA_CODES
@@ -362,10 +361,10 @@ class Enrich2(base.BaseProgram):
 
         is_mixed = any([len(v.strip().split(" ")) == 2 for v in variant.split(",")])
         is_nt_only = all(
-            [v.strip()[0] in hgvsp_constants.dna_prefix for v in variant.split(",")]
+            [v.strip()[0] in "cngmo" for v in variant.split(",")]
         )
         is_pro_only = all(
-            [v.strip()[0] in hgvsp_constants.protein_prefix for v in variant.split(",")]
+            [v.strip()[0] == "p" for v in variant.split(",")]
         )
 
         if is_mixed:

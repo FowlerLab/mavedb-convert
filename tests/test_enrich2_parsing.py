@@ -4,7 +4,6 @@ from unittest.mock import patch
 from itertools import product
 
 import hgvsp
-import hgvsp.constants
 
 import numpy as np
 import pandas as pd

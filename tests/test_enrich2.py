@@ -4,11 +4,10 @@ from unittest.mock import patch
 from itertools import product
 
 import hgvsp
-import hgvsp.constants
 
 import numpy as np
 import pandas as pd
-from pandas.testing import assert_index_equal, assert_frame_equal
+from pandas.testing import assert_index_equal
 from fqfa.constants.translation.table import CODON_TABLE
 from fqfa.constants.iupac.protein import AA_CODES
 
@@ -445,13 +444,13 @@ class TestEnrich2ParseRow(ProgramTestCase):
 
     def test_infers_dna(self):
         # test tuples
-        for prefix in hgvsp.constants.dna_prefix:
+        for prefix in "cngmo":
             variant = "{0}.1A>G, {0}.2C>G".format(prefix)
             expected = "{0}.[1A>G;2C>G]".format(prefix), None
             self.assertEqual(expected, self.enrich2.parse_row((variant, None)))
 
         # test strings
-        for prefix in hgvsp.constants.dna_prefix:
+        for prefix in "cngmo":
             variant = "{0}.1A>G, {0}.2C>G".format(prefix)
             expected = "{0}.[1A>G;2C>G]".format(prefix), None
             self.assertEqual(expected, self.enrich2.parse_row(variant))
@@ -462,13 +461,13 @@ class TestEnrich2ParseRow(ProgramTestCase):
 
     def test_infers_protein(self):
         # test tuples
-        variant = "{0}.Thr1=, {0}.Thr1Gly".format(hgvsp.constants.protein_prefix)
-        expected = (None, "{0}.[Thr1=;Thr1Gly]".format(hgvsp.constants.protein_prefix))
+        variant = "p.Thr1=, p.Thr1Gly"
+        expected = (None, "p.[Thr1=;Thr1Gly]")
         self.assertEqual(expected, self.enrich2.parse_row((variant, None)))
 
         # test strings
-        variant = "{0}.Thr1=, {0}.Thr1Gly".format(hgvsp.constants.protein_prefix)
-        expected = (None, "{0}.[Thr1=;Thr1Gly]".format(hgvsp.constants.protein_prefix))
+        variant = "p.Thr1=, p.Thr1Gly"
+        expected = (None, "p.[Thr1=;Thr1Gly]")
         self.assertEqual(expected, self.enrich2.parse_row(variant))
 
     def test_nt_variant_is_none_special_variant_is_from_synonymous_table(self):
