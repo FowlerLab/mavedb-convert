@@ -27,7 +27,7 @@ setuptools.setup(
     install_requires=[
         "tables",
         "pandas",
-        "xlrd",
+        "openpyxl",
         "tqdm",
         "docopt",
         "hgvsp @ git+https://github.com/VariantEffect/hgvs-patterns",

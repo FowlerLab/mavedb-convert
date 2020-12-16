@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from fqfa.constants.translation.table import CODON_TABLE
 from fqfa.constants.iupac.protein import AA_CODES
-from xlrd.biffh import XLRDError
 
 from . import base, utilities, constants, filters, validators, LOGGER
 
@@ -170,9 +169,10 @@ class Empiric(base.BaseProgram):
                     sheet_name=self.sheet_name,
                     skiprows=self.skip_header_rows,
                     skipfooter=self.skip_footer_rows,
+                    engine="openpyxl",
                 )
-            except XLRDError:
-                raise ValueError(f"invalid Excel sheet name '{self.sheet_name}'")
+            except KeyError:
+                raise KeyError(f"invalid Excel sheet name '{self.sheet_name}'")
 
             if self.sheet_name is None:
                 self.sheet_name = list(od.keys())[0]

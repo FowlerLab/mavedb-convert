@@ -230,7 +230,7 @@ class TestEnrichLoadInput(ProgramTestCase):
             input_type=constants.score_type,
         )
         result = p.load_input_file()
-        expected = pd.read_excel(self.excel_path, na_values=constants.extra_na)
+        expected = pd.read_excel(self.excel_path, na_values=constants.extra_na, engine="openpyxl")
         assert_frame_equal(result, expected)
 
     def test_loads_first_sheet_by_default(self):
@@ -241,7 +241,7 @@ class TestEnrichLoadInput(ProgramTestCase):
             input_type=constants.score_type,
         )
         result = p.load_input_file()
-        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na)
+        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na, engine="openpyxl")
         assert_frame_equal(result, expected)
 
     def test_loads_correct_sheet(self):
@@ -253,7 +253,7 @@ class TestEnrichLoadInput(ProgramTestCase):
             sheet_name="Sheet3",
         )
         result = p.load_input_file()
-        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na, sheet_name="Sheet3")
+        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na, sheet_name="Sheet3", engine="openpyxl")
         assert_frame_equal(result, expected)
 
     def test_error_missing_sheet(self):
@@ -264,7 +264,7 @@ class TestEnrichLoadInput(ProgramTestCase):
             input_type=constants.score_type,
             sheet_name="BadSheet",
         )
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             p.load_input_file()
 
     def test_loads_table(self):

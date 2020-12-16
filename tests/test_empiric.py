@@ -394,7 +394,7 @@ class TestEmpiricLoadInput(ProgramTestCase):
 
     def test_extra_na_load_as_nan(self):
         for value in constants.extra_na:
-            df = pd.read_excel(self.excel_path)
+            df = pd.read_excel(self.excel_path, engine="openpyxl")
             df["A"] = [value] * len(df)
             df.to_csv(self.csv_path, index=False)
             e = empiric.Empiric(
@@ -416,7 +416,7 @@ class TestEmpiricLoadInput(ProgramTestCase):
             input_type=constants.score_type,
         )
         result = p.load_input_file()
-        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na)
+        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na, engine="openpyxl")
         assert_frame_equal(result, expected)
 
     def test_loads_correct_sheet(self):
@@ -429,7 +429,7 @@ class TestEmpiricLoadInput(ProgramTestCase):
             sheet_name="Sheet3",
         )
         result = p.load_input_file()
-        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na, sheet_name="Sheet3")
+        expected = pd.read_excel(self.excel_multisheet_path, na_values=constants.extra_na, sheet_name="Sheet3", engine="openpyxl")
         assert_frame_equal(result, expected)
 
     def test_error_missing_sheet(self):
@@ -441,11 +441,11 @@ class TestEmpiricLoadInput(ProgramTestCase):
             one_based=False,
             sheet_name="BadSheet",
         )
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             p.load_input_file()
 
     def test_handles_csv(self):
-        df = pd.read_excel(self.excel_path)
+        df = pd.read_excel(self.excel_path, engine="openpyxl")
         df.to_csv(self.csv_path, index=False, sep=",")
         e = empiric.Empiric(
             src=self.csv_path,
@@ -468,11 +468,11 @@ class TestEmpiricLoadInput(ProgramTestCase):
             skip_footer_rows=2,
         )
         result = p.load_input_file()
-        df = pd.read_excel(self.excel_path)
+        df = pd.read_excel(self.excel_path, engine="openpyxl")
         assert_frame_equal(result, df)
 
     def test_handles_tsv(self):
-        df = pd.read_excel(self.excel_path)
+        df = pd.read_excel(self.excel_path, engine="openpyxl")
         df.to_csv(self.tsv_path, index=False, sep="\t")
         e = empiric.Empiric(
             src=self.tsv_path,
@@ -485,7 +485,7 @@ class TestEmpiricLoadInput(ProgramTestCase):
         assert_frame_equal(result, df)
 
     def test_error_position_not_in_columns(self):
-        df = pd.read_excel(self.excel_path)
+        df = pd.read_excel(self.excel_path, engine="openpyxl")
         df = df.drop(columns=["Position"])
         df.to_csv(self.csv_path, index=False, sep="\t")
         with self.assertRaises(ValueError):
@@ -499,7 +499,7 @@ class TestEmpiricLoadInput(ProgramTestCase):
             e.load_input_file()
 
     def test_error_amino_acid_not_in_columns(self):
-        df = pd.read_excel(self.excel_path)
+        df = pd.read_excel(self.excel_path, engine="openpyxl")
         df = df.drop(columns=["Amino Acid"])
         df.to_csv(self.csv_path, index=False, sep="\t")
         with self.assertRaises(ValueError):
