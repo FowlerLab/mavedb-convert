@@ -179,7 +179,7 @@ class Enrich(base.BaseProgram):
 
             wt_aa = AA_CODES[self.protein_sequence[aa_position - 1].upper()]
             if aa == "?":
-                mut_aa = "???"
+                mut_aa = "Xaa"
             else:
                 try:
                     mut_aa = AA_CODES[aa.upper()]

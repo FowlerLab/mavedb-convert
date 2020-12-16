@@ -447,13 +447,13 @@ class TestEnrich2ParseRow(ProgramTestCase):
 
     def test_infers_dna(self):
         # test tuples
-        for prefix in "cngmo":
+        for prefix in "cngm":
             variant = "{0}.1A>G, {0}.2C>G".format(prefix)
             expected = "{0}.[1A>G;2C>G]".format(prefix), None
             self.assertEqual(expected, self.enrich2.parse_row((variant, None)))
 
         # test strings
-        for prefix in "cngmo":
+        for prefix in "cngm":
             variant = "{0}.1A>G, {0}.2C>G".format(prefix)
             expected = "{0}.[1A>G;2C>G]".format(prefix), None
             self.assertEqual(expected, self.enrich2.parse_row(variant))
@@ -499,12 +499,6 @@ class TestEnrich2ParseRow(ProgramTestCase):
     def test_strips_whitespace(self):
         self.assertEqual(self.enrich2.parse_row((" c.1A>G ", None)), ("c.1A>G", None))
 
-    def test_uses_three_qmarks(self):
-        variant = "c.3T>C (p.Thr1?)"
-        self.assertEqual(
-            ("c.3T>C", "p.Thr1???"), self.enrich2.parse_row((variant, None))
-        )
-
     # TODO: Uncomment if normalizing variants.
     # def test_converts_X_to_N(self):
     #     self.assertEqual(
@@ -529,17 +523,17 @@ class TestProteinHGVSParsing(ProgramTestCase):
         self.path = os.path.join(self.data_dir, "enrich2", "dummy.h5")
         self.enrich2 = enrich2.Enrich2(self.path, wt_sequence="AAA")
 
-    def test_combines_into_multi_variant_syntax(self):
-        result = self.enrich2.parse_protein_variant("p.L5G, p.L6G")
-        self.assertEqual(result, "p.[L5G;L6G]")
+    def test_combines_string_into_multi_variant_syntax(self):
+        result = self.enrich2.parse_protein_variant("p.Leu5Gly,p.Leu6Gly")
+        self.assertEqual(result, "p.[Leu5Gly;Leu6Gly]")
 
     def test_combines_list_into_multi_variant_syntax(self):
-        result = self.enrich2.parse_protein_variant(["p.L5G", "p.L6G"])
-        self.assertEqual(result, "p.[L5G;L6G]")
+        result = self.enrich2.parse_protein_variant(["p.Leu5Gly", "p.Leu6Gly"])
+        self.assertEqual(result, "p.[Leu5Gly;Leu6Gly]")
 
     def test_does_not_squash_single_variant(self):
-        result = self.enrich2.parse_protein_variant("p.L5G")
-        self.assertEqual(result, "p.L5G")
+        result = self.enrich2.parse_protein_variant("p.Leu5Gly")
+        self.assertEqual(result, "p.Leu5Gly")
 
     def test_passes_on_sy_or_wt(self):
         self.assertEqual(self.enrich2.parse_protein_variant("_wt"), "_wt")
@@ -556,28 +550,28 @@ class TestProteinHGVSParsing(ProgramTestCase):
             self.enrich2.parse_protein_variant("(random)")
 
     def test_removes_brackets(self):
-        result = self.enrich2.parse_protein_variant("(p.L4G),(p.L5G)")
-        self.assertEqual(result, "p.[L4G;L5G]")
+        result = self.enrich2.parse_protein_variant("(p.Leu4Gly),(p.Leu5Gly)")
+        self.assertEqual(result, "p.[Leu4Gly;Leu5Gly]")
 
-        result = self.enrich2.parse_protein_variant("(p.L4G)")
-        self.assertEqual(result, "p.L4G")
+        result = self.enrich2.parse_protein_variant("(p.Leu4Gly)")
+        self.assertEqual(result, "p.Leu4Gly")
 
-        result = self.enrich2.parse_protein_variant(["(p.L4G)"])
-        self.assertEqual(result, "p.L4G")
+        result = self.enrich2.parse_protein_variant(["(p.Leu4Gly)"])
+        self.assertEqual(result, "p.Leu4Gly")
 
     def test_strips_ws(self):
         result = self.enrich2.parse_protein_variant(" p.Gly5Leu ")
         self.assertEqual(result, "p.Gly5Leu")
-        result = self.enrich2.parse_protein_variant(" p.L4G, p.L5G ")
-        self.assertEqual(result, "p.[L4G;L5G]")
+        result = self.enrich2.parse_protein_variant(" p.Leu4Gly, p.Leu5Gly ")
+        self.assertEqual(result, "p.[Leu4Gly;Leu5Gly]")
 
     def test_removes_duplicates(self):
-        result = self.enrich2.parse_protein_variant("p.L5G, p.L5G")
-        self.assertEqual(result, "p.L5G")
+        result = self.enrich2.parse_protein_variant("p.Leu5Gly,p.Leu5Gly")
+        self.assertEqual(result, "p.Leu5Gly")
 
     def test_maintains_ordering(self):
-        result = self.enrich2.parse_protein_variant("p.L5G, p.L4G")
-        self.assertEqual(result, "p.[L5G;L4G]")
+        result = self.enrich2.parse_protein_variant("p.Leu5Gly,p.Leu4Gly")
+        self.assertEqual(result, "p.[Leu5Gly;Leu4Gly]")
 
 
 # Nucleotide parsing tests
@@ -614,7 +608,7 @@ class TestNucleotideHGVSParing(ProgramTestCase):
         with self.assertRaises(ValueError):
             self.enrich2.parse_nucleotide_variant("p.101A>G")
         with self.assertRaises(ValueError):
-            self.enrich2.parse_nucleotide_variant("p.L5G")
+            self.enrich2.parse_nucleotide_variant("p.Leu5Gly")
         with self.assertRaises(ValueError):
             self.enrich2.parse_nucleotide_variant("random")
         with self.assertRaises(ValueError):

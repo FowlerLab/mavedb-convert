@@ -129,8 +129,8 @@ class TestEnrichParseRow(ProgramTestCase):
     def test_removes_duplicates(self):
         self.assertEqual(self.enrich.parse_row("0,0-L,L"), "p.Asp1Leu")
 
-    def test_uses_three_qmarks(self):
-        self.assertEqual(self.enrich.parse_row("0,1-?,?"), "p.[Asp1???;Val2???]")
+    def test_uses_xaa(self):
+        self.assertEqual(self.enrich.parse_row("0,1-?,?"), "p.[Asp1Xaa;Val2Xaa]")
 
     def test_applies_offset_divided_by_3(self):
         self.enrich.offset = -3

@@ -185,11 +185,9 @@ class TestProteinSubstitutionEvent(unittest.TestCase):
         self.assertEqual(utilities.ProteinSubstitutionEvent("p.Gly2Leu").position, 2)
 
     def test_parses_ref_three_letter_aa(self):
-        self.assertEqual(utilities.ProteinSubstitutionEvent("p.G2L").ref, "Gly")
         self.assertEqual(utilities.ProteinSubstitutionEvent("p.Gly2Leu").ref, "Gly")
 
     def test_parses_alt_three_letter_aa(self):
-        self.assertEqual(utilities.ProteinSubstitutionEvent("p.G2L").alt, "Leu")
         self.assertEqual(utilities.ProteinSubstitutionEvent("p.Gly2Leu").alt, "Leu")
 
     def test_sets_alt_as_ref_in_silent_variant(self):
@@ -229,25 +227,8 @@ class TestNormalizeVariant(unittest.TestCase):
         self.assertEqual(utilities.normalize_variant("_wt"), "_wt")
         self.assertEqual(utilities.normalize_variant("_sy"), "_sy")
 
-    def test_replaces_qmark_with_Xaa_in_protein_variant(self):
-        self.assertEqual(utilities.normalize_variant("p.G4???"), "p.G4Xaa")
-        self.assertEqual(utilities.normalize_variant("p.G4?"), "p.G4X")
-
     def test_ignores_invalid_protein_variant(self):
         self.assertEqual(utilities.normalize_variant("p.G4??"), "p.G4??")
-
-    def test_replaces_X_with_N_in_dna_variant(self):
-        for p in "cgnm":
-            self.assertEqual(
-                utilities.normalize_variant("{}.100A>X".format(p)),
-                "{}.100A>N".format(p),
-            )
-
-        for p in "cgnm":
-            self.assertEqual(
-                utilities.normalize_variant("{}.100_102delinsXXX".format(p)),
-                "{}.100_102delinsNNN".format(p),
-            )
 
     def test_replaces_X_with_N_in_rna_variant(self):
         self.assertEqual(utilities.normalize_variant("r.100a>x"), "r.100a>n")
@@ -266,26 +247,26 @@ class TestFormatVariant(unittest.TestCase):
 
 class TestHGVSProFromEventList(unittest.TestCase):
     def test_returns_single_event(self):
-        result = utilities.hgvs_pro_from_event_list(["L4V"])
-        self.assertEqual(result, "p.L4V")
+        result = utilities.hgvs_pro_from_event_list(["Leu4Val"])
+        self.assertEqual(result, "p.Leu4Val")
 
     def test_strips_whitespace(self):
-        result = utilities.hgvs_pro_from_event_list([" L4V "])
-        self.assertEqual(result, "p.L4V")
+        result = utilities.hgvs_pro_from_event_list([" Leu4Val "])
+        self.assertEqual(result, "p.Leu4Val")
 
     def test_combines_multi_events(self):
-        result = utilities.hgvs_pro_from_event_list(["L4V", "G5*"])
-        self.assertEqual(result, "p.[L4V;G5*]")
+        result = utilities.hgvs_pro_from_event_list(["Leu4Val", "Gly5Ter"])
+        self.assertEqual(result, "p.[Leu4Val;Gly5Ter]")
 
     def test_removes_duplicate_events(self):
-        result = utilities.hgvs_pro_from_event_list(["L4V", "L4V"])
-        self.assertEqual(result, "p.L4V")
-        result = utilities.hgvs_pro_from_event_list(["L4V", "L4V", "L5V"])
-        self.assertEqual(result, "p.[L4V;L5V]")
+        result = utilities.hgvs_pro_from_event_list(["Leu4Val", "Leu4Val"])
+        self.assertEqual(result, "p.Leu4Val")
+        result = utilities.hgvs_pro_from_event_list(["Leu4Val", "Leu4Val", "Leu5Val"])
+        self.assertEqual(result, "p.[Leu4Val;Leu5Val]")
 
     def test_retains_ordering(self):
-        result = utilities.hgvs_pro_from_event_list(["L5V", "L4V"])
-        self.assertEqual(result, "p.[L5V;L4V]")
+        result = utilities.hgvs_pro_from_event_list(["Leu5Val", "Leu4Val"])
+        self.assertEqual(result, "p.[Leu5Val;Leu4Val]")
 
     def test_error_invalid_hgvs(self):
         with self.assertRaises(exceptions.HGVSMatchError):
