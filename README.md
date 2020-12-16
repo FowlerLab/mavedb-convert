@@ -19,3 +19,8 @@ We recommend creating a [virtual environment](https://docs.python.org/3/library/
 Install the package using pip:
 
     pip3 install .
+
+## Python 3.9 compatibility
+The tests are currently failing under Python 3.9 due to multiple HDF5 files being open.
+This is being worked on in an updated version.
+If you encounter this error using mavedbconvert for normal use, please open a GitHub issue.
